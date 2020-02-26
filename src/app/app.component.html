@@ -1,4 +1,17 @@
-<!--The content below is only a placeholder and can be replaced.-->
+<!--h2>Put your earl report link here</h2>
+<textarea id="earlFileLink"></textarea>
+<h2>Put your earl file here</h2>
+<div [formGroup]="earlReport">
+
+  <input type="file" id="odfFile" formControlName="earlFile" accept="application/json" (change)="addFile($event)"/>
+  <label for="odfFile">Choose a file</label>
+
+  <button mat-icon-button class="tools" (click)="sendFile()"></button>
+</div-->
+
+<app-submit-earl-report></app-submit-earl-report>
+
+<!--The content below is only a placeholder and can be replaced.
 <div style="text-align:center">
   <h1>
     Welcome to {{ title }}!
@@ -16,5 +29,4 @@
   <li>
     <h2><a target="_blank" rel="noopener" href="https://blog.angular.io/">Angular blog</a></h2>
   </li>
-</ul>
-
+</ul>-->
