@@ -1,1 +1,21 @@
-<p>submit-accessibility-statement works!</p>
+<div [formGroup]="accessStatement">
+    <fieldset>
+      <legend>Accessibility Statement</legend>
+  
+      <div fxLayout="row">
+      <div fxLayout="column" fxFlex=45>
+      <label for="asLink">Type a link</label>
+      <input type="text" id="asLink" formControlName="asLink"/>
+      </div>
+  
+      <div class="divider" fxLayout="column" fxFlex=10>or</div>
+  
+      <div fxLayout="column" fxFlex=45>
+        <input type="file" id="asFile" formControlName="asFile" accept="text/html" (change)="addFile($event)"/>
+        <label for="asFile">Choose a file</label>
+        </div>
+      </div>
+  
+      <button mat-icon-button (click)="sendFile()" class="submitButton"></button>
+    </fieldset>
+  </div>

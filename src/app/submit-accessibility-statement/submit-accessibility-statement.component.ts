@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { trim } from 'lodash';
 import { SelectionModel } from '@angular/cdk/collections';
 import { FormGroup, FormControl, FormBuilder } from '@angular/forms';
-import { EarlService } from 'src/services/earl.service';
+import { StatementService } from 'src/services/statement.service';
 
 @Component({
   selector: 'app-submit-accessibility-statement',
@@ -16,8 +16,8 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
   error: boolean;
   linkToRead: any;
   fileToRead: any;
-  jsonFromLink: string;
-  jsonFromFile: string;
+  textFromLink: string;
+  textFromFile: string;
   linkErrorMessage: string;
   fileErrorMessage: string;
 
@@ -25,37 +25,42 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
 
   constructor(
     private formBuilder: FormBuilder,
-    private earl: EarlService,
+    private statement: StatementService,
   ) {
     this.accessStatement = this.formBuilder.group({
-        file: new FormControl(),
-        link: new FormControl()});
+        asFile: new FormControl(),
+        asLink: new FormControl()});
     this.selection = new SelectionModel<any>(true, []);
   };
 
   ngOnInit(){
-    this.labelVal = ((<HTMLInputElement>document.getElementById('statementFile')).nextElementSibling).innerHTML;
+    this.labelVal = ((<HTMLInputElement>document.getElementById('asFile')).nextElementSibling).innerHTML;
   }
 
   addFile(e: Event): void {
+    let selectedFiles = (<HTMLInputElement>e.target).files.length;
     this.fileToRead = (<HTMLInputElement>e.target).files[0];
-    console.log(this.fileToRead);
-    if(this.fileToRead && this.fileToRead.name){
-      ((<HTMLInputElement>e.target).nextElementSibling).innerHTML = this.fileToRead.name.length > 30 ? this.fileToRead.name.substring(0,27).concat('...') : this.fileToRead.name;
+
+    if(selectedFiles > 1){
+      ((<HTMLInputElement>e.target).nextElementSibling).innerHTML = selectedFiles + " selected files";
     } else {
-      ((<HTMLInputElement>e.target).nextElementSibling).innerHTML = this.labelVal;
+      if(this.fileToRead && this.fileToRead.name){
+        ((<HTMLInputElement>e.target).nextElementSibling).innerHTML = this.fileToRead.name.length > 30 ? this.fileToRead.name.substring(0,27).concat('...') : this.fileToRead.name;
+      } else {
+        ((<HTMLInputElement>e.target).nextElementSibling).innerHTML = this.labelVal;
+      }
     }
   }
 
   async sendFile(): Promise<void> {
-    this.linkToRead = trim(this.accessStatement.controls.link.value);
+    this.linkToRead = trim(this.accessStatement.controls.asLink.value);
     if (!this.fileToRead && !this.linkToRead) {
       this.accessStatement.reset();
       return;
     }
 
-    if(/^https?:\/\/.*\.(json|html)$/.test(this.linkToRead)){
-      this.jsonFromLink = <string> await fetch(this.linkToRead)
+    if(/^https?:\/\/.*\.html$/.test(this.linkToRead)){
+      this.textFromLink = <string> await fetch(this.linkToRead)
           .then(response => {
             if (response.status === 200) {
               return response.text();
@@ -66,10 +71,10 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
           .catch(err => {
             this.linkErrorMessage = "failedFetch";
         });
-        console.log(this.jsonFromLink);
+        console.log(this.textFromLink);
     } else {
       this.linkErrorMessage = "invalidUrl";
-      this.jsonFromLink = "";
+      this.textFromLink = "";
     }
     /*
     let href;
@@ -92,37 +97,38 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
 
     try {
       switch (this.fileToRead.type) {
-        case "application/json":
-          this.jsonFromFile = await this.parseJSON(this.fileToRead);
+        case "text/html":
+          this.textFromFile = await this.parseFile(this.fileToRead);
           break;
         default:
-          this.jsonFromFile = "";
+          this.textFromFile = "";
           this.fileErrorMessage = "invalidType";
           break;
       } 
     } catch (err) {
-      this.jsonFromFile = "";
+      this.textFromFile = "";
       this.fileErrorMessage = "parseError";
     }
 
     this.loadingResponse = true;
-    /*this.earl.sendEARLReport(this.jsonFromFile).subscribe(response => {
+    this.statement.sendAccessibilityStatement(this.textFromFile, this.textFromLink).subscribe(response => {
       if (response) {
         console.log("oh que maravilha");
-        ((<HTMLInputElement>document.getElementById('odfFile')).nextElementSibling).innerHTML = this.labelVal;
+        ((<HTMLInputElement>document.getElementById('asFile')).nextElementSibling).innerHTML = this.labelVal;
         this.fileToRead = null;
         this.accessStatement.reset();
       } else {
         console.log("oh ohhhhhhhhh");
+        ((<HTMLInputElement>document.getElementById('asFile')).nextElementSibling).innerHTML = this.labelVal;
         this.fileToRead = null;
         this.accessStatement.reset();
         this.error = true;
       }
       this.loadingResponse = false;
-    });*/
+    });
   }
 
-  parseJSON(file: File): Promise<any> {
+  parseFile(file: File): Promise<any> {
     const reader = new FileReader();
     return new Promise((resolve, reject) => {
       reader.onerror = () => {
