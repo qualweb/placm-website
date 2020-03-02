@@ -5,13 +5,13 @@
       <div fxLayout="row">
       <div fxLayout="column" fxFlex=45>
       <label for="earlLink">Type a link</label>
-      <input type="text" id="earlLink" formControlName="earlLink"/>
+      <textarea id="earlLink" formControlName="earlLink"></textarea>
       </div>
   
       <div class="divider" fxLayout="column" fxFlex=10>or</div>
   
       <div fxLayout="column" fxFlex=45>
-        <input type="file" id="earlFile" formControlName="earlFile" accept="application/json" (change)="addFile($event)"/>
+        <input type="file" id="earlFile" formControlName="earlFile" accept="application/json" (change)="addFile($event)" multiple/>
         <label for="earlFile">Choose a file</label>
         </div>
       </div>

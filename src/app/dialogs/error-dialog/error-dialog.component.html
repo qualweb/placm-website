@@ -1,0 +1,9 @@
+<mat-dialog-content>
+    <p *ngFor="let link of links; let i = index">
+        {{i}} - {{link}}
+    </p> 
+</mat-dialog-content>
+
+<mat-dialog-actions>
+    <button mat-raised-button color="warn" (click)="close()">Close</button>
+</mat-dialog-actions>

@@ -4,10 +4,12 @@ import { RouterModule, Routes } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import {MatIconModule, MatDialogModule} from '@angular/material';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { AppComponent } from './app.component';
 import { SubmitEarlReportComponent } from './submit-earl-report/submit-earl-report.component';
 import { SubmitAccessibilityStatementComponent } from './submit-accessibility-statement/submit-accessibility-statement.component';
+import { ErrorDialogComponent } from './dialogs/error-dialog/error-dialog.component';
 
 const appRoutes: Routes = [
   { path: '', component: AppComponent}
@@ -17,10 +19,12 @@ const appRoutes: Routes = [
   declarations: [
     AppComponent,
     SubmitEarlReportComponent,
-    SubmitAccessibilityStatementComponent
+    SubmitAccessibilityStatementComponent,
+    ErrorDialogComponent
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     RouterModule.forRoot(
       appRoutes,
       { enableTracing: false }
@@ -30,6 +34,7 @@ const appRoutes: Routes = [
     MatDialogModule,
     FlexLayoutModule
   ],
+  entryComponents: [ErrorDialogComponent],
   providers: [],
   bootstrap: [AppComponent]
 })
