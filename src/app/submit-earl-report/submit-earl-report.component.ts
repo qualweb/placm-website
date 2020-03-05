@@ -5,7 +5,7 @@ import { EarlService } from 'src/services/earl.service';
 import { parseFile } from 'src/assets/utils/file';
 import { trim } from 'lodash';
 import { ErrorDialogComponent } from '../dialogs/error-dialog/error-dialog.component';
-import { MatDialog, MatDialogState, MatDialogConfig } from '@angular/material';
+import { MatDialog, MatDialogConfig } from '@angular/material';
 
 @Component({
   selector: 'app-submit-earl-report',
