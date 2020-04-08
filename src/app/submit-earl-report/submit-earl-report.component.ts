@@ -113,12 +113,12 @@ export class SubmitEarlReportComponent implements OnInit {
       }
     }
 
-    if(this.errorsLinks.length) {
+    /*if(this.errorsLinks.length) {
       this.dialogConfig.data = {
         links: this.errorsLinks
       };
       this.dialog.open(ErrorDialogComponent, this.dialogConfig);
-    }
+    }*/
 
     try {
       for(let file of Array.from(this.filesFromInput)){

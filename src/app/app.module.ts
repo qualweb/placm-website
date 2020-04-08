@@ -10,6 +10,8 @@ import { AppComponent } from './app.component';
 import { SubmitEarlReportComponent } from './submit-earl-report/submit-earl-report.component';
 import { SubmitAccessibilityStatementComponent } from './submit-accessibility-statement/submit-accessibility-statement.component';
 import { ErrorDialogComponent } from './dialogs/error-dialog/error-dialog.component';
+import { PrototypeHomepageComponent } from './prototype/prototype-homepage/prototype-homepage.component';
+import { PrototypeTagComponent } from './prototype/prototype-tag/prototype-tag.component';
 
 const appRoutes: Routes = [
   { path: '', component: AppComponent}
@@ -20,7 +22,9 @@ const appRoutes: Routes = [
     AppComponent,
     SubmitEarlReportComponent,
     SubmitAccessibilityStatementComponent,
-    ErrorDialogComponent
+    ErrorDialogComponent,
+    PrototypeHomepageComponent,
+    PrototypeTagComponent
   ],
   imports: [
     BrowserModule,

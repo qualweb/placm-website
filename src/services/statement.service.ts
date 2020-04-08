@@ -12,10 +12,11 @@ import { Response } from "../models/response";
 export class StatementService {
   constructor(private config: ConfigService) {}
 
-  sendAccessibilityStatement(htmls: any): Observable<boolean> {
+  sendAccessibilityStatement(numLinks: number, links: any, htmls: any): Observable<boolean> {
     //console.log(htmls);
+    //console.log(numLinks);
     return ajax
-      .post(this.config.getServer("/admin/statement/add"), {htmls})
+      .post(this.config.getServer("/admin/statement/add"), {numLinks, links, htmls})
       .pipe(
         retry(3),
         map(res => {
