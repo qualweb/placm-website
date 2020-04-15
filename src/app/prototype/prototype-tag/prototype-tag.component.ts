@@ -56,7 +56,6 @@ export class PrototypeTagComponent implements OnInit {
         //useless?
         type: 'column'
       }]*/
-      //series: graphicData
     });
     for(let data of this.preparedData){
       this.chart.addSeries(data, true, true);
@@ -179,11 +178,11 @@ export class PrototypeTagComponent implements OnInit {
       return x.tag;
     });
     
-    let index;
+    let actualData, index;
     let toChangeData = cloneDeep(this.preparedData);
 
     for(let i = 0; i < this.chart.ref.series.length; i++){
-      let actualData = this.chart.ref.series[i]['yData'];
+      actualData = this.chart.ref.series[i]['yData'];
       if(e.checked) {
         index = afterChecked.indexOf(tag);
         actualData.splice(index, 0, toChangeData[i].data[clickedTagIndex]);
@@ -193,11 +192,18 @@ export class PrototypeTagComponent implements OnInit {
       }
       toChangeData[i].data = cloneDeep(actualData);
     }
-    while(this.chart.ref.series.length > 0)
-      this.chart.ref.series[0].remove(false);
+
+    removeAllSeries(this.chart);
+
     for(let data of toChangeData){
       this.chart.addSeries(data, true, true);
     }
+
     this.chart.ref.xAxis[0].setCategories(afterChecked);
   }
+}
+
+function removeAllSeries(chart: Chart): void{
+  while(chart.ref.series.length > 0)
+    chart.ref.series[0].remove(false);
 }
