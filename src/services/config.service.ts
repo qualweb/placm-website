@@ -17,7 +17,7 @@ export class ConfigService {
     this.HOST = split(location.host, ':')[0];
 
     if (this.HOST === 'localhost') {
-      this.PORT = 3443;
+      this.PORT = 1234;
       this.PATH = '';
     } else {
       if (this.PROTOCOL === 'http://') {

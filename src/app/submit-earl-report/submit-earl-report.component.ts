@@ -1,11 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { SelectionModel } from '@angular/cdk/collections';
 import { FormGroup, FormControl, FormBuilder } from '@angular/forms';
 import { EarlService } from 'src/services/earl.service';
-import { parseFile } from 'src/assets/utils/file';
+import { parseFile } from 'src/utils/file';
 import { trim } from 'lodash';
-import { ErrorDialogComponent } from '../dialogs/error-dialog/error-dialog.component';
-import { MatDialog, MatDialogConfig } from '@angular/material';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-submit-earl-report',
@@ -13,7 +11,6 @@ import { MatDialog, MatDialogConfig } from '@angular/material';
   styleUrls: ['./submit-earl-report.component.css']
 })
 export class SubmitEarlReportComponent implements OnInit {
-  selection: SelectionModel<any>;
   loadingResponse: boolean;
   earlReport: FormGroup;
   error: boolean;
@@ -36,7 +33,6 @@ export class SubmitEarlReportComponent implements OnInit {
     this.earlReport = this.formBuilder.group({
         earlFile: new FormControl(),
         earlLink: new FormControl()});
-    this.selection = new SelectionModel<any>(true, []);
     this.dialogConfig = new MatDialogConfig();
     this.dialogConfig.disableClose = true;
     this.dialogConfig.autoFocus = true;
