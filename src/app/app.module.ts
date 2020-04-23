@@ -6,8 +6,9 @@ import { HttpClientModule } from '@angular/common/http'
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatButtonModule } from '@angular/material/button';
+import { FlexLayoutModule } from '@angular/flex-layout';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ChartModule } from 'angular-highcharts';
 
@@ -17,6 +18,12 @@ import { SubmitAccessibilityStatementComponent } from './submit-accessibility-st
 import { ErrorDialogComponent } from './dialogs/error-dialog/error-dialog.component';
 import { PrototypeHomepageComponent } from './prototype/prototype-homepage/prototype-homepage.component';
 import { PrototypeTagComponent } from './prototype/prototype-tag/prototype-tag.component';
+import { DrilldownDialogComponent } from './dialogs/drilldown-dialog/drilldown-dialog.component';
+import { PrototypeApplicationComponent } from './prototype/prototype-application/prototype-application.component';
+import { PrototypeCountryComponent } from './prototype/prototype-country/prototype-country.component';
+import { PrototypePageComponent } from './prototype/prototype-page/prototype-page.component';
+import { PrototypeRuleComponent } from './prototype/prototype-rule/prototype-rule.component';
+import { PrototypeEvaluationComponent } from './prototype/prototype-evaluation/prototype-evaluation.component';
 
 const appRoutes: Routes = [
   { path: '', component: AppComponent}
@@ -29,7 +36,13 @@ const appRoutes: Routes = [
     SubmitAccessibilityStatementComponent,
     ErrorDialogComponent,
     PrototypeHomepageComponent,
-    PrototypeTagComponent
+    PrototypeTagComponent,
+    DrilldownDialogComponent,
+    PrototypeApplicationComponent,
+    PrototypeCountryComponent,
+    PrototypePageComponent,
+    PrototypeRuleComponent,
+    PrototypeEvaluationComponent
   ],
   imports: [
     BrowserModule,
@@ -44,6 +57,7 @@ const appRoutes: Routes = [
     MatCheckboxModule,
     MatDialogModule,
     MatTabsModule,
+    MatButtonModule,
     FlexLayoutModule,
     ChartModule
   ],

@@ -1,0 +1,2 @@
+<div [chart]="chart" (click)="onPointSelect($event)"></div>
+<mat-checkbox *ngFor="let et of evaluationTools; let i = index" checked="true" (change)="updateEvaluationToolSelection($event, et)">{{et}}</mat-checkbox>

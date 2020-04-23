@@ -1,0 +1,2 @@
+<div [chart]="chart" (click)="onPointSelect($event)"></div>
+<mat-checkbox *ngFor="let name of countryNames; let i = index" checked="true" (change)="updateCountrySelection($event, name)">{{name}}</mat-checkbox>

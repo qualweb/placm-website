@@ -1,34 +1,30 @@
 import { Component, OnInit } from '@angular/core';
 import { Chart } from 'angular-highcharts';
-import { TagService } from 'src/services/tag.service';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { RuleService } from 'src/services/rule.service';
+import { FormGroup } from '@angular/forms';
 import * as cloneDeep from 'lodash.clonedeep';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { DrilldownDialogComponent } from 'src/app/dialogs/drilldown-dialog/drilldown-dialog.component';
 
-// to apply theming - must be better to apply in ts
-//import * as Highcharts from 'highcharts';
-//require('highcharts/themes/dark-blue')(Highcharts);
- 
 @Component({
-  selector: 'app-prototype-tag',
-  templateUrl: './prototype-tag.component.html',
-  styleUrls: ['./prototype-tag.component.css']
+  selector: 'app-prototype-rule',
+  templateUrl: './prototype-rule.component.html',
+  styleUrls: ['./prototype-rule.component.css']
 })
-export class PrototypeTagComponent implements OnInit {
+export class PrototypeRuleComponent implements OnInit {
 
   chart: Chart;
   number: number;
   rawData: any;
   preparedData = [];
-  tagNames = [];
+  rules = [];
 
   form: FormGroup;
-  selectedTagNames = [];
+  selectedRules = [];
   variableIds = [];
 
-  constructor(private tagService: TagService, 
-    private fb: FormBuilder, private dialog: MatDialog) { }
+  constructor(private ruleService: RuleService, 
+    private dialog: MatDialog) { }
 
   async ngOnInit() {    
     await this.fetchData();
@@ -36,13 +32,18 @@ export class PrototypeTagComponent implements OnInit {
 
     this.chart = new Chart({
       chart: {
-        type: 'column'
+        type: 'column',
+        animation: false
       },
       title: {
-        text: 'Tags column chart'
+        text: 'Rules column chart'
       },
       subtitle: {
         text: 'Click each column and check console'
+      },
+      //to enable a single tooltip to all series at one point
+      tooltip: { 
+        shared: true
       },
       credits: {
         enabled: false
@@ -54,11 +55,16 @@ export class PrototypeTagComponent implements OnInit {
       },
       //eixo dos x - nomes de cada coluna
       xAxis: {
-        categories: this.tagNames,
+        categories: this.rules,
       },
-      // disabling graphic animations
+      yAxis: {
+      },
+      scrollbar: {
+        enabled: true
+      },
       plotOptions: {
         series: {
+          // disabling graphic animations
             animation: false,
             cursor: 'pointer',
             events: {
@@ -69,9 +75,10 @@ export class PrototypeTagComponent implements OnInit {
                     category: e.point.category,
                     variable: e.point.series['userOptions'].id
                   }
-                  console.log(e.point.category, e.point.series['userOptions'].id);
                 }
-            }
+            },
+            compare: 'value',
+            showInNavigator: true
         }
       }
       /*series: [{
@@ -104,15 +111,8 @@ export class PrototypeTagComponent implements OnInit {
 
   private async fetchData() {
     let data;
-    
-    /*data = await this.tagService.getNumber();
-    if(data['success'] === 1){
-      this.number = data['result'];
-    } else {
-      //todo rip query
-    }*/
 
-    data = await this.tagService.getAll();
+    data = await this.ruleService.getAll();
 
     if(data['success'] === 1){
       this.rawData = data['result'];
@@ -123,42 +123,51 @@ export class PrototypeTagComponent implements OnInit {
   }
 
   private prepareData() {
-    let nApps = [], nPages = [], nPassed = [],
-        nFailed = [], nCantTell = [], 
+    let nApps = [], nPages = [], nAssertions = [],
+        nPassed = [], nFailed = [], nCantTell = [], 
         nInapplicable = [], nUntested = [];
-    this.rawData = this.rawData.sort(function (a,b) {
-          return a.name - b.name;
-        });
-    for(let tag of this.rawData){
-      this.tagNames.push(tag.name);
-      nApps.push(tag.nApps);
-      nPages.push(tag.nPages);
-      nPassed.push(tag.nPassed);
-      nFailed.push(tag.nFailed);
-      nCantTell.push(tag.nCantTell);
-      nInapplicable.push(tag.nInapplicable);
-      nUntested.push(tag.nUntested);
+    for(let rule of this.rawData){
+      this.rules.push(rule.name);
+      nAssertions.push(rule.nAssertions);
+      nPassed.push(rule.nPassed);
+      nFailed.push(rule.nFailed);
+      nCantTell.push(rule.nCantTell);
+      nInapplicable.push(rule.nInapplicable);
+      nUntested.push(rule.nUntested);
     }
 
-    this.preparedData.push({
-      id: 'nApps',
-      name: '# applications',
-      data: nApps
-    });
-    this.variableIds.push('nApps');
+    if(nApps.length){
+      this.preparedData.push({
+        id: 'nApps',
+        name: '# applications',
+        data: nApps
+      });
+      this.variableIds.push('nApps');
+    }
 
-    this.preparedData.push({
-      id: 'nPages',
-      name: '# pages',
-      data: nPages
-    });
-    this.variableIds.push('nPages');
+    if(nPages.length){
+      this.preparedData.push({
+        id: 'nPages',
+        name: '# pages',
+        data: nPages
+      });
+      this.variableIds.push('nPages');
+    }
+
+    if(nAssertions.length){
+      this.preparedData.push({
+        id: 'nAssertions',
+        name: '# assertions',
+        data: nAssertions,
+        visible: false
+      });
+      this.variableIds.push('nAssertions');
+    }
 
     this.preparedData.push({
       id: 'nPassed',
       name: '# passed assertions',
       data: nPassed,
-      visible: false
     });
     this.variableIds.push('nPassed');
 
@@ -166,7 +175,6 @@ export class PrototypeTagComponent implements OnInit {
       id: 'nFailed',
       name: '# failed assertions',
       data: nFailed,
-      visible: false
     });
     this.variableIds.push('nFailed');
 
@@ -174,7 +182,6 @@ export class PrototypeTagComponent implements OnInit {
       id: 'nCantTell',
       name: '# cantTell assertions',
       data: nCantTell,
-      visible: false
     });
     this.variableIds.push('nCantTell');
 
@@ -182,7 +189,6 @@ export class PrototypeTagComponent implements OnInit {
       id: 'nInapplicable',
       name: '# inapplicable assertions',
       data: nInapplicable,
-      visible: false
     });
     this.variableIds.push('nInapplicable');
 
@@ -190,31 +196,30 @@ export class PrototypeTagComponent implements OnInit {
       id: 'nUntested',
       name: '# untested assertions',
       data: nUntested,
-      visible: false
     });
     this.variableIds.push('nUntested');
     
-    for(let tag of this.tagNames){
-      this.selectedTagNames.push({tag: tag, checked: true});
+    for(let rule of this.rules){
+      this.selectedRules.push({rule: rule, checked: true});
     }
   }
 
-  updateTagSelection(e: any, tag: string){
-    let beforeChecked = this.selectedTagNames.filter(function(x){
+  updateRuleSelection(e: any, rule: string){
+    let beforeChecked = this.selectedRules.filter(function(x){
       return x.checked === true;
     }).map(function(x){
-      return x.tag;
+      return x.rule;
     });
 
-    let clickedTagIndex = this.selectedTagNames.findIndex(function(item, i){
-      return item.tag === tag;
+    let clickedTagIndex = this.selectedRules.findIndex(function(item, i){
+      return item.rule === rule;
     });
-    this.selectedTagNames[clickedTagIndex].checked = e.checked;
+    this.selectedRules[clickedTagIndex].checked = e.checked;
 
-    let afterChecked = this.selectedTagNames.filter(function(x){
+    let afterChecked = this.selectedRules.filter(function(x){
       return x.checked === true;
     }).map(function(x){
-      return x.tag;
+      return x.rule;
     });
     
     let actualData, index;
@@ -223,10 +228,10 @@ export class PrototypeTagComponent implements OnInit {
     for(let i = 0; i < this.chart.ref.series.length; i++){
       actualData = cloneDeep(this.chart.ref.series[i]['yData']);
       if(e.checked) {
-        index = afterChecked.indexOf(tag);
+        index = afterChecked.indexOf(rule);
         actualData.splice(index, 0, toChangeData[i].data[clickedTagIndex]);
       } else {
-        index = beforeChecked.indexOf(tag);
+        index = beforeChecked.indexOf(rule);
         actualData.splice(index, 1);
       }
       toChangeData[i].data = actualData;

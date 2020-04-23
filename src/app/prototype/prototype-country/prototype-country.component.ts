@@ -1,34 +1,30 @@
 import { Component, OnInit } from '@angular/core';
 import { Chart } from 'angular-highcharts';
-import { TagService } from 'src/services/tag.service';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { CountryService } from 'src/services/country.service';
+import { FormGroup } from '@angular/forms';
 import * as cloneDeep from 'lodash.clonedeep';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { DrilldownDialogComponent } from 'src/app/dialogs/drilldown-dialog/drilldown-dialog.component';
 
-// to apply theming - must be better to apply in ts
-//import * as Highcharts from 'highcharts';
-//require('highcharts/themes/dark-blue')(Highcharts);
- 
 @Component({
-  selector: 'app-prototype-tag',
-  templateUrl: './prototype-tag.component.html',
-  styleUrls: ['./prototype-tag.component.css']
+  selector: 'app-prototype-country',
+  templateUrl: './prototype-country.component.html',
+  styleUrls: ['./prototype-country.component.css']
 })
-export class PrototypeTagComponent implements OnInit {
+export class PrototypeCountryComponent implements OnInit {
 
   chart: Chart;
   number: number;
   rawData: any;
   preparedData = [];
-  tagNames = [];
+  countryNames = [];
 
   form: FormGroup;
-  selectedTagNames = [];
+  selectedCountryNames = [];
   variableIds = [];
 
-  constructor(private tagService: TagService, 
-    private fb: FormBuilder, private dialog: MatDialog) { }
+  constructor(private countryService: CountryService, 
+    private dialog: MatDialog) { }
 
   async ngOnInit() {    
     await this.fetchData();
@@ -39,10 +35,14 @@ export class PrototypeTagComponent implements OnInit {
         type: 'column'
       },
       title: {
-        text: 'Tags column chart'
+        text: 'Countries column chart'
       },
       subtitle: {
         text: 'Click each column and check console'
+      },
+      //to enable a single tooltip to all series at one point
+      tooltip: { 
+        shared: true
       },
       credits: {
         enabled: false
@@ -54,11 +54,16 @@ export class PrototypeTagComponent implements OnInit {
       },
       //eixo dos x - nomes de cada coluna
       xAxis: {
-        categories: this.tagNames,
+        categories: this.countryNames,
       },
-      // disabling graphic animations
+      yAxis: {
+      },
+      scrollbar: {
+        enabled: true
+      },
       plotOptions: {
         series: {
+          // disabling graphic animations
             animation: false,
             cursor: 'pointer',
             events: {
@@ -69,9 +74,10 @@ export class PrototypeTagComponent implements OnInit {
                     category: e.point.category,
                     variable: e.point.series['userOptions'].id
                   }
-                  console.log(e.point.category, e.point.series['userOptions'].id);
                 }
-            }
+            },
+            compare: 'value',
+            showInNavigator: true
         }
       }
       /*series: [{
@@ -104,15 +110,8 @@ export class PrototypeTagComponent implements OnInit {
 
   private async fetchData() {
     let data;
-    
-    /*data = await this.tagService.getNumber();
-    if(data['success'] === 1){
-      this.number = data['result'];
-    } else {
-      //todo rip query
-    }*/
 
-    data = await this.tagService.getAll();
+    data = await this.countryService.getAllByCountry();
 
     if(data['success'] === 1){
       this.rawData = data['result'];
@@ -127,25 +126,29 @@ export class PrototypeTagComponent implements OnInit {
         nFailed = [], nCantTell = [], 
         nInapplicable = [], nUntested = [];
     this.rawData = this.rawData.sort(function (a,b) {
-          return a.name - b.name;
-        });
-    for(let tag of this.rawData){
-      this.tagNames.push(tag.name);
-      nApps.push(tag.nApps);
-      nPages.push(tag.nPages);
-      nPassed.push(tag.nPassed);
-      nFailed.push(tag.nFailed);
-      nCantTell.push(tag.nCantTell);
-      nInapplicable.push(tag.nInapplicable);
-      nUntested.push(tag.nUntested);
+      return a.name - b.name;
+    });
+    for(let country of this.rawData){
+      this.countryNames.push(country.name);
+      if(country.nApps){
+        nApps.push(country.nApps);
+      }
+      nPages.push(country.nPages);
+      nPassed.push(country.nPassed);
+      nFailed.push(country.nFailed);
+      nCantTell.push(country.nCantTell);
+      nInapplicable.push(country.nInapplicable);
+      nUntested.push(country.nUntested);
     }
 
-    this.preparedData.push({
-      id: 'nApps',
-      name: '# applications',
-      data: nApps
-    });
-    this.variableIds.push('nApps');
+    if(nApps.length){
+      this.preparedData.push({
+        id: 'nApps',
+        name: '# applications',
+        data: nApps
+      });
+      this.variableIds.push('nApps');
+    }
 
     this.preparedData.push({
       id: 'nPages',
@@ -194,27 +197,27 @@ export class PrototypeTagComponent implements OnInit {
     });
     this.variableIds.push('nUntested');
     
-    for(let tag of this.tagNames){
-      this.selectedTagNames.push({tag: tag, checked: true});
+    for(let country of this.countryNames){
+      this.selectedCountryNames.push({country: country, checked: true});
     }
   }
 
-  updateTagSelection(e: any, tag: string){
-    let beforeChecked = this.selectedTagNames.filter(function(x){
+  updateCountrySelection(e: any, country: string){
+    let beforeChecked = this.selectedCountryNames.filter(function(x){
       return x.checked === true;
     }).map(function(x){
-      return x.tag;
+      return x.country;
     });
 
-    let clickedTagIndex = this.selectedTagNames.findIndex(function(item, i){
-      return item.tag === tag;
+    let clickedTagIndex = this.selectedCountryNames.findIndex(function(item, i){
+      return item.country === country;
     });
-    this.selectedTagNames[clickedTagIndex].checked = e.checked;
+    this.selectedCountryNames[clickedTagIndex].checked = e.checked;
 
-    let afterChecked = this.selectedTagNames.filter(function(x){
+    let afterChecked = this.selectedCountryNames.filter(function(x){
       return x.checked === true;
     }).map(function(x){
-      return x.tag;
+      return x.country;
     });
     
     let actualData, index;
@@ -223,10 +226,10 @@ export class PrototypeTagComponent implements OnInit {
     for(let i = 0; i < this.chart.ref.series.length; i++){
       actualData = cloneDeep(this.chart.ref.series[i]['yData']);
       if(e.checked) {
-        index = afterChecked.indexOf(tag);
+        index = afterChecked.indexOf(country);
         actualData.splice(index, 0, toChangeData[i].data[clickedTagIndex]);
       } else {
-        index = beforeChecked.indexOf(tag);
+        index = beforeChecked.indexOf(country);
         actualData.splice(index, 1);
       }
       toChangeData[i].data = actualData;
