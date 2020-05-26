@@ -1,0 +1,19 @@
+<ng-template [ngIf]="showAll" [ngIfElse]="showDialog">
+  <button mat-icon-button [matMenuTriggerFor]="menu">
+    <mat-icon aria-hidden="false" aria-label="Categories menu icon">label</mat-icon>
+  </button>
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item *ngFor="let category of categories" (click)="clickedSubmit(category.abbr)">{{category.name}}</button>
+  </mat-menu>
+</ng-template>
+<ng-template #showDialog>
+  <mat-form-field>
+    <mat-label>Choose which category you want to study:</mat-label>
+    <mat-select (selectionChange)="changeCategory($event.value)">
+      <mat-option *ngFor="let category of categories" [value]="category.abbr">
+        {{category.name}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <button mat-button (click)="clickedSubmit()">Submit</button>
+</ng-template>

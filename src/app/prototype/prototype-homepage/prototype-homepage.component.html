@@ -1,32 +1,16 @@
-<mat-tab-group animationDuration="0ms">
-    <mat-tab label="Tag">
-        <ng-template matTabContent>
-            <app-prototype-tag></app-prototype-tag>
-        </ng-template>
-    </mat-tab>
-    <mat-tab label="Application">
-        <ng-template matTabContent>
-            <app-prototype-application></app-prototype-application>
-        </ng-template>
-    </mat-tab>
-    <mat-tab label="Page">
-        <ng-template matTabContent>
-            <app-prototype-page></app-prototype-page>
-        </ng-template>
-    </mat-tab>
-    <mat-tab label="Rule">
-        <ng-template matTabContent>
-            <app-prototype-rule></app-prototype-rule>
-        </ng-template>
-    </mat-tab>
-    <mat-tab label="Evaluation Tool">
-        <ng-template matTabContent>
-            <app-prototype-evaluation></app-prototype-evaluation>
-        </ng-template>
-    </mat-tab>
-    <mat-tab label="Country">
-        <ng-template matTabContent>
-            <app-prototype-country></app-prototype-country>
-        </ng-template>
-    </mat-tab>
-</mat-tab-group>
+<mat-toolbar color="primary">
+    <span>Prototype Large-Scale Accessibility Compliance Monitoring</span>
+
+    <!-- This fills the remaining space of the current row -->
+    <span class="fill-remaining-space"></span>
+    
+    <a mat-button href="/">
+        <button mat-icon-button>
+            <mat-icon aria-hidden="false" aria-label="Home icon">home</mat-icon>
+        </button>
+    </a>
+    <app-graphic-picker [actualCategory]="actualCategory" [showAll]="true" (submit)="submittedCategory($event)"></app-graphic-picker>
+</mat-toolbar>
+
+<ng-template #graphics>
+</ng-template>

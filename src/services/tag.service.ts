@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { BASE_URL } from '../utils/constants';
 import { retry } from 'rxjs/internal/operators/retry';
 
@@ -29,6 +29,15 @@ export class TagService {
       )
       .toPromise();
   }
+  
+  getAllTagsNames(): Promise<any> {
+    return this.http.get(tagUrl.concat('allTagsNames'))
+      .pipe(
+        retry(3),
+        //todo error handling
+      )
+      .toPromise();
+  }
 
   /*get(id: number) {
     return this.http.get(tagUrl.concat(id.toString()));
@@ -49,5 +58,17 @@ export class TagService {
   deleteAll() {
     return this.http.delete(baseUrl);
   }*/
+
+  getData(filters?: any): Promise<any> {
+    let opts = new HttpParams();
+    if(filters)
+      opts = opts.append('filters', filters);
+    return this.http.get(tagUrl.concat('allTagDataFiltered'), {params: opts})
+      .pipe(
+        retry(3),
+        //todo error handling
+      )
+      .toPromise();
+  }
 
 }

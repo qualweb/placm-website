@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PrototypePageComponent } from './prototype-page.component';
+import { GraphicDisplayComponent } from './graphic-display.component';
 
-describe('PrototypePageComponent', () => {
-  let component: PrototypePageComponent;
-  let fixture: ComponentFixture<PrototypePageComponent>;
+describe('GraphicDisplayComponent', () => {
+  let component: GraphicDisplayComponent;
+  let fixture: ComponentFixture<GraphicDisplayComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PrototypePageComponent ]
+      declarations: [ GraphicDisplayComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(PrototypePageComponent);
+    fixture = TestBed.createComponent(GraphicDisplayComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

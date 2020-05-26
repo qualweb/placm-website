@@ -8,6 +8,9 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from '@angular/material/select';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatMenuModule } from '@angular/material/menu';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ChartModule } from 'angular-highcharts';
@@ -17,16 +20,30 @@ import { SubmitEarlReportComponent } from './submit-earl-report/submit-earl-repo
 import { SubmitAccessibilityStatementComponent } from './submit-accessibility-statement/submit-accessibility-statement.component';
 import { ErrorDialogComponent } from './dialogs/error-dialog/error-dialog.component';
 import { PrototypeHomepageComponent } from './prototype/prototype-homepage/prototype-homepage.component';
-import { PrototypeTagComponent } from './prototype/prototype-tag/prototype-tag.component';
 import { DrilldownDialogComponent } from './dialogs/drilldown-dialog/drilldown-dialog.component';
-import { PrototypeApplicationComponent } from './prototype/prototype-application/prototype-application.component';
-import { PrototypeCountryComponent } from './prototype/prototype-country/prototype-country.component';
-import { PrototypePageComponent } from './prototype/prototype-page/prototype-page.component';
-import { PrototypeRuleComponent } from './prototype/prototype-rule/prototype-rule.component';
-import { PrototypeEvaluationComponent } from './prototype/prototype-evaluation/prototype-evaluation.component';
+import { GraphicPickerComponent } from './prototype/graphic-picker/graphic-picker.component';
+import { GraphicDisplayComponent } from './prototype/graphic-display/graphic-display.component';
+//import { LocationStrategy, PathLocationStrategy } from '@angular/common';
 
 const appRoutes: Routes = [
-  { path: '', component: AppComponent}
+  { path: '', 
+    redirectTo: 'continent',
+    pathMatch: 'full'
+  },
+  { path: 'continent', component: PrototypeHomepageComponent },
+  { path: 'country', component: PrototypeHomepageComponent },
+  { path: 'tag', component: PrototypeHomepageComponent },
+  { path: 'sector', component: PrototypeHomepageComponent },
+  { path: 'org', component: PrototypeHomepageComponent },
+  { path: 'app', component: PrototypeHomepageComponent },
+  { path: 'rule', component: PrototypeHomepageComponent },
+  { path: 'eval', component: PrototypeHomepageComponent },
+  // Error handling path
+  //{ path: '**', component: PrototypeHomepageComponent },  
+  { path: '**', 
+  redirectTo: 'continent',
+  pathMatch: 'full'
+  },
 ];
 
 @NgModule({
@@ -36,13 +53,9 @@ const appRoutes: Routes = [
     SubmitAccessibilityStatementComponent,
     ErrorDialogComponent,
     PrototypeHomepageComponent,
-    PrototypeTagComponent,
     DrilldownDialogComponent,
-    PrototypeApplicationComponent,
-    PrototypeCountryComponent,
-    PrototypePageComponent,
-    PrototypeRuleComponent,
-    PrototypeEvaluationComponent
+    GraphicPickerComponent,
+    GraphicDisplayComponent
   ],
   imports: [
     BrowserModule,
@@ -58,11 +71,14 @@ const appRoutes: Routes = [
     MatDialogModule,
     MatTabsModule,
     MatButtonModule,
+    MatSelectModule,
+    MatToolbarModule,
+    MatMenuModule,
     FlexLayoutModule,
-    ChartModule
+    ChartModule,
   ],
   entryComponents: [ErrorDialogComponent],
-  providers: [],
+  providers: [/*Location, {provide: LocationStrategy, useClass: PathLocationStrategy}*/],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

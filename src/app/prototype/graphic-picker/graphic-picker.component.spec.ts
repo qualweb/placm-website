@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PrototypeRuleComponent } from './prototype-rule.component';
+import { GraphicPickerComponent } from './graphic-picker.component';
 
-describe('PrototypeRuleComponent', () => {
-  let component: PrototypeRuleComponent;
-  let fixture: ComponentFixture<PrototypeRuleComponent>;
+describe('GraphicPickerComponent', () => {
+  let component: GraphicPickerComponent;
+  let fixture: ComponentFixture<GraphicPickerComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PrototypeRuleComponent ]
+      declarations: [ GraphicPickerComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(PrototypeRuleComponent);
+    fixture = TestBed.createComponent(GraphicPickerComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
