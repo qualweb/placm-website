@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, FormBuilder } from '@angular/forms';
-import { EarlService } from 'src/services/earl.service';
-import { parseFile } from 'src/utils/file';
+import { EarlService } from 'services/earl.service';
+import { parseFile } from 'utils/file';
 import { trim } from 'lodash';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 

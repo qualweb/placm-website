@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, ViewContainerRef, ComponentFactoryResolver, ComponentFactory, ComponentRef, ChangeDetectorRef, Directive } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GraphicDisplayComponent } from '../graphic-display/graphic-display.component';
-import { POSSIBLE_FILTERS } from 'src/utils/constants';
+import { POSSIBLE_FILTERS } from 'utils/constants';
 
 @Component({
   selector: 'app-prototype-homepage',
@@ -64,7 +64,6 @@ export class PrototypeHomepageComponent implements OnInit {
         }
       }
       queryParamsString = queryParamsString.concat('}');
-      console.log(queryParamsString);
 
       let navExtras = { queryParams: JSON.parse(queryParamsString) };
       this.router.navigate(['/'.concat(cat)], navExtras);

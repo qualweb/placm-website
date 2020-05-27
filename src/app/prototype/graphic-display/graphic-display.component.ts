@@ -1,10 +1,10 @@
 import { Component, OnInit, Input, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatDialogConfig, MatDialog } from '@angular/material/dialog';
-import { DrilldownDialogComponent } from 'src/app/dialogs/drilldown-dialog/drilldown-dialog.component';
+import { DrilldownDialogComponent } from 'app/dialogs/drilldown-dialog/drilldown-dialog.component';
 import { Chart } from 'angular-highcharts';
 import { POSSIBLE_FILTERS, TITLES } from '../../../utils/constants';
-import { CombinedService } from 'src/services/combined.service';
+import { CombinedService } from 'services/combined.service';
 import * as isEmpty from 'lodash.isempty';
 import * as filter from 'lodash.filter';
 
@@ -133,12 +133,36 @@ export class GraphicDisplayComponent implements OnInit {
     let filterArray;
     let idInParams;
     let resultData = [];
-    let inputKeys = Object.keys(input);
+    let subtitle = "";
+    let sqlInjectRegex = new RegExp('^[0-9]([,][0-9])*$');
 
-    // removing actual filter from queryParams, because
-    // we want to query all data and manipulate this data in the client
-    let removed;
-    ({[this.actualFilter]: removed, ...input} = input);
+    if(!isEmpty(input)){
+      
+      // removing actual filter from queryParams, because
+      // we want to query all data and manipulate this data in the client
+      let removed;
+      ({[this.actualFilter]: removed, ...input} = input);
+
+      // search in all queryParams
+      for(let params in input){
+        // only accept possible ones
+        if(POSSIBLE_FILTERS.includes(params)){
+          if(params !== this.actualFilter && params !== 'filter'){
+            if(input[params]){
+              if(!sqlInjectRegex.test(input[params])){
+                // remove all queryParams without numbers or commas
+                ({[params]: removed, ...input} = input);
+              } else {
+                // preparing graphic subtitle
+                if(subtitle)
+                  subtitle = subtitle.concat('; ');
+                subtitle = subtitle.concat(params).concat('=').concat(input[params]);
+              }
+            }
+          }
+        }
+      }
+    }    
 
     // input can be sent as '{}' in this function
     data = await this.combinedService.getData(this.actualCategory, input);
@@ -315,15 +339,6 @@ export class GraphicDisplayComponent implements OnInit {
         }
       }
     });
-
-    let subtitle = "";
-    if(inputKeys.length){
-      for(let data of inputKeys){
-        if(subtitle)
-          subtitle = subtitle.concat('; ');
-        subtitle = subtitle.concat(data).concat('=').concat(input[data]);
-      }
-    }
     
     if(subtitle)
       this.chart.options.subtitle = {text: subtitle};

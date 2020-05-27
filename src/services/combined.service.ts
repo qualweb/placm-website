@@ -6,8 +6,7 @@ import { PageService } from './page.service';
 import { RuleService } from './rule.service';
 import { TagService } from './tag.service';
 import { SessionStorage } from '@cedx/ngx-webstorage';
-import { POSSIBLE_FILTERS } from 'src/utils/constants';
-import { identifierModuleUrl } from '@angular/compiler';
+import { POSSIBLE_FILTERS } from 'utils/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -98,7 +97,6 @@ export class CombinedService {
     let result = category;
     queryParams = this.sortObject(queryParams);
     for(let param in queryParams[0]){
-      console.log(param);
       if(POSSIBLE_FILTERS.includes(param) && param !== 'filter')
         result = result.concat(';').concat(param.substring(0, 3)).concat('=').concat(queryParams[0][param]);
     }

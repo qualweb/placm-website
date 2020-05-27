@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { trim } from 'lodash';
 import { FormGroup, FormControl, FormBuilder } from '@angular/forms';
-import { StatementService } from 'src/services/statement.service';
-import { parseFile } from 'src/utils/file';
+import { StatementService } from 'services/statement.service';
+import { parseFile } from 'utils/file';
 
 @Component({
   selector: 'app-submit-accessibility-statement',
