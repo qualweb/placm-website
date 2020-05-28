@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { BASE_URL } from '../utils/constants';
 import { retry } from 'rxjs/internal/operators/retry';
+import { ConfigService } from './config.service';
 
 const countryUrl = BASE_URL.concat('country/');
 
@@ -10,7 +11,9 @@ const countryUrl = BASE_URL.concat('country/');
 })
 export class CountryService {
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private config: ConfigService) { }
 
   /*getAllByCountry(): Promise<any> {
     return this.http.get(countryUrl.concat('byCountry'))

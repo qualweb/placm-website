@@ -9,27 +9,23 @@ export class ConfigService {
   PROTOCOL: string;
   PORT: number;
   HOST: string;
-  PATH: string;
   URI: string;
 
   constructor() {
-    this.PROTOCOL = 'http://';
-    this.HOST = split(location.host, ':')[0];
+    this.PROTOCOL = location.protocol.concat('//');
+    this.HOST = location.hostname;
 
     if (this.HOST === 'localhost') {
-      this.PORT = 1234;
-      this.PATH = '';
+      this.PORT = 3443;
     } else {
       if (this.PROTOCOL === 'http://') {
         this.PORT = 80;
       } else {
         this.PORT = 443;
       }
-
-      this.PATH = '/server';
     }
 
-    this.URI = `${this.PROTOCOL}${this.HOST}:${this.PORT}${this.PATH}`;
+    this.URI = `${this.PROTOCOL}${this.HOST}:${this.PORT}`;
   }
 
   getServer(service: string): string {
