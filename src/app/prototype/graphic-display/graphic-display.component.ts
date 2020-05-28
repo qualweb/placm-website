@@ -134,7 +134,7 @@ export class GraphicDisplayComponent implements OnInit {
     let idInParams;
     let resultData = [];
     let subtitle = "";
-    let sqlInjectRegex = new RegExp('^[0-9]([,][0-9])*$');
+    let sqlInjectRegex = new RegExp('^[0-9]([,]?[0-9])*$');
 
     if(!isEmpty(input)){
       
@@ -257,7 +257,8 @@ export class GraphicDisplayComponent implements OnInit {
     
     this.chart = new Chart({
       chart: {
-        type: 'column'
+        type: 'column',
+        zoomType: 'y',
       },
       title: {
         text: TITLES[this.actualCategory].concat(' column chart')
@@ -276,7 +277,8 @@ export class GraphicDisplayComponent implements OnInit {
       },
       //eixo dos x - nomes de cada coluna
       xAxis: {
-        categories: names
+        categories: names,
+        crosshair: true
       },
       plotOptions: {
         series: {
