@@ -41,8 +41,8 @@ const appRoutes: Routes = [
   // Error handling path
   //{ path: '**', component: PrototypeHomepageComponent },  
   { path: '**', 
-  redirectTo: 'continent',
-  pathMatch: 'full'
+    redirectTo: 'continent',
+    pathMatch: 'full'
   },
 ];
 
