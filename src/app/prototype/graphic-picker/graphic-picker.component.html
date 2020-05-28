@@ -6,6 +6,7 @@
     <button mat-menu-item *ngFor="let category of categories" (click)="clickedSubmit(category.abbr)">{{category.name}}</button>
   </mat-menu>
 </ng-template>
+
 <ng-template #showDialog>
   <mat-form-field>
     <mat-label>Choose which category you want to study:</mat-label>
@@ -15,5 +16,4 @@
       </mat-option>
     </mat-select>
   </mat-form-field>
-  <button mat-button (click)="clickedSubmit()">Submit</button>
 </ng-template>

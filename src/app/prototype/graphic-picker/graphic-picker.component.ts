@@ -13,6 +13,7 @@ export class GraphicPickerComponent implements OnInit {
   @Input() actualCategory: string;
   @Input() showAll: boolean;
   @Output() submit = new EventEmitter();
+  @Output() change = new EventEmitter();
 
   constructor() { }
 
@@ -212,6 +213,7 @@ export class GraphicPickerComponent implements OnInit {
 
   changeCategory(value: any){
     this.selectedCategory = value;
+    this.change.emit(this.selectedCategory);
   }
 
 }

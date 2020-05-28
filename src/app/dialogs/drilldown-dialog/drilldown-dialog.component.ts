@@ -13,6 +13,7 @@ export class DrilldownDialogComponent implements OnInit {
   name: string;
   variable: string;
   id: string;
+  selectedCategory: string;
 
   constructor(@Inject(MAT_DIALOG_DATA) data,
     public dialog: MatDialog,
@@ -31,8 +32,12 @@ export class DrilldownDialogComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  submittedCategory(category: any){
-    this.dialogRef.close({selected: category, filter: this.filterName, id: this.id});
+  changedCategorySelection(category: any){
+    this.selectedCategory = category;
+  }
+
+  submittedCategory(){
+    this.dialogRef.close({selected: this.selectedCategory, filter: this.filterName, id: this.id});
   }
 
 }

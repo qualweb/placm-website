@@ -11,13 +11,14 @@
 
 
 <button mat-button (click)="clickedSubmit()">Submit</button-->
-<h2>Click!</h2>
 <mat-dialog-content>
-<p>You have clicked on {{category}} {{name}} ({{id}})</p>
+<p>You have clicked on {{category}} {{name}}</p>
 <p>Where do you want to drop now?</p>
-<app-graphic-picker [actualCategory]="category" [showAll]="false" (submit)="submittedCategory($event)"></app-graphic-picker>
+<app-graphic-picker [actualCategory]="category" [showAll]="false" (change)="changedCategorySelection($event)"></app-graphic-picker>
 </mat-dialog-content>
 
 <mat-dialog-actions>
   <button mat-raised-button color="warn" (click)="close()">Close</button>
+  <span class="fill-remaining-space"></span>
+  <button mat-raised-button color="primary" (click)="submittedCategory()" [disabled]=!selectedCategory>Submit</button>
 </mat-dialog-actions>

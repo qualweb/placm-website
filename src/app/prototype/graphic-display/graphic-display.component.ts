@@ -257,8 +257,7 @@ export class GraphicDisplayComponent implements OnInit {
     
     this.chart = new Chart({
       chart: {
-        type: 'column',
-        zoomType: 'y',
+        type: 'column'
       },
       title: {
         text: TITLES[this.actualCategory].concat(' column chart')
