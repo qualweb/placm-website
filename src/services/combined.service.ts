@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { AppService } from './app.service';
 import { CountryService } from './country.service';
 import { EvaluationService } from './evaluation.service';
-import { PageService } from './page.service';
 import { RuleService } from './rule.service';
 import { TagService } from './tag.service';
 import { SessionStorage } from '@cedx/ngx-webstorage';
@@ -17,7 +16,6 @@ export class CombinedService {
     private appService: AppService,
     private countryService: CountryService,
     private evalService: EvaluationService,
-    private pageService: PageService,
     private ruleService: RuleService,
     private tagService: TagService,
     private session: SessionStorage
@@ -97,7 +95,7 @@ export class CombinedService {
     let result = category;
     queryParams = this.sortObject(queryParams);
     for(let param in queryParams[0]){
-      if(POSSIBLE_FILTERS.includes(param) && param !== 'filter')
+      if(POSSIBLE_FILTERS.includes(param) && param !== 'filter' && param !== 'p')
         result = result.concat(';').concat(param.substring(0, 3)).concat('=').concat(queryParams[0][param]);
     }
     return result;

@@ -12,13 +12,18 @@
 
 <button mat-button (click)="clickedSubmit()">Submit</button-->
 <mat-dialog-content>
-<p>You have clicked on {{category}} {{name}}</p>
-<p>Where do you want to drop now?</p>
-<app-graphic-picker [actualCategory]="category" [showAll]="false" (change)="changedCategorySelection($event)"></app-graphic-picker>
+  <p>You have clicked on {{categoryName}} {{name}}</p>
+  <ng-template [ngIf]="!lastDrilldown" [ngIfElse]="lastDrill">
+    <p>Where do you want to drill now?</p>
+    <app-graphic-picker [actualCategory]="category" [showAll]="false" (change)="changedCategorySelection($event)"></app-graphic-picker>
+  </ng-template>
+  <ng-template #lastDrill>
+    <p class="bold">You cannot drill further!</p>
+  </ng-template>
 </mat-dialog-content>
 
 <mat-dialog-actions>
   <button mat-raised-button color="warn" (click)="close()">Close</button>
   <span class="fill-remaining-space"></span>
-  <button mat-raised-button color="primary" (click)="submittedCategory()" [disabled]=!selectedCategory>Submit</button>
+  <button *ngIf="!lastDrilldown" mat-raised-button color="primary" (click)="submittedCategory()" [disabled]=!selectedCategory>Submit</button>
 </mat-dialog-actions>

@@ -23,6 +23,7 @@ import { PrototypeHomepageComponent } from './prototype/prototype-homepage/proto
 import { DrilldownDialogComponent } from './dialogs/drilldown-dialog/drilldown-dialog.component';
 import { GraphicPickerComponent } from './prototype/graphic-picker/graphic-picker.component';
 import { GraphicDisplayComponent } from './prototype/graphic-display/graphic-display.component';
+import { GraphicHeaderComponent } from './prototype/graphic-header/graphic-header.component';
 //import { LocationStrategy, PathLocationStrategy } from '@angular/common';
 
 const appRoutes: Routes = [
@@ -30,14 +31,14 @@ const appRoutes: Routes = [
     redirectTo: 'continent',
     pathMatch: 'full'
   },
-  { path: 'continent', component: PrototypeHomepageComponent },
-  { path: 'country', component: PrototypeHomepageComponent },
-  { path: 'tag', component: PrototypeHomepageComponent },
-  { path: 'sector', component: PrototypeHomepageComponent },
-  { path: 'org', component: PrototypeHomepageComponent },
-  { path: 'app', component: PrototypeHomepageComponent },
-  { path: 'rule', component: PrototypeHomepageComponent },
-  { path: 'eval', component: PrototypeHomepageComponent },
+  { path: 'continent', component: GraphicDisplayComponent },
+  { path: 'country', component: GraphicDisplayComponent },
+  { path: 'tag', component: GraphicDisplayComponent },
+  { path: 'sector', component: GraphicDisplayComponent },
+  { path: 'org', component: GraphicDisplayComponent },
+  { path: 'app', component: GraphicDisplayComponent },
+  { path: 'rule', component: GraphicDisplayComponent },
+  { path: 'eval', component: GraphicDisplayComponent },
   // Error handling path
   //{ path: '**', component: PrototypeHomepageComponent },  
   { path: '**', 
@@ -55,7 +56,8 @@ const appRoutes: Routes = [
     PrototypeHomepageComponent,
     DrilldownDialogComponent,
     GraphicPickerComponent,
-    GraphicDisplayComponent
+    GraphicDisplayComponent,
+    GraphicHeaderComponent
   ],
   imports: [
     BrowserModule,

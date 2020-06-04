@@ -1,12 +1,13 @@
 import { Component, OnInit, Input, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, Params } from '@angular/router';
 import { MatDialogConfig, MatDialog } from '@angular/material/dialog';
 import { DrilldownDialogComponent } from 'app/dialogs/drilldown-dialog/drilldown-dialog.component';
 import { Chart } from 'angular-highcharts';
-import { POSSIBLE_FILTERS, TITLES } from '../../../utils/constants';
+import { POSSIBLE_FILTERS, LABELS_PLURAL, LABELS_SINGULAR } from '../../../utils/constants';
 import { CombinedService } from 'services/combined.service';
 import * as isEmpty from 'lodash.isempty';
 import * as filter from 'lodash.filter';
+import { map } from 'lodash';
 
 @Component({
   selector: 'app-graphic-display',
@@ -15,48 +16,71 @@ import * as filter from 'lodash.filter';
 })
 export class GraphicDisplayComponent implements OnInit {
 
-  @Input() actualCategory: string;
+  //@Input() actualCategory: string;
   @Output() closedDialog = new EventEmitter();
+  actualCategory: string;
   actualFilter: string;
   options: any;
   xAxisVars: any[] = [];
   chart: any;
   allDataPrepared = false;
 
+  initChange = false;
+  checkboxChange = false;
+
   constructor(
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private dialog: MatDialog,
-    private combinedService: CombinedService
-    ) { }
+    private combinedService: CombinedService) { }
 
   ngOnInit(): void {
+    this.initChange = true;
+    this.actualCategory = this.activatedRoute.snapshot.url[0].path;
     this.actualFilter = this.actualCategory.concat('Ids');
-    
-    //this.prepareLegend();
+    //this.prepareApplicationGraphic(this.activatedRoute.snapshot.queryParams);
 
-    this.prepareApplicationGraphic(this.activatedRoute.snapshot.queryParams);
+    // if queryparams changed (even if first load!), but it was not from a checkbox change, then refresh data!
+    this.activatedRoute.queryParams.subscribe((params: any) => {
+      console.log(params);
+      if(this.checkboxChange) {
+        this.checkboxChange = false;
+      } else {
+        this.prepareApplicationGraphic(this.activatedRoute.snapshot.queryParams);
+      } 
+    });
   }
 
-  updateCheckboxSelection(event: any, id: number): void {
-
+  // type 0 = checkbox; type 1 = legend click
+  updateBySelection(id: number, type: number): void {
+    this.checkboxChange = true;
     // --- com o 'filter' no url, em vez do this.actualFilter --- //
     let actualParams = this.activatedRoute.snapshot.queryParams;
     let queryParamsArray = [];
     let actualFilterExists = false;
+    let workingParam = type === 0 ? 'filter' : 'p';
+    
+    let emptyParamString = "";
+    // if it wasnt a legend click on the first p
+    if(!(type === 1 && id === 0)){
+      emptyParamString = '"'.concat(workingParam).concat('":"');
+      // if it was a legend click, there needs to be added the first p (because its always visible in initialization)
+      if(type === 1){
+        emptyParamString = emptyParamString.concat('0,');
+      }
+      emptyParamString = emptyParamString.concat(id.toString().concat('"'));
+    }
 
     if(!isEmpty(actualParams)){
       // search in all queryParams
       for(let params in actualParams){
         // only accept possible ones
         if(POSSIBLE_FILTERS.includes(params)){
-          if(params !== this.actualFilter && params !== 'filter'){
+          if(params !== this.actualFilter && params !== workingParam){
+            console.log(params);
             queryParamsArray.push('"'.concat(params).concat('":"').concat(actualParams[params]).concat('"'));
-          } /*else {
-            // did this to remove '.includes' loss of performance in line 113
-            actualFilterExists = true;
-          }*/
-          else if(params === 'filter'){
+          }
+          else if(params === workingParam){
             actualFilterExists = true;
           }
         }
@@ -64,7 +88,7 @@ export class GraphicDisplayComponent implements OnInit {
 
       // if this category's filter is in queryParams, add or remove id from it
       if(actualFilterExists){
-        let idsArray = actualParams['filter'].split(',');
+        let idsArray = actualParams[workingParam].split(',');
         let indexId = idsArray.indexOf(id.toString());
 
         // if this id already exists, needs to be removed
@@ -80,19 +104,23 @@ export class GraphicDisplayComponent implements OnInit {
           idsArray = idsArray.sort(function(a,b) {
             return +a - +b;
           });
-          queryParamsArray.push('"'.concat('filter').concat('":"').concat(idsArray.join(',').concat('"')));
+          queryParamsArray.push('"'.concat(workingParam).concat('":"').concat(idsArray.join(',').concat('"')));
         }
       } else {
-        queryParamsArray.push('"'.concat('filter').concat('":"').concat(id.toString().concat('"')));
+        queryParamsArray.push(emptyParamString);
       }
-
     } else {
-      queryParamsArray.push('"'.concat('filter').concat('":"').concat(id.toString().concat('"')));
+      queryParamsArray.push(emptyParamString);
     }
 
     let jsonNavExtras = JSON.parse('{'.concat(queryParamsArray.join(',')).concat('}'));
+    this.router.navigate([], {
+        relativeTo: this.activatedRoute,
+        queryParams: jsonNavExtras // remove to replace all query params by provided
+    });
 
-    this.router.navigate([this.router.url.split('?')[0]], {queryParams: jsonNavExtras});
+    if(type === 0)
+      this.prepareApplicationGraphic(jsonNavExtras);
   }
 
   getFilterParamsArray(): string[] {
@@ -120,20 +148,22 @@ export class GraphicDisplayComponent implements OnInit {
       let dialogRef = this.dialog.open(DrilldownDialogComponent, dialogConfig);
       dialogRef.afterClosed().subscribe(cat => {
         if(cat){
-          this.closedDialog.emit(cat);
+          //this.closedDialog.emit(cat);
+          this.submittedCategory(cat.selected, cat);
         }
       })
     }
   }
   
   private async prepareApplicationGraphic(input: any){
-
+    console.log("tou?");
     let data;
     let rawData;
     let filterArray;
     let idInParams;
     let resultData = [];
     let subtitle = "";
+    let subtitlePossibilities = [];
     let sqlInjectRegex = new RegExp('^[0-9]([,]?[0-9])*$');
 
     if(!isEmpty(input)){
@@ -147,18 +177,23 @@ export class GraphicDisplayComponent implements OnInit {
       for(let params in input){
         // only accept possible ones
         if(POSSIBLE_FILTERS.includes(params)){
-          if(params !== this.actualFilter && params !== 'filter'){
+          if(params !== this.actualFilter && params !== 'filter' && params !== 'p'){
             if(input[params]){
               if(!sqlInjectRegex.test(input[params])){
                 // remove all queryParams without numbers or commas
                 ({[params]: removed, ...input} = input);
               } else {
                 // preparing graphic subtitle
-                if(subtitle)
+                
+                /*if(subtitle)
                   subtitle = subtitle.concat('; ');
-                subtitle = subtitle.concat(params).concat('=').concat(input[params]);
+                subtitle = subtitle.concat(params).concat('=').concat(input[params]);*/
+                subtitlePossibilities.push(params.replace('Ids', ''));
               }
             }
+          } else {
+            // remove all queryParams equal to filter, p and filter corresponding to actual category
+            //({[params]: removed, ...input} = input);
           }
         }
       }
@@ -170,6 +205,7 @@ export class GraphicDisplayComponent implements OnInit {
 
     if(data['success'] === 1){
       rawData = data['result'];
+      subtitle = this.prepareSubtitle(rawData, subtitlePossibilities);
     } else {
       //todo query error
     }
@@ -188,6 +224,8 @@ export class GraphicDisplayComponent implements OnInit {
       }
       return comparison;
     });
+
+    this.xAxisVars = [];
 
     for(let vars of rawData){
       idInParams = filterArray.includes(vars.id.toString());
@@ -214,139 +252,236 @@ export class GraphicDisplayComponent implements OnInit {
     resultData.push({
       id: 'nPages',
       name: '# pages',
-      data: nPages
+      data: nPages,
+      visible: this.isSeriesVisible(0)
     });
 
     resultData.push({
       id: 'nPassed',
       name: '# passed assertions',
       data: nPassed,
-      visible: false
+      visible: this.isSeriesVisible(1)
     });
 
     resultData.push({
       id: 'nFailed',
       name: '# failed assertions',
       data: nFailed,
-      visible: false
+      visible: this.isSeriesVisible(2)
     });
 
     resultData.push({
       id: 'nCantTell',
       name: '# cantTell assertions',
       data: nCantTell,
-      visible: false
+      visible: this.isSeriesVisible(3)
     });
 
     resultData.push({
       id: 'nInapplicable',
       name: '# inapplicable assertions',
       data: nInapplicable,
-      visible: false
+      visible: this.isSeriesVisible(4)
     });
 
     resultData.push({
       id: 'nUntested',
       name: '# untested assertions',
       data: nUntested,
-      visible: false
+      visible: this.isSeriesVisible(5)
     });
     
     //console.log(resultData);
     //console.log(this.xAxisVars); 
-    
-    this.chart = new Chart({
-      chart: {
-        type: 'column'
-      },
-      title: {
-        text: TITLES[this.actualCategory].concat(' column chart')
-      },
-      //to enable a single tooltip to all series at one point
-      tooltip: { 
-        shared: true
-      },
-      credits: {
-        enabled: false
-      },
-      accessibility: {
-        announceNewData: {
-            enabled: true
-        }
-      },
-      //eixo dos x - nomes de cada coluna
-      xAxis: {
-        categories: names,
-        crosshair: true
-      },
-      plotOptions: {
-        series: {
-          // disabling graphic animations
-          animation: false,
-          cursor: 'pointer',
-          events: {
-              legendItemClick: function (e){
-                /*console.log(e.target['_i']);
-                console.log(filter(this.chart.series, function(o) { return o.visible; }));
-                //_i da me o index
-                let params = input['p'];
-                let queryString = '';
-                console.log(inputKeys);
-                if(inputKeys.length){
-                  queryString = queryString.concat('&p=');
-                } else {
-                  queryString = queryString.concat('?p=');
-                }
-                console.log(params);
-                console.log(!!params);
-                if(params !== undefined){
-                  let paramsArray = params.split(',');
-                  let indexId = paramsArray.indexOf(e.target['_i']);
-
-                  // if this id already exists, needs to be removed
-                  if(indexId >= 0){
-                    paramsArray.splice(indexId, 1);
-                  } 
-                  // if it doesnt, needs to be added
-                  else {
-                    paramsArray.push(e.target['_i']);
+    if(!this.chart){
+      this.chart = new Chart({
+        chart: {
+          type: 'column'
+        },
+        title: {
+          text: LABELS_PLURAL[this.actualCategory].concat(' column chart')
+        },
+        //to enable a single tooltip to all series at one point
+        tooltip: { 
+          shared: true
+        },
+        credits: {
+          enabled: false
+        },
+        accessibility: {
+          announceNewData: {
+              enabled: true
+          }
+        },
+        //eixo dos x - nomes de cada coluna
+        xAxis: {
+          categories: names,
+          crosshair: true
+        },
+        plotOptions: {
+          series: {
+            // disabling graphic animations
+            animation: false,
+            cursor: 'pointer',
+            events: {
+                legendItemClick: (e) => {
+                  this.updateBySelection(e.target['_i'], 1);
+                  /*console.log(input);
+                  console.log(input['p']);
+                  let params = input['p'];
+                  let queryString = '';
+                  
+                  if(params !== undefined){
+                    let paramsArray = params.split(',');
+                    console.log(paramsArray);
+                    let indexId = paramsArray.indexOf(e.target['_i'].toString());
+                    console.log(indexId);
+                    // if this id already exists, needs to be removed
+                    if(indexId >= 0){
+                      paramsArray.splice(indexId, 1);
+                    } 
+                    // if it doesnt, needs to be added
+                    else {
+                      paramsArray.push(e.target['_i'].toString());
+                    }
+                    console.log(paramsArray);
+                    if(paramsArray.length) {
+                      paramsArray = paramsArray.sort(function(a,b) {
+                        return +a - +b;
+                      });
+                      queryString = queryString.concat(paramsArray.join(','));
+                      input['p'] = queryString;
+                    } else {
+                      delete input.p;
+                    }
+                  } else {
+                    queryString = queryString.concat(e.target['_i'].toString());
+                    //input = Object.create(input);
+                    input['p'] = queryString;
                   }
 
-                  if(paramsArray.length) {
-                    paramsArray = paramsArray.sort(function(a,b) {
-                      return +a - +b;
+                  let pRegex = new RegExp('[?&]p=([0-9]+([,][0-9]*)*)[&]?');
+                  if(input['p'] !== undefined){
+                    if(window.location.search.length){
+                      if((window.location.search).match(pRegex)){
+                        queryString = (window.location.search).replace(pRegex, function(match, $1, $2, offset, str) {
+                          return str.replace($1, queryString);
+                        });
+                        console.log(queryString);
+                      } else {
+                        queryString = '&p='.concat(queryString);
+                      }
+                    } else {
+                      queryString = '?p='.concat(queryString);
+                    }
+                  } else {
+                    queryString = (window.location.search).replace(pRegex, function(match, $1, $2, offset, str) {
+                      return str.replace(match, '');
                     });
-                    queryString = queryString.concat(paramsArray.join(','));
                   }
-                } else {
-                  queryString = queryString.concat(e.target['_i']);
+                  console.log(queryString);
+                  console.log(window.location);
+                  console.log(input);
+                  console.log(window);
+                  window.history.replaceState({}, '', window.location.origin.concat(window.location.pathname).concat(queryString));*/
+                  //nao deteta nem filter nem p, na transicao de uma pra outra
                 }
-                
-                window.history.pushState({}, '', window.location.href.concat(queryString));*/
-
-              }
-              /*click: function (e) {
-                const dialogConfig = new MatDialogConfig();
-                dialogConfig.autoFocus = true;
-                dialogConfig.data = {
-                  category: e.point.category,
-                  variable: e.point.series['userOptions'].id
-                }
-              }*/
-          },
-          compare: 'value',
-          showInNavigator: true
-          
+                /*click: function (e) {
+                  const dialogConfig = new MatDialogConfig();
+                  dialogConfig.autoFocus = true;
+                  dialogConfig.data = {
+                    category: e.point.category,
+                    variable: e.point.series['userOptions'].id
+                  }
+                }*/
+            },
+            compare: 'value',
+            showInNavigator: true
+            
+          }
         }
+      });
+    } else {
+      //this.chart.ref$.subscribe(console.log);
+      const length = this.chart.ref.series.length;
+      while(this.chart.ref.series.length !== 0){
+        this.chart.removeSeries(0);
       }
-    });
-    
+      this.chart.ref.xAxis[0].categories = names;
+    }
+
     if(subtitle)
       this.chart.options.subtitle = {text: subtitle};
 
     for(let data of resultData){
-      this.chart.addSeries(data, true, true);
+      this.chart.addSeries(data, true, false);
     }
     this.allDataPrepared = true;
+  }
+
+  prepareSubtitle(data: any, subs: string[]): string {
+    let result = "";
+    if(data.length > 0){
+      for(let sub of subs){
+        let infoQuery = data[0][sub.concat('Names')];
+        if(infoQuery){
+          let arrayInfoQuery = JSON.parse(infoQuery);
+
+          if(result){
+            result = result.concat("; ");
+          }
+
+          if(arrayInfoQuery.length > 1) {
+            result = result.concat(LABELS_PLURAL[sub]);
+            let allNames = [];
+            for(let name of arrayInfoQuery){
+              allNames.push(name);
+            }
+            result = result.concat(' ').concat(allNames.slice(0, -1).join(', ') + ' and ' + allNames.slice(-1));
+          } else {
+            result = result.concat(LABELS_SINGULAR[sub]).concat(' ').concat(arrayInfoQuery[0]);
+          }
+        } else {
+          if(sub === 'sector'){
+            // todo how can i do this?
+          }
+          // Theres no info about this queryParam in this SQL Query!
+          console.log(sub);
+        }
+      }
+    }
+    return result;
+  }
+
+  isSeriesVisible(index: number): boolean {
+    let parameterParam = this.activatedRoute.snapshot.queryParams['p'];
+    let i = index.toString();
+    return parameterParam ? parameterParam.split(',').includes(i) : (index === 0 ? true : false);
+  }
+
+  submittedCategory(cat: string, extra?: any){
+    if(!extra){
+      this.router.navigate(['/'.concat(cat)], {
+        relativeTo: this.activatedRoute
+      });
+    } else {
+      let queryParamsString = '{"'.concat(extra.filter).concat('":"').concat(extra.id).concat('"');
+
+      let actualExtras = this.activatedRoute.snapshot.queryParams;
+      if(actualExtras){
+        for(let params in actualExtras){
+          if(POSSIBLE_FILTERS.includes(params) && params !== extra.filter && params !== 'filter' && params !== 'p'){
+            queryParamsString = queryParamsString.concat(',"')
+                    .concat(params).concat('":"').concat(actualExtras[params]).concat('"');
+          }
+        }
+      }
+      queryParamsString = queryParamsString.concat('}');
+
+      this.router.navigate(['/'.concat(cat)], {
+        relativeTo: this.activatedRoute,
+        queryParams: JSON.parse(queryParamsString)
+      });
+    }
   }
 }

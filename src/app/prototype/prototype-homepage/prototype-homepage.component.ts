@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, ViewContainerRef, ComponentFactoryResolver, ComponentFactory, ComponentRef, ChangeDetectorRef, Directive } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { GraphicDisplayComponent } from '../graphic-display/graphic-display.component';
 import { POSSIBLE_FILTERS } from 'utils/constants';
 
@@ -30,6 +30,12 @@ export class PrototypeHomepageComponent implements OnInit {
     this.router.routeReuseStrategy.shouldReuseRoute = function() {
       return false;
     };
+    this.router.events.subscribe((e: any) => {
+      // If it is a NavigationEnd event re-initalise the component
+      if (e instanceof NavigationEnd) {
+        this.router.navigated = true;
+      }
+    });
   }
 
   ngOnInit() {
@@ -47,46 +53,23 @@ export class PrototypeHomepageComponent implements OnInit {
   ngAfterViewInit(){
   }
 
-  // Function called after submitted button on app-graphic-picker
-  submittedCategory(cat: string, extra?: any){
-    if(!extra){
-      this.router.navigate(['/'.concat(cat)]);
-    } else {
-      let queryParamsString = '{"'.concat(extra.filter).concat('":"').concat(extra.id).concat('"');
-
-      let actualExtras = this.activatedRoute.snapshot.queryParams;
-      if(actualExtras){
-        for(let params in actualExtras){
-          if(POSSIBLE_FILTERS.includes(params) && params !== extra.filter && params !== 'filter' && params !== 'p'){
-            queryParamsString = queryParamsString.concat(',"')
-                    .concat(params).concat('":"').concat(actualExtras[params]).concat('"');
-          }
-        }
-      }
-      queryParamsString = queryParamsString.concat('}');
-
-      let navExtras = { queryParams: JSON.parse(queryParamsString) };
-      this.router.navigate(['/'.concat(cat)], navExtras);
-    }
-   
-    this.loadComponent(cat);
-    this.actualCategory = cat;
-  }
-
   private loadComponent(category: string){
     let factory: ComponentFactory<any>;
 
     // only needed if wanted to be cleared
-    this.vc.clear(); 
+    //this.vc.clear(); 
 
     factory = this.resolver.resolveComponentFactory(GraphicDisplayComponent);
-    let componentRef = this.vc.createComponent(factory);
-    componentRef.instance.actualCategory = category;
-    componentRef.instance.closedDialog.subscribe(cat => {
-      if(cat){
-        this.submittedCategory(cat.selected, cat);
-      }
-    });
+    console.log(this.componentRef);
+    if(!this.componentRef){
+      this.componentRef = this.vc.createComponent(factory);
+      this.componentRef.instance.actualCategory = category;
+      this.componentRef.instance.closedDialog.subscribe(cat => {
+        if(cat){
+          //this.submittedCategory(cat.selected, cat);
+        }
+      });
+    }
   }
 
 }

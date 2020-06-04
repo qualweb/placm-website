@@ -1,4 +1,5 @@
 import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-graphic-picker',
@@ -15,9 +16,11 @@ export class GraphicPickerComponent implements OnInit {
   @Output() submit = new EventEmitter();
   @Output() change = new EventEmitter();
 
-  constructor() { }
+  constructor(
+    private activatedRoute: ActivatedRoute) { }
 
   ngOnInit(): void {
+    this.categories = [];
     if(this.showAll){
       this.categories = [
         {
@@ -89,11 +92,15 @@ export class GraphicPickerComponent implements OnInit {
           ];
           break;
         case 'country':
-          this.categories = [
-            {
-              name: 'Tag',
-              abbr: 'tag'
-            },
+          if(!this.activatedRoute.snapshot.queryParams['tagIds']){
+            this.categories.push(
+              {
+                name: 'Tag',
+                abbr: 'tag'
+              }
+            );
+          }
+          this.categories.push(
             {
               name: 'Sector',
               abbr: 'sector'
@@ -114,18 +121,26 @@ export class GraphicPickerComponent implements OnInit {
               name: 'Rule',
               abbr: 'rule'
             }
-          ];
+          );
           break;
         case 'tag':
-          this.categories = [
-            {
+          if(!this.activatedRoute.snapshot.queryParams['countryIds']){
+            this.categories.push(
+              {
+                name: 'Country',
+                abbr: 'country'
+              }
+            );
+          }
+          if(!this.activatedRoute.snapshot.queryParams['sectorIds']){
+            this.categories.push(
+              {
               name: 'Sector',
               abbr: 'sector'
-            },
-            {
-              name: 'Evaluation Tool',
-              abbr: 'eval'
-            },
+              }
+            );
+          }
+          this.categories.push(
             {
               name: 'Organization',
               abbr: 'org'
@@ -135,21 +150,25 @@ export class GraphicPickerComponent implements OnInit {
               abbr: 'app'
             },
             {
+              name: 'Evaluation Tool',
+              abbr: 'eval'
+            },
+            {
               name: 'Rule',
               abbr: 'rule'
             }
-          ];
+          );
           break;
         case 'sector':
-          this.categories = [
-            {
-              name: 'Tag',
-              abbr: 'tag'
-            },
-            {
-              name: 'Evaluation Tool',
-              abbr: 'eval'
-            },
+          if(!this.activatedRoute.snapshot.queryParams['tagIds']){
+            this.categories.push(
+              {
+                name: 'Tag',
+                abbr: 'tag'
+              }
+            );
+          }
+          this.categories.push(
             {
               name: 'Organization',
               abbr: 'org'
@@ -159,20 +178,24 @@ export class GraphicPickerComponent implements OnInit {
               abbr: 'app'
             },
             {
+              name: 'Evaluation Tool',
+              abbr: 'eval'
+            },
+            {
               name: 'Rule',
               abbr: 'rule'
             }
-          ];
+          );
           break;
         case 'org':
           this.categories = [
             {
-              name: 'Evaluation Tool',
-              abbr: 'eval'
-            },
-            {
               name: 'Application',
               abbr: 'app'
+            },
+            {
+              name: 'Evaluation Tool',
+              abbr: 'eval'
             },
             {
               name: 'Rule',
@@ -193,7 +216,11 @@ export class GraphicPickerComponent implements OnInit {
           ];
           break;
         case 'eval':
-          this.categories = [];
+          this.categories = [
+            {
+              name: 'Rule',
+              abbr: 'rule'
+            }];
           break;
         case 'rule':
           this.categories = [];
