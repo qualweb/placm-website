@@ -1,16 +1,3 @@
-<!--h2>Click!</h2>
-
-<mat-dialog-content>
-  <p>Category {{category}} and variable {{variable}}</p>
-  <p>Id {{id}}</p>
-</mat-dialog-content>
-
-<mat-dialog-actions>
-  <button mat-raised-button color="warn" (click)="close()">Close</button>
-</mat-dialog-actions>
-
-
-<button mat-button (click)="clickedSubmit()">Submit</button-->
 <mat-dialog-content>
   <p>You have clicked on {{categoryName}} {{name}}</p>
   <ng-template [ngIf]="!lastDrilldown" [ngIfElse]="lastDrill">

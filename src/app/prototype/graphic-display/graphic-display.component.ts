@@ -38,11 +38,9 @@ export class GraphicDisplayComponent implements OnInit {
     this.initChange = true;
     this.actualCategory = this.activatedRoute.snapshot.url[0].path;
     this.actualFilter = this.actualCategory.concat('Ids');
-    //this.prepareApplicationGraphic(this.activatedRoute.snapshot.queryParams);
 
     // if queryparams changed (even if first load!), but it was not from a checkbox change, then refresh data!
     this.activatedRoute.queryParams.subscribe((params: any) => {
-      console.log(params);
       if(this.checkboxChange) {
         this.checkboxChange = false;
       } else {
@@ -54,7 +52,6 @@ export class GraphicDisplayComponent implements OnInit {
   // type 0 = checkbox; type 1 = legend click
   updateBySelection(id: number, type: number): void {
     this.checkboxChange = true;
-    // --- com o 'filter' no url, em vez do this.actualFilter --- //
     let actualParams = this.activatedRoute.snapshot.queryParams;
     let queryParamsArray = [];
     let actualFilterExists = false;
@@ -124,7 +121,6 @@ export class GraphicDisplayComponent implements OnInit {
   }
 
   getFilterParamsArray(): string[] {
-    //let filter = this.activatedRoute.snapshot.queryParams[this.actualFilter];
     let filter = this.activatedRoute.snapshot.queryParams['filter'];
     // if there were any filters active (in the url)
     if(filter){
@@ -156,7 +152,6 @@ export class GraphicDisplayComponent implements OnInit {
   }
   
   private async prepareApplicationGraphic(input: any){
-    console.log("tou?");
     let data;
     let rawData;
     let filterArray;
@@ -180,20 +175,16 @@ export class GraphicDisplayComponent implements OnInit {
           if(params !== this.actualFilter && params !== 'filter' && params !== 'p'){
             if(input[params]){
               if(!sqlInjectRegex.test(input[params])){
-                // remove all queryParams without numbers or commas
+                // remove all queryParams that are not composed of only numbers or commas
                 ({[params]: removed, ...input} = input);
               } else {
                 // preparing graphic subtitle
-                
-                /*if(subtitle)
-                  subtitle = subtitle.concat('; ');
-                subtitle = subtitle.concat(params).concat('=').concat(input[params]);*/
                 subtitlePossibilities.push(params.replace('Ids', ''));
               }
             }
           } else {
             // remove all queryParams equal to filter, p and filter corresponding to actual category
-            //({[params]: removed, ...input} = input);
+            ({[params]: removed, ...input} = input);
           }
         }
       }
@@ -291,8 +282,6 @@ export class GraphicDisplayComponent implements OnInit {
       visible: this.isSeriesVisible(5)
     });
     
-    //console.log(resultData);
-    //console.log(this.xAxisVars); 
     if(!this.chart){
       this.chart = new Chart({
         chart: {
@@ -326,74 +315,7 @@ export class GraphicDisplayComponent implements OnInit {
             events: {
                 legendItemClick: (e) => {
                   this.updateBySelection(e.target['_i'], 1);
-                  /*console.log(input);
-                  console.log(input['p']);
-                  let params = input['p'];
-                  let queryString = '';
-                  
-                  if(params !== undefined){
-                    let paramsArray = params.split(',');
-                    console.log(paramsArray);
-                    let indexId = paramsArray.indexOf(e.target['_i'].toString());
-                    console.log(indexId);
-                    // if this id already exists, needs to be removed
-                    if(indexId >= 0){
-                      paramsArray.splice(indexId, 1);
-                    } 
-                    // if it doesnt, needs to be added
-                    else {
-                      paramsArray.push(e.target['_i'].toString());
-                    }
-                    console.log(paramsArray);
-                    if(paramsArray.length) {
-                      paramsArray = paramsArray.sort(function(a,b) {
-                        return +a - +b;
-                      });
-                      queryString = queryString.concat(paramsArray.join(','));
-                      input['p'] = queryString;
-                    } else {
-                      delete input.p;
-                    }
-                  } else {
-                    queryString = queryString.concat(e.target['_i'].toString());
-                    //input = Object.create(input);
-                    input['p'] = queryString;
-                  }
-
-                  let pRegex = new RegExp('[?&]p=([0-9]+([,][0-9]*)*)[&]?');
-                  if(input['p'] !== undefined){
-                    if(window.location.search.length){
-                      if((window.location.search).match(pRegex)){
-                        queryString = (window.location.search).replace(pRegex, function(match, $1, $2, offset, str) {
-                          return str.replace($1, queryString);
-                        });
-                        console.log(queryString);
-                      } else {
-                        queryString = '&p='.concat(queryString);
-                      }
-                    } else {
-                      queryString = '?p='.concat(queryString);
-                    }
-                  } else {
-                    queryString = (window.location.search).replace(pRegex, function(match, $1, $2, offset, str) {
-                      return str.replace(match, '');
-                    });
-                  }
-                  console.log(queryString);
-                  console.log(window.location);
-                  console.log(input);
-                  console.log(window);
-                  window.history.replaceState({}, '', window.location.origin.concat(window.location.pathname).concat(queryString));*/
-                  //nao deteta nem filter nem p, na transicao de uma pra outra
                 }
-                /*click: function (e) {
-                  const dialogConfig = new MatDialogConfig();
-                  dialogConfig.autoFocus = true;
-                  dialogConfig.data = {
-                    category: e.point.category,
-                    variable: e.point.series['userOptions'].id
-                  }
-                }*/
             },
             compare: 'value',
             showInNavigator: true
