@@ -397,7 +397,6 @@ export class GraphicDisplayComponent implements OnInit {
         }
       }
     }
-    console.log(result);
     return result;
   }
 
@@ -435,7 +434,6 @@ export class GraphicDisplayComponent implements OnInit {
 
   updateBreadcrumbs() {
     this.breadcrumbs = [];
-    console.log(this.activatedRoute.snapshot);
     let queryParams = this.activatedRoute.snapshot.queryParams;
 
     let removed;
