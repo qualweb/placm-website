@@ -80,7 +80,7 @@ const appRoutes: Routes = [
     ChartModule,
   ],
   entryComponents: [ErrorDialogComponent],
-  providers: [/*Location, {provide: LocationStrategy, useClass: PathLocationStrategy}*/],
+  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -3,11 +3,11 @@ import { Router, ActivatedRoute, Params } from '@angular/router';
 import { MatDialogConfig, MatDialog } from '@angular/material/dialog';
 import { DrilldownDialogComponent } from 'app/dialogs/drilldown-dialog/drilldown-dialog.component';
 import { Chart } from 'angular-highcharts';
-import { POSSIBLE_FILTERS, LABELS_PLURAL, LABELS_SINGULAR } from '../../../utils/constants';
+import { POSSIBLE_FILTERS, LABELS_PLURAL, LABELS_SINGULAR, SECTORS } from '../../../utils/constants';
 import { CombinedService } from 'services/combined.service';
 import * as isEmpty from 'lodash.isempty';
 import * as filter from 'lodash.filter';
-import { map } from 'lodash';
+import * as remove from 'lodash.remove';
 
 @Component({
   selector: 'app-graphic-display',
@@ -28,6 +28,8 @@ export class GraphicDisplayComponent implements OnInit {
   initChange = false;
   checkboxChange = false;
 
+  breadcrumbs: any;
+
   constructor(
     private router: Router,
     private activatedRoute: ActivatedRoute,
@@ -47,6 +49,7 @@ export class GraphicDisplayComponent implements OnInit {
         this.prepareApplicationGraphic(this.activatedRoute.snapshot.queryParams);
       } 
     });
+    this.updateBreadcrumbs();
   }
 
   // type 0 = checkbox; type 1 = legend click
@@ -74,7 +77,6 @@ export class GraphicDisplayComponent implements OnInit {
         // only accept possible ones
         if(POSSIBLE_FILTERS.includes(params)){
           if(params !== this.actualFilter && params !== workingParam){
-            console.log(params);
             queryParamsArray.push('"'.concat(params).concat('":"').concat(actualParams[params]).concat('"'));
           }
           else if(params === workingParam){
@@ -104,10 +106,12 @@ export class GraphicDisplayComponent implements OnInit {
           queryParamsArray.push('"'.concat(workingParam).concat('":"').concat(idsArray.join(',').concat('"')));
         }
       } else {
-        queryParamsArray.push(emptyParamString);
+        if(emptyParamString)
+          queryParamsArray.push(emptyParamString);
       }
     } else {
-      queryParamsArray.push(emptyParamString);
+      if(emptyParamString)
+        queryParamsArray.push(emptyParamString);
     }
 
     let jsonNavExtras = JSON.parse('{'.concat(queryParamsArray.join(',')).concat('}'));
@@ -365,13 +369,35 @@ export class GraphicDisplayComponent implements OnInit {
           }
         } else {
           if(sub === 'sector'){
-            // todo how can i do this?
+            
+            if(result) {
+              result = result.concat("; ");
+            }
+            let sectorIds = this.activatedRoute.snapshot.queryParams['sectorIds'];
+            sectorIds = sectorIds.split(',');
+            
+            //remove all sectorIds manually inserted
+            sectorIds = remove(sectorIds, function(n) {
+              return n !== 0 && n !== 1;
+            });
+
+            if(sectorIds.length > 1) {
+              let allNames = [];
+              for(let id of sectorIds){
+                allNames.push(SECTORS[id]);
+              }
+              result = result.concat(allNames.slice(0, -1).join(', ') + ' and ' + allNames.slice(-1));
+              result = result.concat(' ').concat(LABELS_PLURAL[sub]);
+            } else {
+              result = result.concat(SECTORS[0]).concat(' ').concat(LABELS_SINGULAR[sub]);
+            }
           }
           // Theres no info about this queryParam in this SQL Query!
-          console.log(sub);
+          //console.log(sub);
         }
       }
     }
+    console.log(result);
     return result;
   }
 
@@ -405,5 +431,44 @@ export class GraphicDisplayComponent implements OnInit {
         queryParams: JSON.parse(queryParamsString)
       });
     }
+  }
+
+  updateBreadcrumbs() {
+    this.breadcrumbs = [];
+    console.log(this.activatedRoute.snapshot);
+    let queryParams = this.activatedRoute.snapshot.queryParams;
+
+    let removed;
+    let removableFilters = [this.actualFilter, 'filter', 'p'];
+    for(let f of removableFilters){
+      if(queryParams[f])
+        ({[f]: removed, ...queryParams} = queryParams);
+    }
+
+    let keys = (Object.keys(queryParams)).reverse();
+    let route = "";
+    let queryParamsToBe = []
+
+    for(let i = 0; i < keys.length; i++){
+      queryParamsToBe = [];
+      for(let j = i; j >= 0; j--) {
+        if(j === i){
+          route = keys[j].replace('Ids', '');
+        } else {
+          queryParamsToBe.push('"'.concat(keys[j]).concat('":').concat(queryParams[keys[j]]));
+        }
+      }
+      this.breadcrumbs.push(
+        {
+          name: LABELS_SINGULAR[route],
+          route: '/'.concat(route),
+          queryParams: JSON.parse('{'.concat(queryParamsToBe.join(',')).concat('}'))
+        });
+    }
+    this.breadcrumbs.push(
+      {
+        name: LABELS_SINGULAR[this.activatedRoute.snapshot.routeConfig.path]
+      }
+    );
   }
 }

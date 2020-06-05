@@ -26,4 +26,9 @@ const LABELS_SINGULAR = {
   'eval': 'Evaluation tool'
 }
 
-export {BASE_URL, POSSIBLE_FILTERS, LABELS_PLURAL, LABELS_SINGULAR};
+const SECTORS = {
+  0: 'Public',
+  1: 'Private'
+}
+
+export {BASE_URL, POSSIBLE_FILTERS, LABELS_PLURAL, LABELS_SINGULAR, SECTORS};

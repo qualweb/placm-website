@@ -1,6 +1,21 @@
+<nav>
+  <ol class="breadcrumb">
+    <li>
+      <a href="/placm">
+        <mat-icon aria-hidden="false" aria-label="Home icon">home</mat-icon>
+      </a>
+    </li>
+    <li *ngFor="let crumb of breadcrumbs; let j = index; let islast = last">
+      <span aria-hidden="true">&nbsp;>&nbsp;</span>
+      <a *ngIf="!islast" [routerLink]="[crumb.route]" [queryParams]="crumb.queryParams">{{crumb.name}}</a>
+      <span *ngIf="islast">{{crumb.name}}</span>
+    </li>
+  </ol>
+</nav>
+
 <div *ngIf="allDataPrepared" class="graphic">
   <div [chart]="chart" (click)="onPointSelect($event)"></div>
-  <div id="checkboxes" fxLayout="column">
+  <div id="checkboxes">
       <mat-checkbox *ngFor="let variable of xAxisVars; let i = index" color="primary" [checked]="variable.checked" (change)="updateBySelection(variable.id, 0)">{{variable.name}}</mat-checkbox>
   </div>
 </div>
