@@ -44,7 +44,7 @@ export class GraphicPickerComponent implements OnInit {
           abbr: 'org'
         },
         {
-          name: 'Application',
+          name: 'App/Website',
           abbr: 'app'
         },
         {
@@ -78,7 +78,7 @@ export class GraphicPickerComponent implements OnInit {
               abbr: 'org'
             },
             {
-              name: 'Application',
+              name: 'App/Website',
               abbr: 'app'
             },
             {
@@ -110,7 +110,7 @@ export class GraphicPickerComponent implements OnInit {
               abbr: 'org'
             },
             {
-              name: 'Application',
+              name: 'App/Website',
               abbr: 'app'
             },
             {
@@ -146,7 +146,7 @@ export class GraphicPickerComponent implements OnInit {
               abbr: 'org'
             },
             {
-              name: 'Application',
+              name: 'App/Website',
               abbr: 'app'
             },
             {
@@ -174,7 +174,7 @@ export class GraphicPickerComponent implements OnInit {
               abbr: 'org'
             },
             {
-              name: 'Application',
+              name: 'App/Website',
               abbr: 'app'
             },
             {
@@ -190,7 +190,7 @@ export class GraphicPickerComponent implements OnInit {
         case 'org':
           this.categories = [
             {
-              name: 'Application',
+              name: 'App/Website',
               abbr: 'app'
             },
             {

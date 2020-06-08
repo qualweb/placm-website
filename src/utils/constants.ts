@@ -10,7 +10,7 @@ const LABELS_PLURAL = {
   'sector': 'Sectors',
   'tag': 'Tags',
   'org': 'Organizations',
-  'app': 'Applications',
+  'app': 'Applications/Websites',
   'rule': 'Rules',
   'eval': 'Evaluation tools'
 };
@@ -21,7 +21,7 @@ const LABELS_SINGULAR = {
   'sector': 'Sector',
   'tag': 'Tag',
   'org': 'Organization',
-  'app': 'Application',
+  'app': 'Application/Website',
   'rule': 'Rule',
   'eval': 'Evaluation tool'
 }
