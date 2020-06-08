@@ -14,7 +14,7 @@
 </nav>
 
 <div *ngIf="allDataPrepared" class="graphic">
-  <div [chart]="chart" (click)="onPointSelect($event)"></div>
+  <div [chart]="chart"></div>
   <div id="checkboxes">
       <mat-checkbox *ngFor="let variable of xAxisVars; let i = index" color="primary" [checked]="variable.checked" (change)="updateBySelection(variable.id, 0)">{{variable.name}}</mat-checkbox>
   </div>

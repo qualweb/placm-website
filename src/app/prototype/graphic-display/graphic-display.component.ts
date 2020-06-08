@@ -244,46 +244,51 @@ export class GraphicDisplayComponent implements OnInit {
       });
     }
 
+    let visibleSeries = [];
+    for(let i = 0; i <= 5; i++){
+      visibleSeries.push(this.isSeriesVisible(i));
+    }
+
     resultData.push({
       id: 'nPages',
       name: '# pages',
       data: nPages,
-      visible: this.isSeriesVisible(0)
+      visible: visibleSeries[0]
     });
 
     resultData.push({
       id: 'nPassed',
       name: '# passed assertions',
       data: nPassed,
-      visible: this.isSeriesVisible(1)
+      visible: visibleSeries[1]
     });
 
     resultData.push({
       id: 'nFailed',
       name: '# failed assertions',
       data: nFailed,
-      visible: this.isSeriesVisible(2)
+      visible: visibleSeries[2]
     });
 
     resultData.push({
       id: 'nCantTell',
       name: '# cantTell assertions',
       data: nCantTell,
-      visible: this.isSeriesVisible(3)
+      visible: visibleSeries[3]
     });
 
     resultData.push({
       id: 'nInapplicable',
       name: '# inapplicable assertions',
       data: nInapplicable,
-      visible: this.isSeriesVisible(4)
+      visible: visibleSeries[4]
     });
 
     resultData.push({
       id: 'nUntested',
       name: '# untested assertions',
       data: nUntested,
-      visible: this.isSeriesVisible(5)
+      visible: visibleSeries[5]
     });
     
     if(!this.chart){
@@ -319,6 +324,10 @@ export class GraphicDisplayComponent implements OnInit {
             events: {
                 legendItemClick: (e) => {
                   this.updateBySelection(e.target['_i'], 1);
+                },
+                click: (e) => {
+                  console.log(e);
+                  this.onPointSelect(e);
                 }
             },
             compare: 'value',
@@ -329,7 +338,6 @@ export class GraphicDisplayComponent implements OnInit {
       });
     } else {
       //this.chart.ref$.subscribe(console.log);
-      const length = this.chart.ref.series.length;
       while(this.chart.ref.series.length !== 0){
         this.chart.removeSeries(0);
       }
@@ -389,7 +397,7 @@ export class GraphicDisplayComponent implements OnInit {
               result = result.concat(allNames.slice(0, -1).join(', ') + ' and ' + allNames.slice(-1));
               result = result.concat(' ').concat(LABELS_PLURAL[sub]);
             } else {
-              result = result.concat(SECTORS[0]).concat(' ').concat(LABELS_SINGULAR[sub]);
+              result = result.concat(SECTORS[sectorIds[0]]).concat(' ').concat(LABELS_SINGULAR[sub]);
             }
           }
           // Theres no info about this queryParam in this SQL Query!

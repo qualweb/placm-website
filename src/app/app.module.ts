@@ -84,7 +84,7 @@ const appRoutes: Routes = [
   ],
   entryComponents: [ErrorDialogComponent],
   providers: [
-    { provide: HIGHCHARTS_MODULES, useFactory: () => [ accessibility, exporting ] }
+    //{ provide: HIGHCHARTS_MODULES, useFactory: () => [ accessibility ] }
   ],
   bootstrap: [AppComponent]
 })
