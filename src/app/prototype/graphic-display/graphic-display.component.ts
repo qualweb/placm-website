@@ -456,7 +456,7 @@ export class GraphicDisplayComponent implements OnInit {
     let queryParamsToBe = []
 
     for(let i = 0; i < keys.length; i++){
-      if(POSSIBLE_FILTERS[keys[i]]){
+      if(POSSIBLE_FILTERS.includes(keys[i])){
         queryParamsToBe = [];
         for(let j = i; j >= 0; j--) {
           if(j === i){
@@ -478,5 +478,6 @@ export class GraphicDisplayComponent implements OnInit {
         name: LABELS_SINGULAR[this.activatedRoute.snapshot.routeConfig.path]
       }
     );
+    console.log(this.breadcrumbs);
   }
 }
