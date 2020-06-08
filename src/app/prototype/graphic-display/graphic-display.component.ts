@@ -43,11 +43,11 @@ export class GraphicDisplayComponent implements OnInit {
 
     // if queryparams changed (even if first load!), but it was not from a checkbox change, then refresh data!
     this.activatedRoute.queryParams.subscribe((params: any) => {
-      if(this.checkboxChange) {
+      /*if(this.checkboxChange) {
         this.checkboxChange = false;
-      } else {
+      } else {*/
         this.prepareApplicationGraphic(this.activatedRoute.snapshot.queryParams);
-      } 
+      //} 
     });
     this.updateBreadcrumbs();
   }
@@ -120,8 +120,8 @@ export class GraphicDisplayComponent implements OnInit {
         queryParams: jsonNavExtras // remove to replace all query params by provided
     });
 
-    if(type === 0)
-      this.prepareApplicationGraphic(jsonNavExtras);
+    /*if(type === 0)
+      this.prepareApplicationGraphic(jsonNavExtras);*/
   }
 
   getFilterParamsArray(): string[] {
@@ -290,7 +290,7 @@ export class GraphicDisplayComponent implements OnInit {
       data: nUntested,
       visible: visibleSeries[5]
     });
-    
+
     if(!this.chart){
       this.chart = new Chart({
         chart: {
@@ -326,7 +326,6 @@ export class GraphicDisplayComponent implements OnInit {
                   this.updateBySelection(e.target['_i'], 1);
                 },
                 click: (e) => {
-                  console.log(e);
                   this.onPointSelect(e);
                 }
             },
@@ -478,6 +477,5 @@ export class GraphicDisplayComponent implements OnInit {
         name: LABELS_SINGULAR[this.activatedRoute.snapshot.routeConfig.path]
       }
     );
-    console.log(this.breadcrumbs);
   }
 }
