@@ -448,20 +448,22 @@ export class GraphicDisplayComponent implements OnInit {
     let queryParamsToBe = []
 
     for(let i = 0; i < keys.length; i++){
-      queryParamsToBe = [];
-      for(let j = i; j >= 0; j--) {
-        if(j === i){
-          route = keys[j].replace('Ids', '');
-        } else {
-          queryParamsToBe.push('"'.concat(keys[j]).concat('":').concat(queryParams[keys[j]]));
+      if(POSSIBLE_FILTERS[keys[i]]){
+        queryParamsToBe = [];
+        for(let j = i; j >= 0; j--) {
+          if(j === i){
+            route = keys[j].replace('Ids', '');
+          } else {
+            queryParamsToBe.push('"'.concat(keys[j]).concat('":').concat(queryParams[keys[j]]));
+          }
         }
+        this.breadcrumbs.push(
+          {
+            name: LABELS_SINGULAR[route],
+            route: '/'.concat(route),
+            queryParams: JSON.parse('{'.concat(queryParamsToBe.join(',')).concat('}'))
+          });
       }
-      this.breadcrumbs.push(
-        {
-          name: LABELS_SINGULAR[route],
-          route: '/'.concat(route),
-          queryParams: JSON.parse('{'.concat(queryParamsToBe.join(',')).concat('}'))
-        });
     }
     this.breadcrumbs.push(
       {

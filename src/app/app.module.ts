@@ -13,7 +13,10 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatMenuModule } from '@angular/material/menu';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ChartModule } from 'angular-highcharts';
+
+import { ChartModule, HIGHCHARTS_MODULES } from 'angular-highcharts';
+import * as accessibility from 'highcharts/modules/accessibility.src';
+import * as exporting from 'highcharts/modules/exporting.src';
 
 import { AppComponent } from './app.component';
 import { SubmitEarlReportComponent } from './submit-earl-report/submit-earl-report.component';
@@ -80,7 +83,9 @@ const appRoutes: Routes = [
     ChartModule,
   ],
   entryComponents: [ErrorDialogComponent],
-  providers: [],
+  providers: [
+    { provide: HIGHCHARTS_MODULES, useFactory: () => [ accessibility, exporting ] }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
