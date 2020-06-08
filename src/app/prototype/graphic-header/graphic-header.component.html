@@ -3,11 +3,9 @@
 
     <!-- This fills the remaining space of the current row -->
     <span class="fill-remaining-space"></span>
-    
-    <a mat-button href="/placm">
-        <button mat-icon-button>
-            <mat-icon aria-hidden="false" aria-label="Home icon">home</mat-icon>
-        </button>
+
+    <a mat-icon-button href="/placm" class="homeicon">
+        <mat-icon aria-hidden="false" aria-label="Home icon">home</mat-icon>
     </a>
     <app-graphic-picker [showAll]="true" (submit)="submittedCategory($event)"></app-graphic-picker>
 </mat-toolbar>
