@@ -2,12 +2,13 @@ import { Component, OnInit, Input, ChangeDetectorRef, EventEmitter, Output } fro
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import { MatDialogConfig, MatDialog } from '@angular/material/dialog';
 import { DrilldownDialogComponent } from 'app/dialogs/drilldown-dialog/drilldown-dialog.component';
-import { Chart } from 'angular-highcharts';
+//import { Chart } from 'angular-highcharts';
 import { POSSIBLE_FILTERS, LABELS_PLURAL, LABELS_SINGULAR, SECTORS } from '../../../utils/constants';
 import { CombinedService } from 'services/combined.service';
 import * as isEmpty from 'lodash.isempty';
 import * as filter from 'lodash.filter';
 import * as remove from 'lodash.remove';
+import * as Highcharts from 'highcharts';
 
 @Component({
   selector: 'app-graphic-display',
@@ -26,7 +27,7 @@ export class GraphicDisplayComponent implements OnInit {
   allDataPrepared = false;
 
   initChange = false;
-  checkboxChange = false;
+  legendChange = false;
 
   breadcrumbs: any;
 
@@ -43,18 +44,18 @@ export class GraphicDisplayComponent implements OnInit {
 
     // if queryparams changed (even if first load!), but it was not from a checkbox change, then refresh data!
     this.activatedRoute.queryParams.subscribe((params: any) => {
-      /*if(this.checkboxChange) {
-        this.checkboxChange = false;
-      } else {*/
+      if(this.legendChange) {
+        this.legendChange = false;
+      } else {
         this.prepareApplicationGraphic(this.activatedRoute.snapshot.queryParams);
-      //} 
+      }
     });
     this.updateBreadcrumbs();
   }
 
   // type 0 = checkbox; type 1 = legend click
   updateBySelection(id: number, type: number): void {
-    this.checkboxChange = true;
+    this.legendChange = type === 1;
     let actualParams = this.activatedRoute.snapshot.queryParams;
     let queryParamsArray = [];
     let actualFilterExists = false;
@@ -119,9 +120,6 @@ export class GraphicDisplayComponent implements OnInit {
         relativeTo: this.activatedRoute,
         queryParams: jsonNavExtras // remove to replace all query params by provided
     });
-
-    /*if(type === 0)
-      this.prepareApplicationGraphic(jsonNavExtras);*/
   }
 
   getFilterParamsArray(): string[] {
@@ -291,65 +289,52 @@ export class GraphicDisplayComponent implements OnInit {
       visible: visibleSeries[5]
     });
 
-    if(!this.chart){
-      this.chart = new Chart({
-        chart: {
-          type: 'column'
-        },
-        title: {
-          text: LABELS_PLURAL[this.actualCategory].concat(' column chart')
-        },
-        //to enable a single tooltip to all series at one point
-        tooltip: { 
-          shared: true
-        },
-        credits: {
-          enabled: false
-        },
-        accessibility: {
-          announceNewData: {
-              enabled: true
-          }
-        },
-        //eixo dos x - nomes de cada coluna
-        xAxis: {
-          categories: names,
-          crosshair: true
-        },
-        plotOptions: {
-          series: {
-            // disabling graphic animations
-            animation: false,
-            cursor: 'pointer',
-            events: {
-                legendItemClick: (e) => {
-                  this.updateBySelection(e.target['_i'], 1);
-                },
-                click: (e) => {
-                  this.onPointSelect(e);
-                }
-            },
-            compare: 'value',
-            showInNavigator: true
-            
-          }
+    this.chart = Highcharts.chart('chart', {
+      chart: {
+        type: 'column'
+      },
+      title: {
+        text: LABELS_PLURAL[this.actualCategory].concat(' column chart')
+      },
+      //to enable a single tooltip to all series at one point
+      tooltip: { 
+        shared: true
+      },
+      credits: {
+        enabled: false
+      },
+      accessibility: {
+        announceNewData: {
+            enabled: true
         }
-      });
-    } else {
-      //this.chart.ref$.subscribe(console.log);
-      while(this.chart.ref.series.length !== 0){
-        this.chart.removeSeries(0);
-      }
-      this.chart.ref.xAxis[0].categories = names;
-    }
-
+      },
+      //eixo dos x - nomes de cada coluna
+      xAxis: {
+        categories: names,
+        crosshair: true
+      },
+      plotOptions: {
+        series: {
+          // disabling graphic animations
+          animation: false,
+          cursor: 'pointer',
+          events: {
+              legendItemClick: (e) => {
+                this.updateBySelection(e.target['_i'], 1);
+              },
+              click: (e) => {
+                this.onPointSelect(e);
+              }
+          },
+          compare: 'value',
+          showInNavigator: true
+          
+        }
+      },
+      series: resultData
+    });
     if(subtitle)
-      this.chart.options.subtitle = {text: subtitle};
-
-    for(let data of resultData){
-      this.chart.addSeries(data, true, false);
-    }
-    this.allDataPrepared = true;
+      this.chart.setSubtitle({text: subtitle});
   }
 
   prepareSubtitle(data: any, subs: string[]): string {

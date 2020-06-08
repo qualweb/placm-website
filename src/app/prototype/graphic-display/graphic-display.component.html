@@ -13,8 +13,8 @@
   </ol>
 </nav>
 
-<div *ngIf="allDataPrepared" class="graphic">
-  <div [chart]="chart"></div>
+<div class="graphic">
+  <div id="chart"></div>
   <div id="checkboxes">
       <mat-checkbox *ngFor="let variable of xAxisVars; let i = index" color="primary" [checked]="variable.checked" (change)="updateBySelection(variable.id, 0)">{{variable.name}}</mat-checkbox>
   </div>
