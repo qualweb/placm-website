@@ -291,7 +291,8 @@ export class GraphicDisplayComponent implements OnInit {
 
     this.chart = Highcharts.chart('chart', {
       chart: {
-        type: 'column'
+        type: 'column',
+        animation: false
       },
       title: {
         text: LABELS_PLURAL[this.actualCategory].concat(' column chart')
@@ -333,6 +334,7 @@ export class GraphicDisplayComponent implements OnInit {
       },
       series: resultData
     });
+
     if(subtitle)
       this.chart.setSubtitle({text: subtitle});
   }
