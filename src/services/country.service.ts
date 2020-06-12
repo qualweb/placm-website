@@ -24,15 +24,6 @@ export class CountryService {
       .toPromise();
   }
 
-  getAllCountryNames(): Promise<any> {
-    return this.http.get(countryUrl.concat('countryNames'))
-      .pipe(
-        retry(3),
-        //todo error handling
-      )
-      .toPromise();
-  }
-
   getAllByContinent(): Promise<any> {
     return this.http.get(countryUrl.concat('byContinent'))
       .pipe(
@@ -42,8 +33,9 @@ export class CountryService {
       .toPromise();
   }*/
 
-  getCountryData(filters?: any): Promise<any> {
+  getCountryData(serverName: string, filters?: any): Promise<any> {
     let opts = new HttpParams();
+    opts = opts.append('name', serverName);
     if(filters)
       opts = opts.append('filters', filters);
     return this.http.get(countryUrl.concat('allCountryDataFiltered'), {params: opts})
@@ -54,8 +46,20 @@ export class CountryService {
       .toPromise();
   }
 
-  getContinentData(): Promise<any> {
-    return this.http.get(countryUrl.concat('allContinentData'))
+  getContinentData(serverName: string): Promise<any> {
+    let opts = new HttpParams();
+    opts = opts.append('name', serverName);
+    return this.http.get(countryUrl.concat('allContinentData'), {params: opts})
+      .pipe(
+        retry(3),
+        //todo error handling
+      )
+      .toPromise();
+  }
+  
+
+  getAllCountryNames(): Promise<any> {
+    return this.http.get(countryUrl.concat('countryNames'))
       .pipe(
         retry(3),
         //todo error handling

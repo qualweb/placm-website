@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http'
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -11,6 +11,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatCardModule } from '@angular/material/card';
+import { MatInputModule } from '@angular/material/input';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -27,13 +30,16 @@ import { DrilldownDialogComponent } from './dialogs/drilldown-dialog/drilldown-d
 import { GraphicPickerComponent } from './prototype/graphic-picker/graphic-picker.component';
 import { GraphicDisplayComponent } from './prototype/graphic-display/graphic-display.component';
 import { GraphicHeaderComponent } from './prototype/graphic-header/graphic-header.component';
+import { AdminComponent } from './prototype/admin/admin.component';
+import { InformationDialogComponent } from './dialogs/information-dialog/information-dialog.component';
 //import { LocationStrategy, PathLocationStrategy } from '@angular/common';
 
 const appRoutes: Routes = [
   { path: '', 
-    redirectTo: 'continent',
+    redirectTo: 'admin',
     pathMatch: 'full'
   },
+  { path: 'admin', component: AdminComponent },
   { path: 'continent', component: GraphicDisplayComponent },
   { path: 'country', component: GraphicDisplayComponent },
   { path: 'tag', component: GraphicDisplayComponent },
@@ -45,7 +51,7 @@ const appRoutes: Routes = [
   // Error handling path
   //{ path: '**', component: PrototypeHomepageComponent },  
   { path: '**', 
-    redirectTo: 'continent',
+    redirectTo: 'admin',
     pathMatch: 'full'
   },
 ];
@@ -60,7 +66,9 @@ const appRoutes: Routes = [
     DrilldownDialogComponent,
     GraphicPickerComponent,
     GraphicDisplayComponent,
-    GraphicHeaderComponent
+    GraphicHeaderComponent,
+    AdminComponent,
+    InformationDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -69,6 +77,7 @@ const appRoutes: Routes = [
       appRoutes,
       { enableTracing: false }
     ),
+    FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
     MatIconModule,
@@ -79,6 +88,9 @@ const appRoutes: Routes = [
     MatSelectModule,
     MatToolbarModule,
     MatMenuModule,
+    MatCardModule,
+    MatInputModule,
+    MatAutocompleteModule,
     FlexLayoutModule,
     ChartModule,
   ],

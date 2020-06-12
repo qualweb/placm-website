@@ -21,8 +21,9 @@ export class EvaluationService {
       .toPromise();
   }
 
-  getEvalutionToolData(filters?: any): Promise<any> {
+  getEvalutionToolData(serverName: string, filters?: any): Promise<any> {
     let opts = new HttpParams();
+    opts = opts.append('name', serverName);
     if(filters)
       opts = opts.append('filters', filters);
     return this.http.get(evaluationUrl.concat('allEvalToolDataFiltered'), {params: opts})

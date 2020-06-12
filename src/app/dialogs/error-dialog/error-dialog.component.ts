@@ -9,12 +9,16 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 export class ErrorDialogComponent implements OnInit {
 
   links: string[];
+  files: string[];
+  message: string;
 
   constructor(
     private dialogRef: MatDialogRef<ErrorDialogComponent>,
     @Inject(MAT_DIALOG_DATA) data
   ) {
     this.links = data.links;
+    this.files = data.files;
+    this.message = data.message;
    }
 
   ngOnInit() {

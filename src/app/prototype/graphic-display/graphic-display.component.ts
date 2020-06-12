@@ -221,6 +221,7 @@ export class GraphicDisplayComponent implements OnInit {
     this.xAxisVars = [];
 
     for(let vars of rawData){
+      console.log(vars);
       idInParams = filterArray.includes(vars.id.toString());
       this.xAxisVars.push({name: vars.name, id: vars.id, checked: !idInParams});
       if(!idInParams){

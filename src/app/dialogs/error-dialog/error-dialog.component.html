@@ -1,4 +1,5 @@
 <mat-dialog-content>
+    <p *ngIf="message">There was a parse error of your file!</p>
     <p *ngFor="let link of links; let i = index">
         {{i}} - {{link}}
     </p> 

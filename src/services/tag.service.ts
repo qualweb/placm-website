@@ -30,8 +30,10 @@ export class TagService {
       .toPromise();
   }
   
-  getAllTagsNames(): Promise<any> {
-    return this.http.get(tagUrl.concat('allTagsNames'))
+  getAllTagsNames(serverName: string): Promise<any> {
+    let opts = new HttpParams();
+    opts = opts.append('name', serverName);
+    return this.http.get(tagUrl.concat('tagsNames'), {params: opts})
       .pipe(
         retry(3),
         //todo error handling
@@ -59,8 +61,9 @@ export class TagService {
     return this.http.delete(baseUrl);
   }*/
 
-  getData(filters?: any): Promise<any> {
+  getData(serverName: string, filters?: any): Promise<any> {
     let opts = new HttpParams();
+    opts = opts.append('name', serverName);
     if(filters)
       opts = opts.append('filters', filters);
     return this.http.get(tagUrl.concat('allTagDataFiltered'), {params: opts})

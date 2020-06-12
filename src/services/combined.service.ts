@@ -5,7 +5,7 @@ import { EvaluationService } from './evaluation.service';
 import { RuleService } from './rule.service';
 import { TagService } from './tag.service';
 import { SessionStorage } from '@cedx/ngx-webstorage';
-import { POSSIBLE_FILTERS } from 'utils/constants';
+import { POSSIBLE_FILTERS, SERVER_NAME } from 'utils/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -28,60 +28,60 @@ export class CombinedService {
     if(sessionData === undefined){
       switch(category){
         case 'continent':
-          data = await this.countryService.getContinentData();
+          data = await this.countryService.getContinentData(SERVER_NAME);
           break;
         case 'country':
           if(Object.keys(queryParams).length){
-            data = await this.countryService.getCountryData(JSON.stringify(queryParams));
+            data = await this.countryService.getCountryData(SERVER_NAME, JSON.stringify(queryParams));
           } else {
-            data = await this.countryService.getCountryData();
+            data = await this.countryService.getCountryData(SERVER_NAME);
           }
           break;
         case 'tag':
           if(Object.keys(queryParams).length){
-            data = await this.tagService.getData(JSON.stringify(queryParams));
+            data = await this.tagService.getData(SERVER_NAME, JSON.stringify(queryParams));
           } else {
-            data = await this.tagService.getData();
+            data = await this.tagService.getData(SERVER_NAME);
           }
           break;
         case 'sector':
           if(Object.keys(queryParams).length){
-            data = await this.appService.getSectorData(JSON.stringify(queryParams));
+            data = await this.appService.getSectorData(SERVER_NAME, JSON.stringify(queryParams));
           } else {
-            data = await this.appService.getSectorData();
+            data = await this.appService.getSectorData(SERVER_NAME);
           }
           break;
         case 'org':
           if(Object.keys(queryParams).length){
-            data = await this.appService.getOrganizationData(JSON.stringify(queryParams));
+            data = await this.appService.getOrganizationData(SERVER_NAME, JSON.stringify(queryParams));
           } else {
-            data = await this.appService.getOrganizationData();
+            data = await this.appService.getOrganizationData(SERVER_NAME);
           }
           break;
         case 'app':
           if(Object.keys(queryParams).length){
-            data = await this.appService.getAppData(JSON.stringify(queryParams));
+            data = await this.appService.getAppData(SERVER_NAME, JSON.stringify(queryParams));
           } else {
-            data = await this.appService.getAppData();
+            data = await this.appService.getAppData(SERVER_NAME);
           }
           break;
         case 'eval':
           if(Object.keys(queryParams).length){
-            data = await this.evalService.getEvalutionToolData(JSON.stringify(queryParams));
+            data = await this.evalService.getEvalutionToolData(SERVER_NAME, JSON.stringify(queryParams));
           } else {
-            data = await this.evalService.getEvalutionToolData();
+            data = await this.evalService.getEvalutionToolData(SERVER_NAME);
           }
           break;
         case 'rule':
           if(Object.keys(queryParams).length){
-            data = await this.ruleService.getRuleData(JSON.stringify(queryParams));
+            data = await this.ruleService.getRuleData(SERVER_NAME, JSON.stringify(queryParams));
           } else {
-            data = await this.ruleService.getRuleData();
+            data = await this.ruleService.getRuleData(SERVER_NAME);
           }
           break;
         default:
           //todo error
-          data = await this.countryService.getContinentData();
+          data = await this.countryService.getContinentData(SERVER_NAME);
           break;
       }
       if(data.success === 1){

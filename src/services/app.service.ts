@@ -33,8 +33,9 @@ export class AppService {
       .toPromise();
   }
 
-  getAppData(filters?: any): Promise<any> {
+  getAppData(serverName: string, filters?: any): Promise<any> {
     let opts = new HttpParams();
+    opts = opts.append('name', serverName);
     if(filters)
       opts = opts.append('filters', filters);
     return this.http.get(appUrl.concat('appDataFiltered'), {params: opts})
@@ -45,8 +46,9 @@ export class AppService {
       .toPromise();
   }
 
-  getSectorData(filters?: any): Promise<any> {
+  getSectorData(serverName: string, filters?: any): Promise<any> {
     let opts = new HttpParams();
+    opts = opts.append('name', serverName);
     if(filters)
       opts = opts.append('filters', filters);
     return this.http.get(appUrl.concat('sectorDataFiltered'), {params: opts})
@@ -57,8 +59,9 @@ export class AppService {
       .toPromise();
   }
 
-  getOrganizationData(filters?: any): Promise<any> {
+  getOrganizationData(serverName: string, filters?: any): Promise<any> {
     let opts = new HttpParams();
+    opts = opts.append('name', serverName);
     if(filters)
       opts = opts.append('filters', filters);
     return this.http.get(appUrl.concat('orgDataFiltered'), {params: opts})

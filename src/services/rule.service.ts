@@ -21,8 +21,9 @@ export class RuleService {
       .toPromise();
   }
 
-  getRuleData(filters?: any): Promise<any> {
+  getRuleData(serverName: string, filters?: any): Promise<any> {
     let opts = new HttpParams();
+    opts = opts.append('name', serverName);
     if(filters)
       opts = opts.append('filters', filters);
     return this.http.get(ruleUrl.concat('allRuleDataFiltered'), {params: opts})

@@ -31,4 +31,11 @@ const SECTORS = {
   1: 'Private'
 }
 
-export {BASE_URL, POSSIBLE_FILTERS, LABELS_PLURAL, LABELS_SINGULAR, SECTORS};
+const TYPES = {
+  0: 'Website',
+  1: 'Application'
+}
+
+const SERVER_NAME = 'proto';
+
+export {BASE_URL, POSSIBLE_FILTERS, LABELS_PLURAL, LABELS_SINGULAR, SECTORS, TYPES, SERVER_NAME};
