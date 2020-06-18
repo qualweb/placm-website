@@ -1,6 +1,13 @@
 .graphic {
   margin-top: 1em;
 }
+
+#chart {
+  width: 100% !important;
+  min-height: 20em;
+  height: 50vh;
+}
+
 .breadcrumb {
   list-style-type: none;
   display: flex;
@@ -23,4 +30,12 @@
 
 #checkboxes mat-checkbox{
   display: table;
+}
+
+/* to avoid overflow with export */
+::ng-deep .highcharts-container{
+  width: 100% !important;
+}
+::ng-deep .highcharts-container > svg{
+  width: 100% !important;
 }

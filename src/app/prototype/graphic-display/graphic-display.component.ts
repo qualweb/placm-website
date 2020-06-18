@@ -43,11 +43,11 @@ export class GraphicDisplayComponent implements OnInit {
     this.actualFilter = this.actualCategory.concat('Ids');
 
     // if queryparams changed (even if first load!), but it was not from a checkbox change, then refresh data!
-    this.activatedRoute.queryParams.subscribe((params: any) => {
+    this.activatedRoute.queryParams.subscribe(async (params: any) => {
       if(this.legendChange) {
         this.legendChange = false;
       } else {
-        this.prepareApplicationGraphic(this.activatedRoute.snapshot.queryParams);
+        await this.prepareApplicationGraphic(this.activatedRoute.snapshot.queryParams);
       }
     });
     this.updateBreadcrumbs();

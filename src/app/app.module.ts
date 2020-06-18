@@ -21,10 +21,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { ChartModule, HIGHCHARTS_MODULES } from 'angular-highcharts';
-import * as accessibility from 'highcharts/modules/accessibility.src';
-import * as exporting from 'highcharts/modules/exporting.src';
-import * as export_data from 'highcharts/modules/export-data.src';
+//import { ChartModule, HIGHCHARTS_MODULES } from 'angular-highcharts';
+import * as Highcharts from 'highcharts';
+import HC_accessibility from 'highcharts/modules/accessibility';
+import HC_exporting from 'highcharts/modules/exporting';
+import HC_exportdata from 'highcharts/modules/export-data';
+HC_accessibility(Highcharts);
+HC_exporting(Highcharts);
+HC_exportdata(Highcharts);
 
 import { AppComponent } from './app.component';
 import { SubmitEarlReportComponent } from './submit-earl-report/submit-earl-report.component';
@@ -101,11 +105,11 @@ const appRoutes: Routes = [
     MatChipsModule,
     MatProgressSpinnerModule,
     FlexLayoutModule,
-    ChartModule,
+    //ChartModule,
   ],
   entryComponents: [ErrorDialogComponent],
   providers: [
-    { provide: HIGHCHARTS_MODULES, useFactory: () => [ accessibility, exporting, export_data ] }
+    //{ provide: HIGHCHARTS_MODULES, useFactory: () => [ accessibility, exporting, export_data ] }
   ],
   bootstrap: [AppComponent]
 })
