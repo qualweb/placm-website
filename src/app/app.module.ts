@@ -24,6 +24,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ChartModule, HIGHCHARTS_MODULES } from 'angular-highcharts';
 import * as accessibility from 'highcharts/modules/accessibility.src';
 import * as exporting from 'highcharts/modules/exporting.src';
+import * as export_data from 'highcharts/modules/export-data.src';
 
 import { AppComponent } from './app.component';
 import { SubmitEarlReportComponent } from './submit-earl-report/submit-earl-report.component';
@@ -104,7 +105,7 @@ const appRoutes: Routes = [
   ],
   entryComponents: [ErrorDialogComponent],
   providers: [
-    //{ provide: HIGHCHARTS_MODULES, useFactory: () => [ accessibility ] }
+    { provide: HIGHCHARTS_MODULES, useFactory: () => [ accessibility, exporting, export_data ] }
   ],
   bootstrap: [AppComponent]
 })

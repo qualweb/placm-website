@@ -2,7 +2,7 @@ import { environment } from '../environments/environment';
 
 const BASE_URL = environment.production ? '/' : 'http://localhost:3443/' ;
 
-const SERVER_NAME = 'pt';
+const SERVER_NAME = 'proto';
 
 const POSSIBLE_FILTERS = ['continentIds', 'countryIds', 'sectorIds', 'orgIds', 'tagIds', 'appIds', 'evalIds', 'ruleIds', 'filter', 'p'];
 
