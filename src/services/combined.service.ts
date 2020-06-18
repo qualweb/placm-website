@@ -121,7 +121,7 @@ export class CombinedService {
       if(POSSIBLE_FILTERS.includes(param) && param !== 'filter' && param !== 'p')
         result = result.concat(';').concat(param.substring(0, 3)).concat('=').concat(queryParams[0][param]);
     }
-    return result;
+    return result.concat('_').concat(SERVER_NAME);
   }
 
   private sortObject(obj) {

@@ -5,14 +5,18 @@ import { ajax } from "rxjs/ajax";
 import { catchError, map, retry } from "rxjs/operators";
 import { PLACMError } from "../models/error";
 import { Response } from "../models/response";
+import { HttpClient } from '@angular/common/http';
+import { BASE_URL } from 'utils/constants';
 
 @Injectable({
   providedIn: "root"
 })
 export class EarlService {
-  constructor(private config: ConfigService) {}
+  constructor(
+    private config: ConfigService,
+    private http: HttpClient) {}
 
-  sendEARLReport(serverName: string, formData: string, jsons: string): Observable<boolean> {
+  sendEARLReportAjax(serverName: string, formData: string, jsons: string): Observable<boolean> {
     return ajax
       .post(this.config.getServer("/admin/report/add"), { serverName, formData, jsons })
       .pipe(
@@ -35,5 +39,13 @@ export class EarlService {
           return of(null);
         })
       );
+  }
+  sendEARLReport(serverName: string, formData: string, jsons: string): Promise<any> {
+    return this.http.post((BASE_URL.concat('admin/report/add')), { serverName, formData, jsons })
+      .pipe(
+        retry(3),
+        //todo error handling
+      )
+      .toPromise();
   }
 }

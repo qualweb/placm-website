@@ -6,6 +6,7 @@
     "start": "ng serve",
     "build": "ng build --prod --build-optimizer",
     "build:prod": "ng build --prod --build-optimizer --base-href=\"/placm/\"",
+    "build:prodpt": "ng build --prod --build-optimizer --base-href=\"/placm/pt/\"",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"

@@ -36,6 +36,7 @@ export class ConfigService {
   }
 
   resetDatabase(serverName: string): Promise<any> {
+    console.log(BASE_URL);
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
     return this.http.get((BASE_URL.concat('proto/reset')), {params: opts})

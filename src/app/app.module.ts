@@ -21,7 +21,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-//import { ChartModule, HIGHCHARTS_MODULES } from 'angular-highcharts';
 import * as Highcharts from 'highcharts';
 import HC_accessibility from 'highcharts/modules/accessibility';
 import HC_exporting from 'highcharts/modules/exporting';
@@ -47,6 +46,7 @@ import { DatabaseDialogComponent } from './dialogs/database-dialog/database-dial
 const appRoutes: Routes = [
   { path: '', 
     redirectTo: 'admin',
+    //redirectTo: 'continent',
     pathMatch: 'full'
   },
   { path: 'admin', component: AdminComponent },
@@ -62,6 +62,7 @@ const appRoutes: Routes = [
   //{ path: '**', component: PrototypeHomepageComponent },  
   { path: '**', 
     redirectTo: 'admin',
+    //redirectTo: 'continent',
     pathMatch: 'full'
   },
 ];
@@ -104,13 +105,10 @@ const appRoutes: Routes = [
     MatAutocompleteModule,
     MatChipsModule,
     MatProgressSpinnerModule,
-    FlexLayoutModule,
-    //ChartModule,
+    FlexLayoutModule
   ],
   entryComponents: [ErrorDialogComponent],
-  providers: [
-    //{ provide: HIGHCHARTS_MODULES, useFactory: () => [ accessibility, exporting, export_data ] }
-  ],
+  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -301,7 +301,7 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
       let formDataJson = JSON.stringify(formData);
 
       this.loadingResponse = true;
-      this.statement.sendAccessibilityStatement(SERVER_NAME, linksRead.length, formDataJson, linksJson, dataFromBothInputsJson).subscribe(response => {
+      this.statement.sendAccessibilityStatement(SERVER_NAME, linksRead.length, formDataJson, linksJson, dataFromBothInputsJson).then(response => {
         if (!response) {
           this.error = true;
         } else {

@@ -2,7 +2,6 @@ import { Component, OnInit, Input, ChangeDetectorRef, EventEmitter, Output } fro
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import { MatDialogConfig, MatDialog } from '@angular/material/dialog';
 import { DrilldownDialogComponent } from 'app/dialogs/drilldown-dialog/drilldown-dialog.component';
-//import { Chart } from 'angular-highcharts';
 import { POSSIBLE_FILTERS, LABELS_PLURAL, LABELS_SINGULAR, SECTORS } from '../../../utils/constants';
 import { CombinedService } from 'services/combined.service';
 import * as isEmpty from 'lodash.isempty';
@@ -17,7 +16,6 @@ import * as Highcharts from 'highcharts';
 })
 export class GraphicDisplayComponent implements OnInit {
 
-  //@Input() actualCategory: string;
   @Output() closedDialog = new EventEmitter();
   actualCategory: string;
   actualFilter: string;
@@ -30,6 +28,8 @@ export class GraphicDisplayComponent implements OnInit {
   legendChange = false;
 
   breadcrumbs: any;
+
+  homepageUrl: string;
 
   constructor(
     private router: Router,

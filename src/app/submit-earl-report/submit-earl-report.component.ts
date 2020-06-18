@@ -302,7 +302,7 @@ export class SubmitEarlReportComponent implements OnInit {
       let formDataJson = JSON.stringify(formData);
   
       this.loadingResponse = true;
-      this.earl.sendEARLReport(SERVER_NAME, formDataJson, dataFromBothInputsJson).subscribe(response => {
+      this.earl.sendEARLReport(SERVER_NAME, formDataJson, dataFromBothInputsJson).then(response => {
         if (!response) {
           this.error = true;
         } else {
