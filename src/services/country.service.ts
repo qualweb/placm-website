@@ -58,8 +58,10 @@ export class CountryService {
   }
   
 
-  getAllCountryNames(): Promise<any> {
-    return this.http.get(countryUrl.concat('countryNames'))
+  getAllCountryNames(serverName: string): Promise<any> {
+    let opts = new HttpParams();
+    opts = opts.append('name', serverName);
+    return this.http.get(countryUrl.concat('countryNames'), {params: opts})
       .pipe(
         retry(3),
         //todo error handling

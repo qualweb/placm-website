@@ -2,6 +2,8 @@ import { environment } from '../environments/environment';
 
 const BASE_URL = environment.production ? '/' : 'http://localhost:3443/' ;
 
+const SERVER_NAME = 'pt';
+
 const POSSIBLE_FILTERS = ['continentIds', 'countryIds', 'sectorIds', 'orgIds', 'tagIds', 'appIds', 'evalIds', 'ruleIds', 'filter', 'p'];
 
 const LABELS_PLURAL = {
@@ -35,7 +37,5 @@ const TYPES = {
   0: 'Website',
   1: 'Application'
 }
-
-const SERVER_NAME = 'proto';
 
 export {BASE_URL, POSSIBLE_FILTERS, LABELS_PLURAL, LABELS_SINGULAR, SECTORS, TYPES, SERVER_NAME};

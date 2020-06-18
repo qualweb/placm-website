@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
-import {split} from 'lodash';
+import { retry } from "rxjs/operators";
+import { HttpParams, HttpClient } from '@angular/common/http';
+import { BASE_URL } from 'utils/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +13,8 @@ export class ConfigService {
   HOST: string;
   URI: string;
 
-  constructor() {
+  constructor(
+    private http: HttpClient) {
     this.PROTOCOL = location.protocol.concat('//');
     this.HOST = location.hostname;
 
@@ -30,5 +33,16 @@ export class ConfigService {
 
   getServer(service: string): string {
     return `${this.URI}${service}`;
+  }
+
+  resetDatabase(serverName: string): Promise<any> {
+    let opts = new HttpParams();
+    opts = opts.append('name', serverName);
+    return this.http.get((BASE_URL.concat('proto/reset')), {params: opts})
+      .pipe(
+        retry(3),
+        //todo error handling
+      )
+      .toPromise();
   }
 }

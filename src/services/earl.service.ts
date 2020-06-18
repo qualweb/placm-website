@@ -12,9 +12,9 @@ import { Response } from "../models/response";
 export class EarlService {
   constructor(private config: ConfigService) {}
 
-  sendEARLReport(serverName: string, jsons: string): Observable<boolean> {
+  sendEARLReport(serverName: string, formData: string, jsons: string): Observable<boolean> {
     return ajax
-      .post(this.config.getServer("/admin/report/add"), { serverName, jsons })
+      .post(this.config.getServer("/admin/report/add"), { serverName, formData, jsons })
       .pipe(
         retry(3),
         map(res => {

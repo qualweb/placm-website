@@ -6,6 +6,7 @@ import { RuleService } from './rule.service';
 import { TagService } from './tag.service';
 import { SessionStorage } from '@cedx/ngx-webstorage';
 import { POSSIBLE_FILTERS, SERVER_NAME } from 'utils/constants';
+import { query } from '@angular/animations';
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +22,7 @@ export class CombinedService {
     private session: SessionStorage
   ) { }
 
-  async getData(category: string, queryParams: any): Promise<any> {
+  async getData(category: string, queryParams?: any): Promise<any> {
     let sessionName = this.getStorageName(category, [queryParams]);
     let sessionData = this.session.getObject(sessionName);
     let data;
@@ -79,21 +80,43 @@ export class CombinedService {
             data = await this.ruleService.getRuleData(SERVER_NAME);
           }
           break;
+        case 'countryNames':
+          data = await this.countryService.getAllCountryNames(SERVER_NAME);
+          break;
+        case 'tagNames':
+          data = await this.tagService.getAllTagsNames(SERVER_NAME);
+          break;
         default:
           //todo error
           data = await this.countryService.getContinentData(SERVER_NAME);
           break;
+      } 
+    } else {
+      let queryDate = 0;
+      if(sessionData.result.length){
+        queryDate = new Date(sessionData.result[0]['date']).getTime();
       }
-      if(data.success === 1){
-        this.session.setObject(sessionName, data);
+      let currTime = new Date();
+      if((currTime.getTime() - queryDate) > 60000){
+        switch(category){
+          case 'tagNames':
+            data = await this.tagService.getAllTagsNames(SERVER_NAME);
+            break;
+          default:
+            //todo error
+            break;
+        }
       }
+    } 
+    if(data && data.success === 1){
+      this.session.setObject(sessionName, data);
     }
     return this.session.getObject(sessionName);
   }
 
-  private getStorageName(category: string, queryParams: any): string {
+  private getStorageName(category: string, queryParams?: any): string {
     let result = category;
-    queryParams = this.sortObject(queryParams);
+    queryParams = queryParams ? this.sortObject(queryParams) : [];
     for(let param in queryParams[0]){
       if(POSSIBLE_FILTERS.includes(param) && param !== 'filter' && param !== 'p')
         result = result.concat(';').concat(param.substring(0, 3)).concat('=').concat(queryParams[0][param]);

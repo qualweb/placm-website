@@ -1,15 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { trim } from 'lodash';
-import { FormGroup, FormControl, FormBuilder, AbstractControl, Validators } from '@angular/forms';
+import { FormGroup, FormControl, AbstractControl, Validators } from '@angular/forms';
 import { StatementService } from 'services/statement.service';
 import { parseFile } from 'utils/file';
 import { SERVER_NAME, TYPES, SECTORS } from 'utils/constants';
-import { ErrorDialogComponent } from 'app/dialogs/error-dialog/error-dialog.component';
 import { map, startWith } from 'rxjs/operators';
 import { MatDialogConfig, MatDialog } from '@angular/material/dialog';
-import { TagService } from 'services/tag.service';
-import { CountryService } from 'services/country.service';
 import { Observable } from 'rxjs';
+import { CombinedService } from 'services/combined.service';
+import { ErrorDialogComponent } from 'app/dialogs/error-dialog/error-dialog.component';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-submit-accessibility-statement',
@@ -42,12 +42,16 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
 
   linksError: string[] = [];
   filesError: string[] = [];
+  
+  separatorKeysCodes: number[] = [COMMA, ENTER];
+  selectedTags: any[] = [];
+  selectedTagsNames: string[] = [];
+  @ViewChild('tagsInput') tagsInput: ElementRef<HTMLInputElement>;
 
   constructor(
     private statement: StatementService,
     private dialog: MatDialog,
-    private countryService: CountryService,
-    private tagService: TagService
+    private combinedService: CombinedService
   ) {
     this.initializeForms();
     this.dialogConfig = new MatDialogConfig();
@@ -55,14 +59,8 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
     this.dialogConfig.autoFocus = true;
   };
 
-  async ngOnInit(){
+  ngOnInit(){
     this.labelVal = ((<HTMLInputElement>document.getElementById('asFiles')).nextElementSibling).innerHTML;
-    this.countries = (await this.countryService.getAllCountryNames()).result;
-    this.tags = (await this.tagService.getAllTagsNames(SERVER_NAME)).result;
-    for(let sec of Object.keys(SECTORS)){
-      this.sectors.push({name: SECTORS[sec], value: sec});
-      this.types.push({name: TYPES[sec], value: sec});
-    }
     this.countriesOptions = this.sqlData.controls.country!.valueChanges.pipe(
       startWith(''),
       map(value => typeof value === 'string' ? value : value['name']),
@@ -71,6 +69,20 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
       startWith(''),
       map(value => typeof value === 'string' ? value : value['name']),
       map(name => name ? this._filter('tag', name) : this.tags.slice()));
+    this.prepareData();
+  }
+
+  private async prepareData(): Promise<void> {
+    if(SERVER_NAME !== undefined){
+      this.countries = await this.combinedService.getData('countryNames');
+      this.countries = this.countries['result'];
+      this.tags = await this.combinedService.getData('tagNames');
+      this.tags = this.tags['result'];
+    }
+    for(let sec of Object.keys(SECTORS)){
+      this.sectors.push({name: SECTORS[sec], value: sec});
+      this.types.push({name: TYPES[sec], value: sec});
+    }
   }
 
   private initializeForms(){
@@ -78,11 +90,9 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
       this.urlValidator.bind(this)
     ]);
     this.sqlData = new FormGroup({
-      'appName': new FormControl('', 
-        Validators.required),
+      'appName': new FormControl(),
       'appUrl': new FormControl(),
-      'org': new FormControl('', 
-        Validators.required),
+      'org': new FormControl(),
       'type': new FormControl('', 
         Validators.required),
       'sector': new FormControl('', 
@@ -90,6 +100,8 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
       'country': new FormControl(),
       'tags': new FormControl()
     });
+    this.selectedTags = [];
+    this.selectedTagsNames = [];
   }
   
   urlValidator(control: AbstractControl): any {
@@ -135,6 +147,35 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
         break;
     }
     return filter;
+  }
+
+  addTag(event: any): void {
+    if(event.value || event.value === ''){
+        if(event.value.trim() !== ''){
+          if(this.selectedTagsNames.indexOf(event.value) < 0){
+            this.selectedTags.push(event.value);
+            this.selectedTagsNames.push(event.value);
+          }
+        }
+    } else {
+      if(this.selectedTagsNames.indexOf(event.option.viewValue) < 0){
+        this.selectedTags.push(event.option.value);
+        this.selectedTagsNames.push(event.option.viewValue);
+      }
+    }
+
+    // Reset the input value
+    this.tagsInput.nativeElement.value = '';
+    this.sqlData.controls.tags.setValue('');
+  }
+
+  removeTag(tag: string): void {
+    const index = this.selectedTagsNames.indexOf(tag);
+
+    if (index >= 0) {
+      this.selectedTagsNames.splice(index, 1);
+      this.selectedTags.splice(index, 1);
+    }
   }
 
   addFile(e: Event): void {
@@ -201,20 +242,20 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
     this.filesError = [];
 
     if(linksToRead.length > 0 && linksToRead[0] !== ''){
-    for(let link of linksToRead){
-      dataFromLink = <string> await fetch(link)
-          .then(response => {
-            if (response.status === 200) {
-              return response.text();
-            } else {
-              throw new Error(response.statusText);
-            }
-          })
-          .catch(err => {
-            //this.linkErrorMessage = "failedFetch";
-            if(!this.linksError.includes(link))
-              this.linksError.push(link);
-        });
+      for(let link of linksToRead){
+        dataFromLink = <string> await fetch(link)
+            .then(response => {
+              if (response.ok) {
+                return response.text();
+              } else {
+                throw new Error(response.statusText);
+              }
+            })
+            .catch(err => {
+              //this.linkErrorMessage = "failedFetch";
+              if(!this.linksError.includes(link))
+                this.linksError.push(link);
+            });
         if(dataFromLink){
           dataFromLinks.push(dataFromLink);
           linksRead.push(link);
@@ -226,14 +267,16 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
     }
 
     try {
-      for(let file of Array.from(this.filesFromInput)){
-        let dataFromFile = await parseFile(file);
-        if(dataFromFile){
-          dataFromFiles.push(dataFromFile);
-        } else {
-          this.filesError.push(file.name);
+      if(this.filesFromInput){
+        for(let file of Array.from(this.filesFromInput)){
+          let dataFromFile = await parseFile(file);
+          if(dataFromFile){
+            dataFromFiles.push(dataFromFile);
+          } else {
+            this.filesError.push(file.name);
+          }
         }
-      };
+      }
     } catch (err) {
       this.fileErrorMessage = "parseError";
     }
@@ -249,9 +292,16 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
       let dataFromBothInputs = dataFromLinks.concat(dataFromFiles);
       let dataFromBothInputsJson = JSON.stringify(dataFromBothInputs);
       let linksJson = JSON.stringify(linksRead);
+      let formData = this.sqlData.value;
+      console.log(formData);
+      if(this.sqlData.controls.tags.value !== null && this.sqlData.controls.tags.value !== ''){
+        this.selectedTags.push(this.sqlData.controls.tags.value);
+      }
+      formData['tags'] = this.selectedTags;
+      let formDataJson = JSON.stringify(formData);
 
       this.loadingResponse = true;
-      this.statement.sendAccessibilityStatement(SERVER_NAME, linksRead.length, linksJson, dataFromBothInputsJson).subscribe(response => {
+      this.statement.sendAccessibilityStatement(SERVER_NAME, linksRead.length, formDataJson, linksJson, dataFromBothInputsJson).subscribe(response => {
         if (!response) {
           this.error = true;
         } else {

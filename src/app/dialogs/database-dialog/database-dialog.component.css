@@ -1,0 +1,20 @@
+.fill-remaining-space {
+  /* This fills the remaining space, by using flexbox. 
+      Every toolbar row uses a flexbox row layout. */
+  flex: 1 1 auto;
+}
+
+::ng-deep .mat-dialog-content {
+  overflow: hidden;
+  display: flex; 
+  justify-content: center; 
+  align-items: center;
+}
+
+.failed {
+  color: darkred;
+}
+
+.success {
+  color: green;
+}

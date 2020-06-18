@@ -1,16 +1,15 @@
-import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormControl, FormBuilder, Validators, AbstractControl } from '@angular/forms';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { FormGroup, FormControl, Validators, AbstractControl } from '@angular/forms';
 import { EarlService } from 'services/earl.service';
 import { parseFile } from 'utils/file';
 import { trim } from 'lodash';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { CombinedService } from 'services/combined.service';
 import { SECTORS, TYPES, SERVER_NAME } from 'utils/constants';
-import { CountryService } from 'services/country.service';
-import { TagService } from 'services/tag.service';
 import { startWith, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { ErrorDialogComponent } from 'app/dialogs/error-dialog/error-dialog.component';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-submit-earl-report',
@@ -44,11 +43,15 @@ export class SubmitEarlReportComponent implements OnInit {
   linksError: string[] = [];
   filesError: string[] = [];
 
+  separatorKeysCodes: number[] = [COMMA, ENTER];
+  selectedTags: any[] = [];
+  selectedTagsNames: string[] = [];
+  @ViewChild('tagsInput') tagsInput: ElementRef<HTMLInputElement>;
+
   constructor(
     private earl: EarlService,
     private dialog: MatDialog,
-    private countryService: CountryService,
-    private tagService: TagService
+    private combinedService: CombinedService
   ) {
     this.initializeForms();
     this.dialogConfig = new MatDialogConfig();
@@ -61,14 +64,8 @@ export class SubmitEarlReportComponent implements OnInit {
     };*/
   };
 
-  async ngOnInit(){
+  ngOnInit(){
     this.labelVal = ((<HTMLInputElement>document.getElementById('earlFiles')).nextElementSibling).innerHTML;
-    this.countries = (await this.countryService.getAllCountryNames()).result;
-    this.tags = (await this.tagService.getAllTagsNames(SERVER_NAME)).result;
-    for(let sec of Object.keys(SECTORS)){
-      this.sectors.push({name: SECTORS[sec], value: sec});
-      this.types.push({name: TYPES[sec], value: sec});
-    }
     this.countriesOptions = this.sqlData.controls.country!.valueChanges.pipe(
       startWith(''),
       map(value => typeof value === 'string' ? value : value['name']),
@@ -77,6 +74,20 @@ export class SubmitEarlReportComponent implements OnInit {
       startWith(''),
       map(value => typeof value === 'string' ? value : value['name']),
       map(name => name ? this._filter('tag', name) : this.tags.slice()));
+    this.prepareData();
+  }
+
+  private async prepareData(): Promise<void> {
+    if(SERVER_NAME !== undefined){
+      this.countries = await this.combinedService.getData('countryNames');
+      this.countries = this.countries['result'];
+      this.tags = await this.combinedService.getData('tagNames');
+      this.tags = this.tags['result'];
+    }
+    for(let sec of Object.keys(SECTORS)){
+      this.sectors.push({name: SECTORS[sec], value: sec});
+      this.types.push({name: TYPES[sec], value: sec});
+    }
   }
 
   private initializeForms(){
@@ -143,6 +154,35 @@ export class SubmitEarlReportComponent implements OnInit {
         break;
     }
     return filter;
+  }
+
+  addTag(event: any): void {
+    if(event.value || event.value === ''){
+        if(event.value.trim() !== ''){
+          if(this.selectedTagsNames.indexOf(event.value) < 0){
+            this.selectedTags.push(event.value);
+            this.selectedTagsNames.push(event.value);
+          }
+        }
+    } else {
+      if(this.selectedTagsNames.indexOf(event.option.viewValue) < 0){
+        this.selectedTags.push(event.option.value);
+        this.selectedTagsNames.push(event.option.viewValue);
+      }
+    }
+
+    // Reset the input value
+    this.tagsInput.nativeElement.value = '';
+    this.sqlData.controls.tags.setValue('');
+  }
+
+  removeTag(tag: string): void {
+    const index = this.selectedTagsNames.indexOf(tag);
+
+    if (index >= 0) {
+      this.selectedTagsNames.splice(index, 1);
+      this.selectedTags.splice(index, 1);
+    }
   }
 
   addFile(e: Event): void {
@@ -254,9 +294,15 @@ export class SubmitEarlReportComponent implements OnInit {
     } else {
       let dataFromBothInputs = dataFromLinks.concat(dataFromFiles);
       let dataFromBothInputsJson = JSON.stringify(dataFromBothInputs);
+      let formData = this.sqlData.value;
+      if(this.sqlData.controls.tags.value !== null && this.sqlData.controls.tags.value !== ''){
+        this.selectedTags.push(this.sqlData.controls.tags.value);
+      }
+      formData['tags'] = this.selectedTags;
+      let formDataJson = JSON.stringify(formData);
   
       this.loadingResponse = true;
-      this.earl.sendEARLReport(SERVER_NAME, dataFromBothInputsJson).subscribe(response => {
+      this.earl.sendEARLReport(SERVER_NAME, formDataJson, dataFromBothInputsJson).subscribe(response => {
         if (!response) {
           this.error = true;
         } else {
