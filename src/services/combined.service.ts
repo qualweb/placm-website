@@ -77,7 +77,6 @@ export class CombinedService {
             }
             break;
           case 'sc':
-            console.log("ola");
             if(Object.keys(queryParams).length){
               data = await this.criteriaService.getData(SERVER_NAME, JSON.stringify(queryParams));
             } else {
