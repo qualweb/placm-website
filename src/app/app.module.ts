@@ -44,8 +44,8 @@ import { DatabaseDialogComponent } from './dialogs/database-dialog/database-dial
 
 const appRoutes: Routes = [
   { path: '', 
-    redirectTo: 'admin',
-    //redirectTo: 'continent',
+    //redirectTo: 'admin',
+    redirectTo: 'assertions/continent',
     pathMatch: 'full'
   },
 
@@ -82,8 +82,8 @@ const appRoutes: Routes = [
   
   // Error handling path
   { path: '**', 
-    redirectTo: 'admin',
-    //redirectTo: 'assertions/continent',
+    //redirectTo: 'admin',
+    redirectTo: 'assertions/continent',
     //redirectTo: 'continent',
     pathMatch: 'full'
   },
