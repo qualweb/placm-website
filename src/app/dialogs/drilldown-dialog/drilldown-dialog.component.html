@@ -2,7 +2,7 @@
   <p>You have clicked on {{categoryName}} {{name}}</p>
   <ng-template [ngIf]="!lastDrilldown" [ngIfElse]="lastDrill">
     <p>Where do you want to drill now?</p>
-    <app-graphic-picker [actualCategory]="category" [showAll]="false" (change)="changedCategorySelection($event)"></app-graphic-picker>
+    <app-graphic-picker [actualCategory]="category" [type]="type" [showAll]="false" (change)="changedCategorySelection($event)"></app-graphic-picker>
   </ng-template>
   <ng-template #lastDrill>
     <p class="bold">You cannot drill further!</p>

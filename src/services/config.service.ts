@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
-import { retry } from "rxjs/operators";
+import { retry, map, catchError, tap } from "rxjs/operators";
 import { HttpParams, HttpClient } from '@angular/common/http';
 import { BASE_URL } from 'utils/constants';
+import { throwError, Observable } from 'rxjs';
+import { PLACMError } from 'models/error';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +17,7 @@ export class ConfigService {
 
   constructor(
     private http: HttpClient) {
-    this.PROTOCOL = location.protocol.concat('//');
+    this.PROTOCOL = location.protocol + '//';
     this.HOST = location.hostname;
 
     if (this.HOST === 'localhost') {
@@ -36,13 +38,21 @@ export class ConfigService {
   }
 
   resetDatabase(serverName: string): Promise<any> {
-    console.log(BASE_URL);
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
-    return this.http.get((BASE_URL.concat('proto/reset')), {params: opts})
+    return this.http.get((BASE_URL + 'proto/reset'), {params: opts})
       .pipe(
         retry(3),
-        //todo error handling
+        map(res => {
+          if (res['success'] !== 1 || res['errors'] !== null) {
+            throw new PLACMError(res['success'], res['message']);
+          }
+          return res;
+        }),
+        catchError(err => {
+          console.log(err);
+          return throwError(err);
+        })
       )
       .toPromise();
   }

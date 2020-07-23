@@ -2,30 +2,34 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { BASE_URL } from '../utils/constants';
 import { retry } from 'rxjs/internal/operators/retry';
+import { map, catchError } from 'rxjs/operators';
+import { PLACMError } from 'models/error';
+import { throwError } from 'rxjs';
 
-const tagUrl = BASE_URL.concat('tag/');;
+const tagUrl = BASE_URL + 'tag/';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TagService {
 
-  constructor(private http: HttpClient) { }
-
-  getAll(): Promise<any> {
-    return this.http.get(tagUrl.concat('allData'))
-      .pipe(
-        retry(3),
-        //todo error handling
-      )
-      .toPromise();
-  }
+  constructor(
+    private http: HttpClient) { }
 
   getNumber(): Promise<any> {
-    return this.http.get(tagUrl.concat('numberOf'))
+    return this.http.get(tagUrl + 'numberOf')
       .pipe(
         retry(3),
-        //todo error handling
+        map(res => {
+          if (res['success'] !== 1 || res['errors'] !== null) {
+            throw new PLACMError(res['success'], res['message']);
+          }
+          return res;
+        }),
+        catchError(err => {
+          console.log(err);
+          return throwError(err);
+        })
       )
       .toPromise();
   }
@@ -33,45 +37,43 @@ export class TagService {
   getAllTagsNames(serverName: string): Promise<any> {
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
-    return this.http.get(tagUrl.concat('tagsNames'), {params: opts})
+    return this.http.get(tagUrl + 'tagNames', {params: opts})
       .pipe(
         retry(3),
-        //todo error handling
+        map(res => {
+          if (res['success'] !== 1 || res['errors'] !== null) {
+            throw new PLACMError(res['success'], res['message']);
+          }
+          return res;
+        }),
+        catchError(err => {
+          console.log(err);
+          return throwError(err);
+        })
       )
       .toPromise();
   }
 
-  /*get(id: number) {
-    return this.http.get(tagUrl.concat(id.toString()));
-  }
-
-  create(data: any) {
-    return this.http.post(baseUrl, data);
-  }
-
-  update(id: number, data: any) {
-    return this.http.put(`${baseUrl}/${id}`, data);
-  }
-
-  delete(id: number) {
-    return this.http.delete(`${baseUrl}/${id}`);
-  }
-
-  deleteAll() {
-    return this.http.delete(baseUrl);
-  }*/
-
-  getData(serverName: string, filters?: any): Promise<any> {
+  getData(serverName: string, type?: string, filters?: any): Promise<any> {
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
+    let types = type === 'scriteria' ? 'SC' : '';
     if(filters)
       opts = opts.append('filters', filters);
-    return this.http.get(tagUrl.concat('allTagDataFiltered'), {params: opts})
+    return this.http.get(tagUrl + 'tagData' + types, {params: opts})
       .pipe(
         retry(3),
-        //todo error handling
+        map(res => {
+          if (res['success'] !== 1 || res['errors'] !== null) {
+            throw new PLACMError(res['success'], res['message']);
+          }
+          return res;
+        }),
+        catchError(err => {
+          console.log(err);
+          return throwError(err);
+        })
       )
       .toPromise();
   }
-
 }

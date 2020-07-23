@@ -23,8 +23,11 @@ export class DatabaseDialogComponent implements OnInit {
 
   async emergencyButton(): Promise<void>{
     this.loadingResponse = true;
-    let response = await this.config.resetDatabase(SERVER_NAME);
-    this.success = !!response;
+    try {
+      this.success = await this.config.resetDatabase(SERVER_NAME);
+    } catch(err){
+      this.success = false;
+    }
     this.loadingResponse = false;
     this.allDone = true;
   }

@@ -3,7 +3,7 @@ import { trim } from 'lodash';
 import { FormGroup, FormControl, AbstractControl, Validators } from '@angular/forms';
 import { StatementService } from 'services/statement.service';
 import { parseFile } from 'utils/file';
-import { SERVER_NAME, TYPES, SECTORS } from 'utils/constants';
+import { SERVER_NAME, TYPES, SECTORS, FILEINPUT_LABEL, GENERATORS } from 'utils/constants';
 import { map, startWith } from 'rxjs/operators';
 import { MatDialogConfig, MatDialog } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
@@ -28,6 +28,7 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
   filesFromInput: FileList = undefined;
 
   labelVal: any;
+  generators: any;
 
   dialogConfig: MatDialogConfig;
 
@@ -60,7 +61,6 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
   };
 
   ngOnInit(){
-    this.labelVal = ((<HTMLInputElement>document.getElementById('asFiles')).nextElementSibling).innerHTML;
     this.countriesOptions = this.sqlData.controls.country!.valueChanges.pipe(
       startWith(''),
       map(value => typeof value === 'string' ? value : value['name']),
@@ -70,6 +70,8 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
       map(value => typeof value === 'string' ? value : value['name']),
       map(name => name ? this._filter('tag', name) : this.tags.slice()));
     this.prepareData();
+    this.labelVal = FILEINPUT_LABEL;
+    this.generators = GENERATORS;
   }
 
   private async prepareData(): Promise<void> {
@@ -90,6 +92,8 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
       this.urlValidator.bind(this)
     ]);
     this.sqlData = new FormGroup({
+      'generator': new FormControl('',
+        Validators.required),
       'appName': new FormControl(),
       'appUrl': new FormControl(),
       'org': new FormControl(),
@@ -191,13 +195,13 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
           this.errorFiles.push(this.filesFromInput[i].name);
         }
       }
-      ((<HTMLInputElement>e.target).nextElementSibling).innerHTML = selectedFiles + " selected files";
+      this.labelVal = selectedFiles + " selected files";
     } else {
       if(firstFile && firstFile.name){
         if(firstFile.type !== 'text/html'){
           this.errorFiles.push(firstFile.name);
         }
-        ((<HTMLInputElement>e.target).nextElementSibling).innerHTML = firstFile.name;
+        this.labelVal = firstFile.name;
       } else {
         this.clearFileInput();
       }
@@ -211,7 +215,7 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
 
   clearFileInput(): void {
     this.filesFromInput = undefined;
-    ((<HTMLInputElement>document.getElementById('asFiles')).nextElementSibling).innerHTML = this.labelVal;
+    this.labelVal = FILEINPUT_LABEL;
     (<HTMLInputElement>document.getElementById('asFiles')).value = "";
     this.fileErrorMessage = '';
   }
@@ -243,19 +247,19 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
 
     if(linksToRead.length > 0 && linksToRead[0] !== ''){
       for(let link of linksToRead){
-        dataFromLink = <string> await fetch(link)
-            .then(response => {
-              if (response.ok) {
-                return response.text();
-              } else {
-                throw new Error(response.statusText);
-              }
-            })
-            .catch(err => {
-              //this.linkErrorMessage = "failedFetch";
-              if(!this.linksError.includes(link))
-                this.linksError.push(link);
-            });
+        let response;
+        try {
+          response = await fetch(link);
+          if (response.status === 200) {
+            dataFromLink = await response.text();
+          } else {
+            throw new Error(response.statusText);
+          }
+        } catch(err) {
+          if(!this.linksError.includes(link))
+            this.linksError.push(link);
+        }  
+        
         if(dataFromLink){
           dataFromLinks.push(dataFromLink);
           linksRead.push(link);
@@ -305,9 +309,10 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
         if (!response) {
           this.error = true;
         } else {
-          ((<HTMLInputElement>document.getElementById('asFiles')).nextElementSibling).innerHTML = this.labelVal;
+          this.labelVal = FILEINPUT_LABEL;
           this.filesFromInput = undefined;
           this.initializeForms();
+          this.combinedService.clearStorage();
         }
         this.loadingResponse = false;
       });

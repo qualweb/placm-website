@@ -33,7 +33,6 @@ import { AppComponent } from './app.component';
 import { SubmitEarlReportComponent } from './submit-earl-report/submit-earl-report.component';
 import { SubmitAccessibilityStatementComponent } from './submit-accessibility-statement/submit-accessibility-statement.component';
 import { ErrorDialogComponent } from './dialogs/error-dialog/error-dialog.component';
-import { PrototypeHomepageComponent } from './prototype/prototype-homepage/prototype-homepage.component';
 import { DrilldownDialogComponent } from './dialogs/drilldown-dialog/drilldown-dialog.component';
 import { GraphicPickerComponent } from './prototype/graphic-picker/graphic-picker.component';
 import { GraphicDisplayComponent } from './prototype/graphic-display/graphic-display.component';
@@ -49,19 +48,42 @@ const appRoutes: Routes = [
     //redirectTo: 'continent',
     pathMatch: 'full'
   },
+
+  { path: 'assertions',
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'continent' },
+      { path: 'continent', component: GraphicDisplayComponent },
+      { path: 'country', component: GraphicDisplayComponent },
+      { path: 'tag', component: GraphicDisplayComponent },
+      { path: 'sector', component: GraphicDisplayComponent },
+      { path: 'org', component: GraphicDisplayComponent },
+      { path: 'app', component: GraphicDisplayComponent },
+      { path: 'eval', component: GraphicDisplayComponent },
+      { path: 'sc', component: GraphicDisplayComponent },
+      { path: 'type', component: GraphicDisplayComponent },
+      { path: 'rule', component: GraphicDisplayComponent }
+    ]
+  },
+
+  { path: 'scriteria',
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'continent' },
+      { path: 'continent', component: GraphicDisplayComponent },
+      { path: 'country', component: GraphicDisplayComponent },
+      { path: 'tag', component: GraphicDisplayComponent },
+      { path: 'sector', component: GraphicDisplayComponent },
+      { path: 'org', component: GraphicDisplayComponent },
+      { path: 'app', component: GraphicDisplayComponent },
+      { path: 'eval', component: GraphicDisplayComponent }
+    ]
+  },
+
   { path: 'admin', component: AdminComponent },
-  { path: 'continent', component: GraphicDisplayComponent },
-  { path: 'country', component: GraphicDisplayComponent },
-  { path: 'tag', component: GraphicDisplayComponent },
-  { path: 'sector', component: GraphicDisplayComponent },
-  { path: 'org', component: GraphicDisplayComponent },
-  { path: 'app', component: GraphicDisplayComponent },
-  { path: 'rule', component: GraphicDisplayComponent },
-  { path: 'eval', component: GraphicDisplayComponent },
+  
   // Error handling path
-  //{ path: '**', component: PrototypeHomepageComponent },  
   { path: '**', 
     redirectTo: 'admin',
+    //redirectTo: 'assertions/continent',
     //redirectTo: 'continent',
     pathMatch: 'full'
   },
@@ -73,7 +95,6 @@ const appRoutes: Routes = [
     SubmitEarlReportComponent,
     SubmitAccessibilityStatementComponent,
     ErrorDialogComponent,
-    PrototypeHomepageComponent,
     DrilldownDialogComponent,
     GraphicPickerComponent,
     GraphicDisplayComponent,

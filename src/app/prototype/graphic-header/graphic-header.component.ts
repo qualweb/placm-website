@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { POSSIBLE_FILTERS } from 'utils/constants';
 
 @Component({
@@ -9,34 +9,47 @@ import { POSSIBLE_FILTERS } from 'utils/constants';
 })
 export class GraphicHeaderComponent implements OnInit {
 
+  type: string;
+
   constructor(
     private activatedRoute: ActivatedRoute,
-    private router: Router) { }
+    private router: Router) { 
+      this.router.events.subscribe(event => {
+        if(event instanceof NavigationEnd ){
+          let splittedUrl = event.url.split('/');
+          if(splittedUrl.length > 1){
+            if(splittedUrl[1] === 'assertions' || splittedUrl[1] === 'scriteria'){
+              this.type = splittedUrl[1];
+            } else {
+              this.type = 'assertions';
+            }
+          }
+        }
+      });
+    }
 
   ngOnInit(): void {
   }
+  
   // Function called after submitted button on app-graphic-picker
-  submittedCategory(cat: string, extra?: any){
+  submittedCategory(event: any, extra?: any){
     if(!extra){
-      this.router.navigate([cat], {
-        relativeTo: this.activatedRoute
-      });
+      this.router.navigate(['/' + event.type + '/' + event.cat]);
     } else {
-      let queryParamsString = '{"'.concat(extra.filter).concat('":"').concat(extra.id).concat('"');
+      let queryParamsString = '{"' + extra.filter + '":"' + extra.id + '"';
 
       let actualExtras = this.activatedRoute.snapshot.queryParams;
       if(actualExtras){
         for(let params in actualExtras){
           if(POSSIBLE_FILTERS.includes(params) && params !== extra.filter && params !== 'filter' && params !== 'p'){
-            queryParamsString = queryParamsString.concat(',"')
-                    .concat(params).concat('":"').concat(actualExtras[params]).concat('"');
+            queryParamsString = queryParamsString + ',"'
+                     + params + '":"' + actualExtras[params] + '"';
           }
         }
       }
-      queryParamsString = queryParamsString.concat('}');
+      queryParamsString = queryParamsString + '}';
 
-      this.router.navigate([cat], {
-        relativeTo: this.activatedRoute,
+      this.router.navigate(['/' + event.type + '/' + event.cat], {
         queryParams: JSON.parse(queryParamsString)
       });
     }

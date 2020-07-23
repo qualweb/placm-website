@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { BASE_URL } from '../utils/constants';
 import { retry } from 'rxjs/internal/operators/retry';
 
-const appUrl = BASE_URL.concat('application/');
+const appUrl = BASE_URL + 'application/';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +13,7 @@ export class AppService {
   constructor(private http: HttpClient) { }
 
   getAllByName(): Promise<any> {
-    return this.http.get(appUrl.concat('byName'))
+    return this.http.get(appUrl + 'byName')
       .pipe(
         retry(3),
         //todo error handling
@@ -25,7 +25,7 @@ export class AppService {
   getAllExceptId(parameters: any): Promise<any> {
     let opts = new HttpParams();
     opts = opts.append('id', parameters);
-    return this.http.get(appUrl.concat('exceptId'), {params: opts})
+    return this.http.get(appUrl + 'exceptId', {params: opts})
       .pipe(
         retry(3),
         //todo error handling
@@ -33,12 +33,13 @@ export class AppService {
       .toPromise();
   }
 
-  getAppData(serverName: string, filters?: any): Promise<any> {
+  getAppData(serverName: string, type?: string, filters?: any): Promise<any> {
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
+    let types = type === 'scriteria' ? 'SC' : '';
     if(filters)
       opts = opts.append('filters', filters);
-    return this.http.get(appUrl.concat('appDataFiltered'), {params: opts})
+    return this.http.get(appUrl + 'appData' + types, {params: opts})
       .pipe(
         retry(3),
         //todo error handling
@@ -46,12 +47,13 @@ export class AppService {
       .toPromise();
   }
 
-  getSectorData(serverName: string, filters?: any): Promise<any> {
+  getSectorData(serverName: string, type?: string, filters?: any): Promise<any> {
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
+    let types = type === 'scriteria' ? 'SC' : '';
     if(filters)
       opts = opts.append('filters', filters);
-    return this.http.get(appUrl.concat('sectorDataFiltered'), {params: opts})
+    return this.http.get(appUrl + 'sectorData' + types, {params: opts})
       .pipe(
         retry(3),
         //todo error handling
@@ -59,12 +61,13 @@ export class AppService {
       .toPromise();
   }
 
-  getOrganizationData(serverName: string, filters?: any): Promise<any> {
+  getOrganizationData(serverName: string, type?: string, filters?: any): Promise<any> {
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
+    let types = type === 'scriteria' ? 'SC' : '';
     if(filters)
       opts = opts.append('filters', filters);
-    return this.http.get(appUrl.concat('orgDataFiltered'), {params: opts})
+    return this.http.get(appUrl + 'orgData' + types, {params: opts})
       .pipe(
         retry(3),
         //todo error handling

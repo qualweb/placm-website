@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { ConfigService } from "./config.service";
-import { Observable, of } from "rxjs";
+import { Observable, of, throwError } from "rxjs";
 import { ajax } from "rxjs/ajax";
 import { catchError, map, retry } from "rxjs/operators";
 import { PLACMError } from "../models/error";
@@ -47,10 +47,19 @@ export class StatementService {
   }
 
   sendAccessibilityStatement(serverName: string, numLinks: number, formData: string, links: string, htmls: string): Promise<any> {
-    return this.http.post((BASE_URL.concat('admin/statement/add')), {serverName, numLinks, formData, links, htmls})
+    return this.http.post((BASE_URL + 'admin/statement/add'), {serverName, numLinks, formData, links, htmls})
       .pipe(
         retry(3),
-        //todo error handling
+        map(res => {
+          if (res['success'] !== 1 || res['errors'] !== null) {
+            throw new PLACMError(res['success'], res['message']);
+          }
+          return res;
+        }),
+        catchError(err => {
+          console.log(err);
+          return throwError(err);
+        })
       )
       .toPromise();
   }

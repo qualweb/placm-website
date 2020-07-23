@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
-import { Router, ActivatedRoute, Params } from '@angular/router';
+import { Router, ActivatedRoute, Params, NavigationEnd } from '@angular/router';
 import { MatDialogConfig, MatDialog } from '@angular/material/dialog';
 import { DrilldownDialogComponent } from 'app/dialogs/drilldown-dialog/drilldown-dialog.component';
 import { POSSIBLE_FILTERS, LABELS_PLURAL, LABELS_SINGULAR, SECTORS } from '../../../utils/constants';
@@ -17,6 +17,7 @@ import * as Highcharts from 'highcharts';
 export class GraphicDisplayComponent implements OnInit {
 
   @Output() closedDialog = new EventEmitter();
+  actualGraphicType: string;
   actualCategory: string;
   actualFilter: string;
   options: any;
@@ -29,7 +30,9 @@ export class GraphicDisplayComponent implements OnInit {
 
   breadcrumbs: any;
 
-  homepageUrl: string;
+  homepageUrl: string; 
+
+  sCriteriaVisible: boolean;
 
   constructor(
     private router: Router,
@@ -37,10 +40,26 @@ export class GraphicDisplayComponent implements OnInit {
     private dialog: MatDialog,
     private combinedService: CombinedService) { }
 
-  ngOnInit(): void {
+  ngOnInit(): void {    
     this.initChange = true;
+    this.actualGraphicType = this.activatedRoute.snapshot.parent.url[0].path;
     this.actualCategory = this.activatedRoute.snapshot.url[0].path;
-    this.actualFilter = this.actualCategory.concat('Ids');
+    this.actualFilter = this.actualCategory + 'Ids';
+    
+    switch(this.actualCategory){
+      case 'continent':
+      case 'country':
+      case 'tag':
+      case 'sector':
+      case 'org':
+      case 'app':
+      case 'eval':
+        this.sCriteriaVisible = true;
+        break;
+      default:
+        this.sCriteriaVisible = false;
+        break;
+    }
 
     // if queryparams changed (even if first load!), but it was not from a checkbox change, then refresh data!
     this.activatedRoute.queryParams.subscribe(async (params: any) => {
@@ -64,12 +83,12 @@ export class GraphicDisplayComponent implements OnInit {
     let emptyParamString = "";
     // if it wasnt a legend click on the first p
     if(!(type === 1 && id === 0)){
-      emptyParamString = '"'.concat(workingParam).concat('":"');
+      emptyParamString = '"' + workingParam + '":"';
       // if it was a legend click, there needs to be added the first p (because its always visible in initialization)
       if(type === 1){
-        emptyParamString = emptyParamString.concat('0,');
+        emptyParamString = emptyParamString + '0,';
       }
-      emptyParamString = emptyParamString.concat(id.toString().concat('"'));
+      emptyParamString = emptyParamString + id.toString() + '"';
     }
 
     if(!isEmpty(actualParams)){
@@ -78,7 +97,7 @@ export class GraphicDisplayComponent implements OnInit {
         // only accept possible ones
         if(POSSIBLE_FILTERS.includes(params)){
           if(params !== this.actualFilter && params !== workingParam){
-            queryParamsArray.push('"'.concat(params).concat('":"').concat(actualParams[params]).concat('"'));
+            queryParamsArray.push('"' + params + '":"' + actualParams[params] + '"');
           }
           else if(params === workingParam){
             actualFilterExists = true;
@@ -104,7 +123,7 @@ export class GraphicDisplayComponent implements OnInit {
           idsArray = idsArray.sort(function(a,b) {
             return +a - +b;
           });
-          queryParamsArray.push('"'.concat(workingParam).concat('":"').concat(idsArray.join(',').concat('"')));
+          queryParamsArray.push('"' + workingParam + '":"' + idsArray.join(',') + '"');
         }
       } else {
         if(emptyParamString)
@@ -115,7 +134,14 @@ export class GraphicDisplayComponent implements OnInit {
         queryParamsArray.push(emptyParamString);
     }
 
-    let jsonNavExtras = JSON.parse('{'.concat(queryParamsArray.join(',')).concat('}'));
+    let jsonNavExtras = JSON.parse('{' + queryParamsArray.join(',') + '}');
+
+    // update data table on checkbox click
+    if(this.chart.options.exporting.showTable){
+      let element = document.getElementsByClassName("highcharts-data-table");
+      if(element)
+        element[0].removeChild(element[0].childNodes[0]);
+    }
     this.router.navigate([], {
         relativeTo: this.activatedRoute,
         queryParams: jsonNavExtras // remove to replace all query params by provided
@@ -133,15 +159,17 @@ export class GraphicDisplayComponent implements OnInit {
   }
 
   onPointSelect(e: any): void {
-    if(e.point){
+    if(e.point || e.target){
+      let data = e.point ? e.point : e.target;
       const dialogConfig = new MatDialogConfig();
       dialogConfig.autoFocus = true;
       dialogConfig.data = {
         category: this.actualCategory,
+        type: this.actualGraphicType,
         filter: this.actualFilter,
-        name: e.point.category,
-        variable: e.point.series['userOptions'].id,
-        id: filter(this.xAxisVars, 'checked')[e.point.index].id
+        name: data.category,
+        variable: data.series['userOptions'].id,
+        id: filter(this.xAxisVars, 'checked')[data.index].id
       }
       let dialogRef = this.dialog.open(DrilldownDialogComponent, dialogConfig);
       dialogRef.afterClosed().subscribe(cat => {
@@ -193,7 +221,7 @@ export class GraphicDisplayComponent implements OnInit {
     }    
 
     // input can be sent as '{}' in this function
-    data = await this.combinedService.getData(this.actualCategory, input);
+    data = await this.combinedService.getData(this.actualCategory, this.actualGraphicType, input);
     filterArray = this.getFilterParamsArray();
 
     if(data['success'] === 1){
@@ -220,11 +248,15 @@ export class GraphicDisplayComponent implements OnInit {
 
     this.xAxisVars = [];
 
+    let test, testId;
     for(let vars of rawData){
-      idInParams = filterArray.includes(vars.id.toString());
-      this.xAxisVars.push({name: vars.name, id: vars.id, checked: !idInParams});
+      //todo still to fix - 'completar query - country'
+      test = vars.name ? vars.name : 'Unspecified';
+      testId = vars.id ? vars.id : 0;
+      idInParams = filterArray.includes(testId.toString());
+      this.xAxisVars.push({name: test, id: testId, checked: !idInParams});
       if(!idInParams){
-        names.push(vars.name);
+        names.push(test);
         nPages.push(vars.nPages);
         nPassed.push(vars.nPassed);
         nFailed.push(vars.nFailed);
@@ -234,59 +266,61 @@ export class GraphicDisplayComponent implements OnInit {
       }
     }
 
-    if(nApps.length){
-      resultData.push({
-        id: 'nApps',
-        name: '# applications',
-        data: nApps
-      });
-    }
-
     let visibleSeries = [];
     for(let i = 0; i <= 5; i++){
       visibleSeries.push(this.isSeriesVisible(i));
     }
 
-    resultData.push({
-      id: 'nPages',
-      name: '# pages',
-      data: nPages,
-      visible: visibleSeries[0]
-    });
+    let i = 0;
+    let variableName = this.actualGraphicType === 'assertions' ? this.actualGraphicType : 'criteria';
+
+    if(this.actualGraphicType === 'assertions'){
+      resultData.push({
+        id: 'nPages',
+        name: '# pages',
+        data: nPages,
+        visible: visibleSeries[i]
+      });
+      i++;
+    }
 
     resultData.push({
       id: 'nPassed',
-      name: '# passed assertions',
+      name: '# passed ' + variableName,
       data: nPassed,
-      visible: visibleSeries[1]
+      visible: visibleSeries[i]
     });
+    i++;
 
     resultData.push({
       id: 'nFailed',
-      name: '# failed assertions',
+      name: '# failed ' + variableName,
       data: nFailed,
-      visible: visibleSeries[2]
+      visible: visibleSeries[i]
     });
+    i++;
 
     resultData.push({
       id: 'nCantTell',
-      name: '# cantTell assertions',
+      name: '# cantTell ' + variableName,
       data: nCantTell,
-      visible: visibleSeries[3]
+      visible: visibleSeries[i]
     });
+    i++;
 
     resultData.push({
       id: 'nInapplicable',
-      name: '# inapplicable assertions',
+      name: '# inapplicable ' + variableName,
       data: nInapplicable,
-      visible: visibleSeries[4]
+      visible: visibleSeries[i]
     });
+    i++;
 
     resultData.push({
       id: 'nUntested',
-      name: '# untested assertions',
+      name: '# untested ' + variableName,
       data: nUntested,
-      visible: visibleSeries[5]
+      visible: visibleSeries[i]
     });
 
     this.chart = Highcharts.chart('chart', {
@@ -295,10 +329,10 @@ export class GraphicDisplayComponent implements OnInit {
         animation: false
       },
       title: {
-        text: LABELS_PLURAL[this.actualCategory].concat(' column chart')
+        text: LABELS_PLURAL[this.actualCategory] + ' column chart'
       },
       //to enable a single tooltip to all series at one point
-      tooltip: { 
+      tooltip: {
         shared: true
       },
       credits: {
@@ -307,7 +341,27 @@ export class GraphicDisplayComponent implements OnInit {
       exporting: {
         accessibility:{
           enabled: true
-        }
+        },
+        showTable: this.chart ? this.chart.options.exporting.showTable : false,
+        menuItemDefinitions: {
+          // toggle data table
+          viewData: {
+              onclick: () => {
+                if(this.chart.options.exporting.showTable){
+                  let element = document.getElementsByClassName("highcharts-data-table");
+                  if(element)
+                    element[0].removeChild(element[0].childNodes[0]);
+                  this.chart.reflow();
+                }
+                this.chart.update({
+                  exporting: {
+                    showTable: !this.chart.options.exporting.showTable
+                  }
+                });
+              },
+              text: 'Toggle data table'
+          }
+        },
       },
       accessibility: {
         announceNewData: {
@@ -319,6 +373,15 @@ export class GraphicDisplayComponent implements OnInit {
         categories: names,
         crosshair: true
       },
+      /*legend: {
+        accessibility: {
+          enabled: true,
+          keyboardNavigation: {
+            enabled: true
+          }
+        },
+        itemHoverStyle: {}
+      },*/
       plotOptions: {
         series: {
           // disabling graphic animations
@@ -327,10 +390,14 @@ export class GraphicDisplayComponent implements OnInit {
           events: {
               legendItemClick: (e) => {
                 this.updateBySelection(e.target['_i'], 1);
-              },
+              }              
+          },
+          point: {
+            events: {
               click: (e) => {
                 this.onPointSelect(e);
               }
+            }
           },
           compare: 'value',
           showInNavigator: true
@@ -348,29 +415,29 @@ export class GraphicDisplayComponent implements OnInit {
     let result = "";
     if(data.length > 0){
       for(let sub of subs){
-        let infoQuery = data[0][sub.concat('Names')];
+        let infoQuery = data[0][sub + 'Names'];
         if(infoQuery){
           let arrayInfoQuery = JSON.parse(infoQuery);
 
           if(result){
-            result = result.concat("; ");
+            result = result + "; ";
           }
 
           if(arrayInfoQuery.length > 1) {
-            result = result.concat(LABELS_PLURAL[sub]);
+            result = result + LABELS_PLURAL[sub];
             let allNames = [];
             for(let name of arrayInfoQuery){
               allNames.push(name);
             }
-            result = result.concat(' ').concat(allNames.slice(0, -1).join(', ') + ' and ' + allNames.slice(-1));
+            result = result + ' ' + allNames.slice(0, -1).join(', ') + ' and ' + allNames.slice(-1);
           } else {
-            result = result.concat(LABELS_SINGULAR[sub]).concat(' ').concat(arrayInfoQuery[0]);
+            result = result + LABELS_SINGULAR[sub] + ' ' + arrayInfoQuery[0];
           }
         } else {
           if(sub === 'sector'){
             
             if(result) {
-              result = result.concat("; ");
+              result = result + "; ";
             }
             let sectorIds = this.activatedRoute.snapshot.queryParams['sectorIds'];
             sectorIds = sectorIds.split(',');
@@ -385,10 +452,10 @@ export class GraphicDisplayComponent implements OnInit {
               for(let id of sectorIds){
                 allNames.push(SECTORS[id]);
               }
-              result = result.concat(allNames.slice(0, -1).join(', ') + ' and ' + allNames.slice(-1));
-              result = result.concat(' ').concat(LABELS_PLURAL[sub]);
+              result = result + allNames.slice(0, -1).join(', ') + ' and ' + allNames.slice(-1);
+              result = result + ' ' + LABELS_PLURAL[sub];
             } else {
-              result = result.concat(SECTORS[sectorIds[0]]).concat(' ').concat(LABELS_SINGULAR[sub]);
+              result = result + SECTORS[sectorIds[0]] + ' ' + LABELS_SINGULAR[sub];
             }
           }
           // Theres no info about this queryParam in this SQL Query!
@@ -407,24 +474,24 @@ export class GraphicDisplayComponent implements OnInit {
 
   submittedCategory(cat: string, extra?: any){
     if(!extra){
-      this.router.navigate(['/'.concat(cat)], {
+      this.router.navigate(['../' + cat], {
         relativeTo: this.activatedRoute
       });
     } else {
-      let queryParamsString = '{"'.concat(extra.filter).concat('":"').concat(extra.id).concat('"');
+      let queryParamsString = '{"' + extra.filter + '":"' + extra.id + '"';
 
       let actualExtras = this.activatedRoute.snapshot.queryParams;
       if(actualExtras){
         for(let params in actualExtras){
           if(POSSIBLE_FILTERS.includes(params) && params !== extra.filter && params !== 'filter' && params !== 'p'){
-            queryParamsString = queryParamsString.concat(',"')
-                    .concat(params).concat('":"').concat(actualExtras[params]).concat('"');
+            queryParamsString = queryParamsString + ',"'
+                     + params + '":"' + actualExtras[params] + '"';
           }
         }
       }
-      queryParamsString = queryParamsString.concat('}');
+      queryParamsString = queryParamsString + '}';
 
-      this.router.navigate(['/'.concat(cat)], {
+      this.router.navigate(['../' + cat], {
         relativeTo: this.activatedRoute,
         queryParams: JSON.parse(queryParamsString)
       });
@@ -453,14 +520,14 @@ export class GraphicDisplayComponent implements OnInit {
           if(j === i){
             route = keys[j].replace('Ids', '');
           } else {
-            queryParamsToBe.push('"'.concat(keys[j]).concat('":').concat(queryParams[keys[j]]));
+            queryParamsToBe.push('"' + keys[j] + '":"' + queryParams[keys[j]] + '"');
           }
         }
         this.breadcrumbs.push(
           {
             name: LABELS_SINGULAR[route],
-            route: '/'.concat(route),
-            queryParams: JSON.parse('{'.concat(queryParamsToBe.join(',')).concat('}'))
+            route: '/' + this.actualGraphicType + '/' + route,
+            queryParams: JSON.parse('{' + queryParamsToBe.join(',') + '}')
           });
       }
     }
@@ -469,5 +536,26 @@ export class GraphicDisplayComponent implements OnInit {
         name: LABELS_SINGULAR[this.activatedRoute.snapshot.routeConfig.path]
       }
     );
+  }
+
+  changeType() {
+    if(this.actualGraphicType === 'assertions'){
+      //todo
+      //this.router.navigate(['/scriteria/'+this.actualCategory], { queryParamsHandling: "preserve" });
+      this.router.navigate(['/scriteria/'+this.actualCategory], {
+        queryParams: {
+          p: null
+        },
+        queryParamsHandling: 'merge'
+      });
+    } else {
+      //this.router.navigate(['/assertions/'+this.actualCategory], { queryParamsHandling: "preserve" });
+      this.router.navigate(['/assertions/'+this.actualCategory], {
+        queryParams: {
+          p: null
+        },
+        queryParamsHandling: 'merge'
+      });
+    }
   }
 }

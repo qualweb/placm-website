@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { ConfigService } from "./config.service";
-import { Observable, of } from "rxjs";
+import { Observable, of, throwError } from "rxjs";
 import { ajax } from "rxjs/ajax";
 import { catchError, map, retry } from "rxjs/operators";
 import { PLACMError } from "../models/error";
@@ -44,7 +44,16 @@ export class EarlService {
     return this.http.post((BASE_URL.concat('admin/report/add')), { serverName, formData, jsons })
       .pipe(
         retry(3),
-        //todo error handling
+        map(res => {
+          if (res['success'] !== 1 || res['errors'] !== null) {
+            throw new PLACMError(res['success'], res['message']);
+          }
+          return res;
+        }),
+        catchError(err => {
+          console.log(err);
+          return throwError(err);
+        })
       )
       .toPromise();
   }

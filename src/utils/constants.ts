@@ -1,11 +1,11 @@
 import { environment } from '../environments/environment';
 
-//const BASE_URL = environment.production ? '/' : 'http://localhost:3443/' ;
-const BASE_URL = 'http://localhost:3443/' ;
+const BASE_URL = environment.production ? '/' : 'http://localhost:3443/' ;
+//const BASE_URL = 'http://localhost:3443/' ;
 
-const SERVER_NAME = 'pt';
+const SERVER_NAME = 'proto';
 
-const POSSIBLE_FILTERS = ['continentIds', 'countryIds', 'sectorIds', 'orgIds', 'tagIds', 'appIds', 'evalIds', 'ruleIds', 'filter', 'p'];
+const POSSIBLE_FILTERS = ['continentIds', 'countryIds', 'sectorIds', 'orgIds', 'tagIds', 'appIds', 'evalIds', 'scIds', 'typeIds', 'ruleIds', 'filter', 'p'];
 
 const LABELS_PLURAL = {
   'continent': 'Continents',
@@ -14,8 +14,10 @@ const LABELS_PLURAL = {
   'tag': 'Tags',
   'org': 'Organizations',
   'app': 'Applications/Websites',
-  'rule': 'Rules',
-  'eval': 'Evaluation tools'
+  'eval': 'Evaluation tools',
+  'sc': 'Success Criteria',
+  'type': 'Types of element',
+  'rule': 'Rules'
 };
 
 const LABELS_SINGULAR = {
@@ -25,8 +27,10 @@ const LABELS_SINGULAR = {
   'tag': 'Tag',
   'org': 'Organization',
   'app': 'Application/Website',
-  'rule': 'Rule',
-  'eval': 'Evaluation tool'
+  'eval': 'Evaluation tool',
+  'sc': 'Success Criteria',
+  'type': 'Type of element',
+  'rule': 'Rule'
 }
 
 const SECTORS = {
@@ -39,4 +43,17 @@ const TYPES = {
   1: 'Application'
 }
 
-export {BASE_URL, POSSIBLE_FILTERS, LABELS_PLURAL, LABELS_SINGULAR, SECTORS, TYPES, SERVER_NAME};
+const GENERATORS = [
+  {
+    name: 'Portuguese Generator Tool',
+    value: 'govpt'
+  },
+  {
+    name: 'W3 Generator Tool',
+    value: 'w3'
+  }
+];
+
+const FILEINPUT_LABEL = 'Choose file(s)';
+
+export {BASE_URL, POSSIBLE_FILTERS, LABELS_PLURAL, LABELS_SINGULAR, SECTORS, TYPES, SERVER_NAME, FILEINPUT_LABEL, GENERATORS};

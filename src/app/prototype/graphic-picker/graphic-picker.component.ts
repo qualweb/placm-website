@@ -1,5 +1,6 @@
-import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
+import { LABELS_SINGULAR } from 'utils/constants';
 
 @Component({
   selector: 'app-graphic-picker',
@@ -11,231 +12,120 @@ export class GraphicPickerComponent implements OnInit {
   selectedCategory: string;
   categories: any[];
 
+  graphicType: string;
+
   @Input() actualCategory: string;
+  @Input() type: string;
   @Input() showAll: boolean;
   @Output() submit = new EventEmitter();
   @Output() change = new EventEmitter();
 
   constructor(
-    private activatedRoute: ActivatedRoute) { }
+    private activatedRoute: ActivatedRoute,
+    private router: Router)
+  { 
+    this.router.events.subscribe(event => {
+      if(event instanceof NavigationEnd){
+        let splittedUrl = event.url.split('/');
+        if(splittedUrl.length > 1){
+          if(splittedUrl[1] === 'assertions' || splittedUrl[1] === 'scriteria'){
+            this.graphicType = splittedUrl[1];
+          } else {
+            this.graphicType = 'assertions';
+          }
+          this.prepareData();
+        }
+      }
+    });
+  }
+
 
   ngOnInit(): void {
+    if(this.type){
+      this.graphicType = this.type;
+      this.prepareData();
+    }
+  }
+
+  prepareData(): void {
     this.categories = [];
+    let futureCategories = [];
     if(this.showAll){
-      this.categories = [
-        {
-          name: 'Continent',
-          abbr: 'continent'
-        },
-        {
-          name: 'Country',
-          abbr: 'country'
-        },
-        {
-          name: 'Tag',
-          abbr: 'tag'
-        },
-        {
-          name: 'Sector',
-          abbr: 'sector'
-        },
-        {
-          name: 'Organization',
-          abbr: 'org'
-        },
-        {
-          name: 'App/Website',
-          abbr: 'app'
-        },
-        {
-          name: 'Evaluation Tool',
-          abbr: 'eval'
-        },
-        {
-          name: 'Rule',
-          abbr: 'rule'
-        }
-      ];
+      futureCategories = ['continent', 'country', 'tag', 'sector', 'org', 'app', 'eval', 'sc', 'type', 'rule'];
     } else {
       switch(this.actualCategory){
         case 'home':
         case 'continent':
-          this.categories = [
-            {
-              name: 'Country',
-              abbr: 'country'
-            },
-            {
-              name: 'Tag',
-              abbr: 'tag'
-            },
-            {
-              name: 'Sector',
-              abbr: 'sector'
-            },
-            {
-              name: 'Organization',
-              abbr: 'org'
-            },
-            {
-              name: 'App/Website',
-              abbr: 'app'
-            },
-            {
-              name: 'Evaluation Tool',
-              abbr: 'eval'
-            },
-            {
-              name: 'Rule',
-              abbr: 'rule'
-            }
-          ];
+          futureCategories = ['country', 'tag', 'sector', 'org', 'app', 'eval', 'sc', 'type', 'rule'];
           break;
         case 'country':
           if(!this.activatedRoute.snapshot.queryParams['tagIds']){
-            this.categories.push(
-              {
-                name: 'Tag',
-                abbr: 'tag'
-              }
-            );
+            futureCategories.push('tag');
           }
-          this.categories.push(
-            {
-              name: 'Sector',
-              abbr: 'sector'
-            },
-            {
-              name: 'Organization',
-              abbr: 'org'
-            },
-            {
-              name: 'App/Website',
-              abbr: 'app'
-            },
-            {
-              name: 'Evaluation Tool',
-              abbr: 'eval'
-            },
-            {
-              name: 'Rule',
-              abbr: 'rule'
-            }
-          );
+          futureCategories.push('sector', 'org', 'app', 'eval', 'sc', 'type', 'rule');
           break;
         case 'tag':
           if(!this.activatedRoute.snapshot.queryParams['countryIds']){
-            this.categories.push(
-              {
-                name: 'Country',
-                abbr: 'country'
-              }
-            );
+            futureCategories.push('country');
           }
           if(!this.activatedRoute.snapshot.queryParams['sectorIds']){
-            this.categories.push(
-              {
-              name: 'Sector',
-              abbr: 'sector'
-              }
-            );
+            futureCategories.push('sector');
           }
-          this.categories.push(
-            {
-              name: 'Organization',
-              abbr: 'org'
-            },
-            {
-              name: 'App/Website',
-              abbr: 'app'
-            },
-            {
-              name: 'Evaluation Tool',
-              abbr: 'eval'
-            },
-            {
-              name: 'Rule',
-              abbr: 'rule'
-            }
-          );
+          futureCategories.push('org', 'app', 'eval', 'sc', 'type', 'rule');
           break;
         case 'sector':
           if(!this.activatedRoute.snapshot.queryParams['tagIds']){
-            this.categories.push(
-              {
-                name: 'Tag',
-                abbr: 'tag'
-              }
-            );
+            futureCategories.push('tag');
           }
-          this.categories.push(
-            {
-              name: 'Organization',
-              abbr: 'org'
-            },
-            {
-              name: 'App/Website',
-              abbr: 'app'
-            },
-            {
-              name: 'Evaluation Tool',
-              abbr: 'eval'
-            },
-            {
-              name: 'Rule',
-              abbr: 'rule'
-            }
-          );
+          futureCategories.push('org', 'app', 'eval', 'sc', 'type', 'rule');
           break;
         case 'org':
-          this.categories = [
-            {
-              name: 'App/Website',
-              abbr: 'app'
-            },
-            {
-              name: 'Evaluation Tool',
-              abbr: 'eval'
-            },
-            {
-              name: 'Rule',
-              abbr: 'rule'
-            }
-          ];
+          futureCategories = ['app', 'eval', 'sc', 'type', 'rule'];
           break;
         case 'app':
-          this.categories = [
-            {
-              name: 'Evaluation Tool',
-              abbr: 'eval'
-            },
-            {
-              name: 'Rule',
-              abbr: 'rule'
-            }
-          ];
+          futureCategories = ['eval', 'sc', 'type', 'rule'];
           break;
         case 'eval':
-          this.categories = [
-            {
-              name: 'Rule',
-              abbr: 'rule'
-            }];
+          futureCategories = ['sc', 'type', 'rule'];
+          break;
+        case 'sc':
+          futureCategories = ['type', 'rule'];
+          break;
+        case 'type':
+          futureCategories = ['rule'];
           break;
         case 'rule':
-          this.categories = [];
+          futureCategories = [];
           break;
         default:
-          this.categories = [];
+          futureCategories = [];
           break;
       }
+    }
+
+    //to remove sc, type and rule from possible dropdowns
+    if(this.graphicType === 'scriteria')
+      futureCategories = futureCategories.slice(0,-3);
+
+    for(let cat of futureCategories){
+      this.categories.push(
+        {
+          name: LABELS_SINGULAR[cat],
+          abbr: cat
+        }
+      );
     }
   }
 
   clickedSubmit(value?: any) {
     if(value)
       this.changeCategory(value);
-    this.submit.emit(this.selectedCategory);
+    this.submit.emit(
+      {
+        cat: this.selectedCategory,
+        type: this.graphicType
+      }
+    );
   }
 
   changeCategory(value: any){

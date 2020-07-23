@@ -15,6 +15,7 @@ export class DrilldownDialogComponent implements OnInit {
   name: string;
   variable: string;
   id: string;
+  type: string;
   selectedCategory: string;
   lastDrilldown: boolean;
 
@@ -23,11 +24,12 @@ export class DrilldownDialogComponent implements OnInit {
     private dialogRef: MatDialogRef<DrilldownDialogComponent>) {
       this.category = data.category;
       this.categoryName = LABELS_SINGULAR[this.category].toLowerCase();
+      this.type = data.type;
       this.filterName = data.filter;
       this.name = data.name;
       this.variable = data.variable;
       this.id = data.id;
-      this.lastDrilldown = this.category === 'rule';
+      this.lastDrilldown = this.category === 'rule' || (this.type === 'scriteria' && this.category === 'eval');
     }
 
   ngOnInit(): void {    

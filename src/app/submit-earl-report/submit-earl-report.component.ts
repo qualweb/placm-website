@@ -249,25 +249,25 @@ export class SubmitEarlReportComponent implements OnInit {
 
     if(linksToRead.length > 0 && linksToRead[0] !== ''){
       for(let link of linksToRead){
-        dataFromLink = <string> await fetch(link)
-          .then(response => {
-            if (response.status === 200) {
-              return response.text();
-            } else {
-              throw new Error(response.statusText);
-            }
-          })
-          .catch(err => {
-            //this.linkErrorMessage = "failedFetch";
-            if(!this.linksError.includes(link))
-              this.linksError.push(link);
-        });
+        let response;
+        try {
+          response = await fetch(link);
+          if (response.status === 200) {
+            dataFromLink = await response.text();
+          } else {
+            throw new Error(response.statusText);
+          }
+        } catch(err) {
+          if(!this.linksError.includes(link))
+            this.linksError.push(link);
+        }  
+        
         if(dataFromLink){
           dataFromLinks.push(dataFromLink);
         } else {
           if(!this.linksError.includes(link))
             this.linksError.push(link);
-        }
+        }        
       }
     } 
 
@@ -309,6 +309,7 @@ export class SubmitEarlReportComponent implements OnInit {
           ((<HTMLInputElement>document.getElementById('earlFiles')).nextElementSibling).innerHTML = this.labelVal;
           this.filesFromInput = undefined;
           this.initializeForms();
+          this.combinedService.clearStorage();
         }
         this.loadingResponse = false;
       });

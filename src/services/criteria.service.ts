@@ -1,24 +1,26 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams} from '@angular/common/http';
 import { BASE_URL } from '../utils/constants';
 import { retry } from 'rxjs/internal/operators/retry';
 import { map, catchError } from 'rxjs/operators';
 import { PLACMError } from 'models/error';
 import { throwError } from 'rxjs';
 
-const pageUrl = BASE_URL.concat('page/');
+const criteriaUrl = BASE_URL + 'sc/';
 
 @Injectable({
   providedIn: 'root'
 })
-export class PageService {
+export class CriteriaService {
 
-  constructor(
-    private http: HttpClient) { }
+  constructor(private http: HttpClient) { }
 
-  getAllByApplicationId(id: number): Promise<any> {
-    let data = new HttpParams().set('id', id.toString())
-    return this.http.get(pageUrl.concat('byApp'), {params: data})
+  getData(serverName: string, filters?: any): Promise<any> {
+    let opts = new HttpParams();
+    opts = opts.append('name', serverName);
+    if(filters)
+      opts = opts.append('filters', filters);
+    return this.http.get(criteriaUrl + 'scData', {params: opts})
       .pipe(
         retry(3),
         map(res => {
@@ -34,4 +36,5 @@ export class PageService {
       )
       .toPromise();
   }
+
 }
