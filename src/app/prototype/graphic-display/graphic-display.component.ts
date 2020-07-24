@@ -236,7 +236,7 @@ export class GraphicDisplayComponent implements OnInit {
         nInapplicable = [], nUntested = [];
 
     // todo sorting
-    rawData = rawData.sort(function (a,b) {
+    /*rawData = rawData.sort(function (a,b) {
       let comparison = 0;
       if (a.name > b.name) {
         comparison = 1;
@@ -244,19 +244,26 @@ export class GraphicDisplayComponent implements OnInit {
         comparison = -1;
       }
       return comparison;
-    });
+    });*/
 
     this.xAxisVars = [];
 
     let test, testId;
     for(let vars of rawData){
-      //todo still to fix - 'completar query - country'
-      test = vars.name ? vars.name : 'Unspecified';
       testId = vars.id ? vars.id : 0;
+      if(this.actualCategory === 'sc'){
+        test = vars.name ? 'SC ' + testId + ' - ' + vars.name : 'Unspecified';
+      } else {
+        test = vars.name ? vars.name : 'Unspecified';
+      }
       idInParams = filterArray.includes(testId.toString());
       this.xAxisVars.push({name: test, id: testId, checked: !idInParams});
       if(!idInParams){
-        names.push(test);
+        if(this.actualCategory === 'sc'){
+          names.push('SC ' + testId);
+        } else {
+          names.push(test);
+        }
         nPages.push(vars.nPages);
         nPassed.push(vars.nPassed);
         nFailed.push(vars.nFailed);
