@@ -75,4 +75,17 @@ export class AppService {
       .toPromise();
   }
 
+  getSuccessCriteriaData(serverName: string, filters?: any): Promise<any> {
+    let opts = new HttpParams();
+    opts = opts.append('name', serverName);
+    if(filters)
+      opts = opts.append('filters', filters);
+    return this.http.get(appUrl + 'scApp', {params: opts})
+      .pipe(
+        retry(3),
+        //todo error handling
+      )
+      .toPromise();
+  }
+
 }

@@ -17,6 +17,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatTableModule } from '@angular/material/table';
+import { MatSortModule } from '@angular/material/sort';
+import { MatDividerModule } from '@angular/material/divider';
 
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -40,6 +44,8 @@ import { GraphicHeaderComponent } from './prototype/graphic-header/graphic-heade
 import { AdminComponent } from './prototype/admin/admin.component';
 import { InformationDialogComponent } from './dialogs/information-dialog/information-dialog.component';
 import { DatabaseDialogComponent } from './dialogs/database-dialog/database-dialog.component';
+import { AppSCListComponent } from './prototype/app-sclist/app-sclist.component';
+import { GraphicBreadcrumbsComponent } from './prototype/graphic-breadcrumbs/graphic-breadcrumbs.component';
 //import { LocationStrategy, PathLocationStrategy } from '@angular/common';
 
 const appRoutes: Routes = [
@@ -74,7 +80,8 @@ const appRoutes: Routes = [
       { path: 'sector', component: GraphicDisplayComponent },
       { path: 'org', component: GraphicDisplayComponent },
       { path: 'app', component: GraphicDisplayComponent },
-      { path: 'eval', component: GraphicDisplayComponent }
+      { path: 'eval', component: GraphicDisplayComponent },
+      { path: 'scApp', component: AppSCListComponent}
     ]
   },
 
@@ -101,7 +108,9 @@ const appRoutes: Routes = [
     GraphicHeaderComponent,
     AdminComponent,
     InformationDialogComponent,
-    DatabaseDialogComponent
+    DatabaseDialogComponent,
+    AppSCListComponent,
+    GraphicBreadcrumbsComponent
   ],
   imports: [
     BrowserModule,
@@ -126,6 +135,10 @@ const appRoutes: Routes = [
     MatAutocompleteModule,
     MatChipsModule,
     MatProgressSpinnerModule,
+    MatExpansionModule,
+    MatTableModule,
+    MatSortModule,
+    MatDividerModule,
     FlexLayoutModule
   ],
   entryComponents: [ErrorDialogComponent],

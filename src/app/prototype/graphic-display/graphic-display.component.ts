@@ -1,8 +1,8 @@
-import { Component, OnInit, Input, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
-import { Router, ActivatedRoute, Params, NavigationEnd } from '@angular/router';
+import { Component, OnInit, EventEmitter, Output } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { MatDialogConfig, MatDialog } from '@angular/material/dialog';
 import { DrilldownDialogComponent } from 'app/dialogs/drilldown-dialog/drilldown-dialog.component';
-import { POSSIBLE_FILTERS, LABELS_PLURAL, LABELS_SINGULAR, SECTORS } from '../../../utils/constants';
+import { POSSIBLE_FILTERS, LABELS_PLURAL, LABELS_SINGULAR, SECTORS, queryParamsRegex } from '../../../utils/constants';
 import { CombinedService } from 'services/combined.service';
 import * as isEmpty from 'lodash.isempty';
 import * as filter from 'lodash.filter';
@@ -189,7 +189,6 @@ export class GraphicDisplayComponent implements OnInit {
     let resultData = [];
     let subtitle = "";
     let subtitlePossibilities = [];
-    let sqlInjectRegex = new RegExp('^[0-9]([,]?[0-9])*$');
 
     if(!isEmpty(input)){
       
@@ -204,7 +203,7 @@ export class GraphicDisplayComponent implements OnInit {
         if(POSSIBLE_FILTERS.includes(params)){
           if(params !== this.actualFilter && params !== 'filter' && params !== 'p'){
             if(input[params]){
-              if(!sqlInjectRegex.test(input[params])){
+              if(!queryParamsRegex.test(input[params])){
                 // remove all queryParams that are not composed of only numbers or commas
                 ({[params]: removed, ...input} = input);
               } else {
@@ -358,13 +357,13 @@ export class GraphicDisplayComponent implements OnInit {
                   let element = document.getElementsByClassName("highcharts-data-table");
                   if(element)
                     element[0].removeChild(element[0].childNodes[0]);
-                  this.chart.reflow();
                 }
                 this.chart.update({
                   exporting: {
                     showTable: !this.chart.options.exporting.showTable
                   }
                 });
+                this.chart.reflow();
               },
               text: 'Toggle data table'
           }
@@ -547,8 +546,6 @@ export class GraphicDisplayComponent implements OnInit {
 
   changeType() {
     if(this.actualGraphicType === 'assertions'){
-      //todo
-      //this.router.navigate(['/scriteria/'+this.actualCategory], { queryParamsHandling: "preserve" });
       this.router.navigate(['/scriteria/'+this.actualCategory], {
         queryParams: {
           p: null
@@ -556,7 +553,6 @@ export class GraphicDisplayComponent implements OnInit {
         queryParamsHandling: 'merge'
       });
     } else {
-      //this.router.navigate(['/assertions/'+this.actualCategory], { queryParamsHandling: "preserve" });
       this.router.navigate(['/assertions/'+this.actualCategory], {
         queryParams: {
           p: null

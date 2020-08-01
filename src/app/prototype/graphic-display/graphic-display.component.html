@@ -1,19 +1,4 @@
-<nav>
-  <ol class="breadcrumb">
-    <li>
-      <!--a href="/placm/pt/"-->
-      <a href="/placm/">
-        <mat-icon aria-hidden="false" aria-label="Home icon">home</mat-icon>
-      </a>
-    </li>
-    <li *ngFor="let crumb of breadcrumbs; let j = index; let islast = last">
-      <span aria-hidden="true">&nbsp;>&nbsp;</span>
-      <a *ngIf="!islast" [routerLink]="[crumb.route]" [queryParams]="crumb.queryParams">{{crumb.name}}</a>
-      <span *ngIf="islast">{{crumb.name}}</span>
-    </li>
-  </ol>
-</nav>
-
+<app-graphic-breadcrumbs></app-graphic-breadcrumbs>
 <div class="graphic">
   <div id="chart"></div>
   <button *ngIf="sCriteriaVisible" (click)="changeType()">

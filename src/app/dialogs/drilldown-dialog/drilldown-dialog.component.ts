@@ -18,6 +18,7 @@ export class DrilldownDialogComponent implements OnInit {
   type: string;
   selectedCategory: string;
   lastDrilldown: boolean;
+  scApp: boolean;
 
   constructor(@Inject(MAT_DIALOG_DATA) data,
     public dialog: MatDialog,
@@ -30,6 +31,7 @@ export class DrilldownDialogComponent implements OnInit {
       this.variable = data.variable;
       this.id = data.id;
       this.lastDrilldown = this.category === 'rule' || (this.type === 'scriteria' && this.category === 'eval');
+      this.scApp = this.category === 'app' && this.type === 'scriteria';
     }
 
   ngOnInit(): void {    
@@ -41,6 +43,10 @@ export class DrilldownDialogComponent implements OnInit {
 
   changedCategorySelection(category: any){
     this.selectedCategory = category;
+  }
+
+  goToSCDetailsPage(){
+    this.dialogRef.close({selected: 'scApp', filter: this.filterName, id: this.id});
   }
 
   submittedCategory(){

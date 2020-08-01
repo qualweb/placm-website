@@ -1,16 +1,57 @@
-<mat-dialog-content>
-  <p>You have clicked on {{categoryName}} {{name}}</p>
-  <ng-template [ngIf]="!lastDrilldown" [ngIfElse]="lastDrill">
-    <p>Where do you want to drill now?</p>
-    <app-graphic-picker [actualCategory]="category" [type]="type" [showAll]="false" (change)="changedCategorySelection($event)"></app-graphic-picker>
-  </ng-template>
-  <ng-template #lastDrill>
-    <p class="bold">You cannot drill further!</p>
-  </ng-template>
-</mat-dialog-content>
+<ng-template [ngIf]="!scApp" [ngIfElse]="scAppCode">
+  <mat-dialog-content>
+    <p>You have clicked on {{categoryName}} {{name}}</p>
+    <ng-template [ngIf]="!lastDrilldown" [ngIfElse]="lastDrill">
+      <p>Where do you want to drill now?</p>
+      <app-graphic-picker [actualCategory]="category" [type]="type" [showAll]="false" (change)="changedCategorySelection($event)"></app-graphic-picker>
+    </ng-template>
+    <ng-template #lastDrill>
+      <p class="bold">You cannot drill further!</p>
+    </ng-template>
+  </mat-dialog-content>
+  
+  <mat-dialog-actions>
+    <button mat-raised-button color="warn" (click)="close()">Close</button>
+    <span class="fill-remaining-space"></span>
+    <button *ngIf="!lastDrilldown" mat-raised-button color="primary" (click)="submittedCategory()" [disabled]=!selectedCategory>Submit</button>
+  </mat-dialog-actions>
+</ng-template>
 
-<mat-dialog-actions>
-  <button mat-raised-button color="warn" (click)="close()">Close</button>
-  <span class="fill-remaining-space"></span>
-  <button *ngIf="!lastDrilldown" mat-raised-button color="primary" (click)="submittedCategory()" [disabled]=!selectedCategory>Submit</button>
-</mat-dialog-actions>
+<ng-template #scAppCode>
+
+  <mat-tab-group animationDuration="0ms">
+
+    <mat-tab label="Drilldown">
+        <p>You have clicked on {{categoryName}} {{name}}</p>
+        <ng-template [ngIf]="!lastDrilldown" [ngIfElse]="lastDrill">
+          <p>Where do you want to drill now?</p>
+          <app-graphic-picker [actualCategory]="category" [type]="type" [showAll]="false" (change)="changedCategorySelection($event)"></app-graphic-picker>
+        </ng-template>
+        <ng-template #lastDrill>
+          <p class="bold">You cannot drill further!</p>
+        </ng-template>
+      
+      <mat-divider></mat-divider>
+
+      <div class="actionButtons">
+        <button mat-raised-button color="warn" (click)="close()">Close</button>
+        <span class="fill-remaining-space"></span>
+        <button *ngIf="!lastDrilldown" mat-raised-button color="primary" (click)="submittedCategory()" [disabled]=!selectedCategory>Submit</button>
+    </div>
+    </mat-tab>
+
+    <mat-tab label="Details">
+      <p>You have clicked on {{categoryName}} {{name}}</p>
+      <p>Do you want to see success criteria in detail?</p>
+    
+      <mat-divider></mat-divider>
+
+      <div class="actionButtons">
+        <span class="fill-remaining-space"></span>
+        <button  mat-raised-button color="primary" (click)="goToSCDetailsPage()">Go to details page</button>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+
+</ng-template>
+
