@@ -15,6 +15,7 @@ import * as Highcharts from 'highcharts';
 
 export class AppSCListComponent implements OnInit {
   loadingResponse: boolean = true;
+  allLoaded: boolean = false;
 
   data: any;
   sortedData: any = [];
@@ -95,6 +96,8 @@ export class AppSCListComponent implements OnInit {
       } else {
         this.data = response['result'];
         for(let i = 0; i < this.data.length; i++){
+          console.log(this.data[i]);
+          console.log(this.data[i].Assertions);
           this.data[i].Assertions = JSON.parse(this.data[i].Assertions);
           this.data[i].table = new MatTableDataSource(this.data[i].Assertions);
         }
@@ -103,6 +106,7 @@ export class AppSCListComponent implements OnInit {
         for(let d of this.outcomes){
           this.sortedData.push(...d.data); 
         }
+        this.allLoaded = true;
       }
       this.loadingResponse = false;
     });
