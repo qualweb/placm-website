@@ -13,7 +13,7 @@ export class GraphicBreadcrumbsComponent implements OnInit {
   actualGraphicType: string;
   actualCategory: string;
 
-  @Input('appNames') appNames: string[];
+  @Input('appNames') appNames: string[] = [];
   constructor(
     private activatedRoute: ActivatedRoute
   ) { }
@@ -54,20 +54,20 @@ export class GraphicBreadcrumbsComponent implements OnInit {
       }
     }
 
-    if(keys.length){
-      if(this.actualCategory === 'scApp'){
+    if(this.actualCategory === 'scApp'){
+      if(keys.length){
         this.breadcrumbs.push(
           {
             name: this.appNames.join(';')
           }
         );
-      } else {
-        this.breadcrumbs.push(
-          {
-            name: LABELS_SINGULAR[this.activatedRoute.snapshot.routeConfig.path]
-          }
-        );
       }
+    } else {
+      this.breadcrumbs.push(
+        {
+          name: LABELS_SINGULAR[this.activatedRoute.snapshot.routeConfig.path]
+        }
+      );
     }
     
   }
