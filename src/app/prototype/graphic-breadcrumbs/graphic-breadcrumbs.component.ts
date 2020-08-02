@@ -19,11 +19,18 @@ export class GraphicBreadcrumbsComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.breadcrumbs = [];
     this.actualGraphicType = this.activatedRoute.snapshot.parent.url[0].path;
     this.actualCategory = this.activatedRoute.snapshot.url[0].path;
-    let queryParams = this.activatedRoute.snapshot.queryParams;
+
+    this.activatedRoute.queryParams.subscribe(x => {
+      this.prepareBreadcrumbs();
+    });
     
+  }
+
+  prepareBreadcrumbs(): void {
+    this.breadcrumbs = [];
+    let queryParams = this.activatedRoute.snapshot.queryParams;
     let removed;
     let removableFilters = ['filter', 'p'];
     for(let f of removableFilters){
@@ -69,7 +76,6 @@ export class GraphicBreadcrumbsComponent implements OnInit {
         }
       );
     }
-    
   }
 
 }

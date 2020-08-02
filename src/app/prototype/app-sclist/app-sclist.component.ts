@@ -96,8 +96,6 @@ export class AppSCListComponent implements OnInit {
       } else {
         this.data = response['result'];
         for(let i = 0; i < this.data.length; i++){
-          console.log(this.data[i]);
-          console.log(this.data[i].Assertions);
           this.data[i].Assertions = JSON.parse(this.data[i].Assertions);
           this.data[i].table = new MatTableDataSource(this.data[i].Assertions);
         }
