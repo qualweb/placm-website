@@ -5,9 +5,12 @@ import { EvaluationService } from './evaluation.service';
 import { RuleService } from './rule.service';
 import { TagService } from './tag.service';
 import { SessionStorage } from '@cedx/ngx-webstorage';
-import { POSSIBLE_FILTERS, SERVER_NAME } from 'utils/constants';
+import { POSSIBLE_FILTERS, SERVER_NAME, BASE_URL } from 'utils/constants';
 import { throwError } from 'rxjs';
 import { CriteriaService } from './criteria.service';
+import { PLACMError } from 'models/error';
+import { catchError, retry, map } from 'rxjs/operators';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +24,8 @@ export class CombinedService {
     private evalService: EvaluationService,
     private ruleService: RuleService,
     private criteriaService: CriteriaService,
-    private session: SessionStorage
+    private session: SessionStorage,
+    private http: HttpClient
   ) { }
 
   async getData(category: string, type?: string, queryParams?: any): Promise<any> {
@@ -144,6 +148,25 @@ export class CombinedService {
     } catch (err){
       return throwError(err);
     }
+  }
+
+  fetchDocument(url: string): Promise<any> {
+    let param = new HttpParams();
+    param = param.append('url', url);
+    return this.http.get((BASE_URL + 'proto/fetch'), {params: param})
+      .pipe(
+        retry(3),
+        map(res => {
+          if (res['success'] !== 1 || res['errors'] !== null) {
+            throw new PLACMError(res['success'], res['message']);
+          }
+          return res;
+        }),
+        catchError(err => {
+          return throwError(err);
+        })
+      )
+      .toPromise();
   }
 
   clearStorage(){

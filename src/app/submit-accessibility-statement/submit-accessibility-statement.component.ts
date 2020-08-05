@@ -249,16 +249,12 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
       for(let link of linksToRead){
         let response;
         try {
-          response = await fetch(link);
-          if (response.status === 200) {
-            dataFromLink = await response.text();
-          } else {
-            throw new Error(response.statusText);
-          }
+          response = await this.combinedService.fetchDocument(link);
+          dataFromLink = await response.result;
         } catch(err) {
           if(!this.linksError.includes(link))
             this.linksError.push(link);
-        }  
+        }   
         
         if(dataFromLink){
           dataFromLinks.push(dataFromLink);
@@ -309,6 +305,7 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
         if (!response) {
           this.error = true;
         } else {
+          console.log(response);
           this.labelVal = FILEINPUT_LABEL;
           this.filesFromInput = undefined;
           this.initializeForms();

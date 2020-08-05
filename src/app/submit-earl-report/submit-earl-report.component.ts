@@ -251,12 +251,8 @@ export class SubmitEarlReportComponent implements OnInit {
       for(let link of linksToRead){
         let response;
         try {
-          response = await fetch(link);
-          if (response.status === 200) {
-            dataFromLink = await response.text();
-          } else {
-            throw new Error(response.statusText);
-          }
+          response = await this.combinedService.fetchDocument(link);
+          dataFromLink = await response.result;
         } catch(err) {
           if(!this.linksError.includes(link))
             this.linksError.push(link);
@@ -306,6 +302,7 @@ export class SubmitEarlReportComponent implements OnInit {
         if (!response) {
           this.error = true;
         } else {
+          console.log(response);
           ((<HTMLInputElement>document.getElementById('earlFiles')).nextElementSibling).innerHTML = this.labelVal;
           this.filesFromInput = undefined;
           this.initializeForms();

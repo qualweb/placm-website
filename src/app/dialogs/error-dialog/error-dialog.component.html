@@ -1,10 +1,15 @@
 <mat-dialog-content>
+    <h1 class="error">> Error</h1>
+    <p *ngIf="!message && links">Encountered errors in the following urls:</p>
     <p *ngIf="message">There was a parse error of your file!</p>
-    <p *ngFor="let link of links; let i = index">
-        {{i}} - {{link}}
-    </p> 
+    <ul *ngIf="links">
+       <li *ngFor="let link of links; let i = index">
+           <a href="{{link}}">{{link}}</a>
+       </li>
+    </ul>
 </mat-dialog-content>
 
 <mat-dialog-actions>
+    <span class="fill-remaining-space"></span>
     <button mat-raised-button color="warn" (click)="close()">Close</button>
 </mat-dialog-actions>

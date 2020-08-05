@@ -16,24 +16,6 @@ export class CountryService {
   constructor(
     private http: HttpClient) { }
 
-  /*getAllByCountry(): Promise<any> {
-    return this.http.get(countryUrl.concat('byCountry'))
-      .pipe(
-        retry(3),
-        //todo error handling
-      )
-      .toPromise();
-  }
-
-  getAllByContinent(): Promise<any> {
-    return this.http.get(countryUrl.concat('byContinent'))
-      .pipe(
-        retry(3),
-        //todo error handling
-      )
-      .toPromise();
-  }*/
-
   getCountryData(serverName: string, type?: string, filters?: any): Promise<any> {
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
