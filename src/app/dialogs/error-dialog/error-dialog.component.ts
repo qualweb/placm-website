@@ -11,6 +11,7 @@ export class ErrorDialogComponent implements OnInit {
   links: string[];
   files: string[];
   message: string;
+  response: string;
 
   constructor(
     private dialogRef: MatDialogRef<ErrorDialogComponent>,
@@ -19,6 +20,7 @@ export class ErrorDialogComponent implements OnInit {
     this.links = data.links;
     this.files = data.files;
     this.message = data.message;
+    this.response = data.response;
    }
 
   ngOnInit() {

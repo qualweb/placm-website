@@ -10,6 +10,7 @@ import { startWith, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { ErrorDialogComponent } from 'app/dialogs/error-dialog/error-dialog.component';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { SuccessDialogComponent } from 'app/dialogs/success-dialog/success-dialog.component';
 
 @Component({
   selector: 'app-submit-earl-report',
@@ -252,7 +253,7 @@ export class SubmitEarlReportComponent implements OnInit {
         let response;
         try {
           response = await this.combinedService.fetchDocument(link);
-          dataFromLink = await response.result;
+          dataFromLink = response.result;
         } catch(err) {
           if(!this.linksError.includes(link))
             this.linksError.push(link);
@@ -302,7 +303,11 @@ export class SubmitEarlReportComponent implements OnInit {
         if (!response) {
           this.error = true;
         } else {
-          console.log(response);
+          this.dialogConfig.data = {
+            results: response.result,
+          };
+          this.dialog.open(SuccessDialogComponent, this.dialogConfig);
+          
           ((<HTMLInputElement>document.getElementById('earlFiles')).nextElementSibling).innerHTML = this.labelVal;
           this.filesFromInput = undefined;
           this.initializeForms();

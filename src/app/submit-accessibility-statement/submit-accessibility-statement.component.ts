@@ -10,6 +10,7 @@ import { Observable } from 'rxjs';
 import { CombinedService } from 'services/combined.service';
 import { ErrorDialogComponent } from 'app/dialogs/error-dialog/error-dialog.component';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { SuccessDialogComponent } from 'app/dialogs/success-dialog/success-dialog.component';
 
 @Component({
   selector: 'app-submit-accessibility-statement',
@@ -250,7 +251,7 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
         let response;
         try {
           response = await this.combinedService.fetchDocument(link);
-          dataFromLink = await response.result;
+          dataFromLink = response.result;
         } catch(err) {
           if(!this.linksError.includes(link))
             this.linksError.push(link);
@@ -293,7 +294,7 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
       let dataFromBothInputsJson = JSON.stringify(dataFromBothInputs);
       let linksJson = JSON.stringify(linksRead);
       let formData = this.sqlData.value;
-      console.log(formData);
+      //console.log(formData);
       if(this.sqlData.controls.tags.value !== null && this.sqlData.controls.tags.value !== ''){
         this.selectedTags.push(this.sqlData.controls.tags.value);
       }
@@ -305,10 +306,23 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
         if (!response) {
           this.error = true;
         } else {
-          console.log(response);
-          this.labelVal = FILEINPUT_LABEL;
-          this.filesFromInput = undefined;
-          this.initializeForms();
+          if(response.result.failedLinks.length > 0){
+            this.dialogConfig.data = {
+              links: response.result.failedLinks,
+              response: true
+            };
+            this.dialog.open(ErrorDialogComponent, this.dialogConfig);
+          } else {
+            this.dialogConfig.data = {
+              results: response.result,
+              fromAS: true
+            };
+            this.dialog.open(SuccessDialogComponent, this.dialogConfig);
+
+            this.labelVal = FILEINPUT_LABEL;
+            this.filesFromInput = undefined;
+            this.initializeForms();
+          }
           this.combinedService.clearStorage();
         }
         this.loadingResponse = false;
