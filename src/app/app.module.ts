@@ -46,6 +46,7 @@ import { InformationDialogComponent } from './dialogs/information-dialog/informa
 import { DatabaseDialogComponent } from './dialogs/database-dialog/database-dialog.component';
 import { AppSCListComponent } from './prototype/app-sclist/app-sclist.component';
 import { GraphicBreadcrumbsComponent } from './prototype/graphic-breadcrumbs/graphic-breadcrumbs.component';
+import { SuccessDialogComponent } from './dialogs/success-dialog/success-dialog.component';
 //import { LocationStrategy, PathLocationStrategy } from '@angular/common';
 
 const appRoutes: Routes = [
@@ -110,7 +111,8 @@ const appRoutes: Routes = [
     InformationDialogComponent,
     DatabaseDialogComponent,
     AppSCListComponent,
-    GraphicBreadcrumbsComponent
+    GraphicBreadcrumbsComponent,
+    SuccessDialogComponent
   ],
   imports: [
     BrowserModule,
