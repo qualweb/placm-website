@@ -116,24 +116,18 @@ export class CombinedService {
             break;
         } 
       } else {
-        let queryDate = 0;
-        if(sessionData.result.length){
-          queryDate = new Date(sessionData.result[0]['date']).getTime();
-        }
-        let currTime = new Date();
-        if((currTime.getTime() - queryDate) > 60000){
-          switch(category){
-            case 'tagNames':
-              data = await this.tagService.getAllTagsNames(SERVER_NAME);
-              break;
-            default:
-              //todo error
-              break;
+        if(category === 'tagNames'){
+          let queryDate = sessionData.timedate;
+          let currTime = Date.now();
+          if((currTime - queryDate) > 60000){
+            data = await this.tagService.getAllTagsNames(SERVER_NAME);
           }
+        } else {
+          // if it reaches here, means data exists on sessionstorage
         }
       }
 
-      if(data && data.success === 1){
+      if(await data && data.success === 1){
         // because the first 6 items in result array are OkPackets and not RowDataPackets
         if(type === 'scriteria')
           data.result = data.result[6];
@@ -141,7 +135,7 @@ export class CombinedService {
         if(type === 'scApp')
           data.result = data.result[8];
         //
-        
+        data.timedate = Date.now();
         this.session.setObject(sessionName, data);
       }
       return this.session.getObject(sessionName);

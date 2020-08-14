@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { SERVER_NAME } from 'utils/constants';
 import { ConfigService } from 'services/config.service';
 import { MatDialogRef } from '@angular/material/dialog';
+import { CombinedService } from 'services/combined.service';
 
 @Component({
   selector: 'app-database-dialog',
@@ -16,7 +17,8 @@ export class DatabaseDialogComponent implements OnInit {
 
   constructor(
     private dialogRef: MatDialogRef<DatabaseDialogComponent>,
-    private config: ConfigService) { }
+    private config: ConfigService,
+    private combinedService: CombinedService) { }
 
   ngOnInit(): void {
   }
@@ -25,6 +27,7 @@ export class DatabaseDialogComponent implements OnInit {
     this.loadingResponse = true;
     try {
       this.success = await this.config.resetDatabase(SERVER_NAME);
+      await this.combinedService.clearStorage();
     } catch(err){
       this.success = false;
     }
