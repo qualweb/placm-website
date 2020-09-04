@@ -568,7 +568,6 @@ export class GraphicDisplayComponent implements OnInit {
   }
 
   removeAllFilters() {
-    console.log(this.activatedRoute.snapshot);
     this.router.navigate([], {
       queryParams: {
         filter: null

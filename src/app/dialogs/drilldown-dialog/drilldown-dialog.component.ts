@@ -39,7 +39,6 @@ export class DrilldownDialogComponent implements OnInit {
     public dialog: MatDialog,
     private dialogRef: MatDialogRef<DrilldownDialogComponent>,
     private combinedService: CombinedService) {
-      console.log(data);
       this.category = data.category;
       this.categoryName = LABELS_SINGULAR[this.category].toLowerCase();
       this.categoryNamePlural = LABELS_PLURAL[this.category].toLowerCase();
@@ -198,7 +197,6 @@ export class DrilldownDialogComponent implements OnInit {
     }
 
     queryParamsString += '}';
-    console.log(queryParamsString);
     return JSON.parse(queryParamsString);
   }
 

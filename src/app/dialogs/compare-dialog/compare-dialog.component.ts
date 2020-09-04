@@ -36,7 +36,6 @@ export class CompareDialogComponent implements OnInit {
     private dialogRef: MatDialogRef<CompareDialogComponent>,
     private combinedService: CombinedService,
     private cd: ChangeDetectorRef) {
-      console.log(data);
       this.category = data.category;
       this.categoryName = LABELS_SINGULAR[this.category].toLowerCase();
       this.categoryNamePlural = LABELS_PLURAL[this.category].toLowerCase();
@@ -91,7 +90,6 @@ export class CompareDialogComponent implements OnInit {
   }
 
   goToCompPageSame(){
-    console.log(this.form.controls.radio);
     let idsSelected = this.form.controls.names.value.map(x => x.id);
     this.dialogRef.close({comparing: true,
                           selected: this.category,

@@ -299,7 +299,7 @@ export class GraphicCompareComponent implements OnInit {
     data = await this.combinedService.getData(this.actualCategory, this.actualGraphicType, firstParamInput, true);
     if(data['success'] === 1){
       rawData = data['result'];
-      subtitle = this.prepareSubtitle(rawData, subtitlePossibilities);
+      //subtitle = this.prepareSubtitle(rawData, subtitlePossibilities);
     } else {
       //todo query error
     }

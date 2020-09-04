@@ -86,7 +86,6 @@ export class GraphicBreadcrumbsComponent implements OnInit {
         }
       );
     }
-    console.log(this.breadcrumbs);
   }
 
   prepareComparingBreadcrumbs(): void {
