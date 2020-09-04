@@ -37,3 +37,36 @@
       Every toolbar row uses a flexbox row layout. */
   flex: 1 1 auto;
 }
+
+.loader_wrapper {
+  margin-top: 1rem;
+  width: 100%;
+}
+.loader {
+  border: 1.5rem solid #f3f3f3; 
+  border-top: 1.5rem solid #3f51b5;
+  border-radius: 50%;
+  width: 10rem;
+  height: 10rem;
+  animation: spin 2s linear infinite;
+  margin: 0 auto;
+  position: relative;
+}
+.loading_text {
+  text-align: center;
+  margin-top: 1rem;
+  font-weight: 700;
+  font-size: 1.5em;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@media only screen and (max-width: 450px) {
+  .loader {
+    border: 1rem solid #f3f3f3; 
+    border-top: 1rem solid #3f51b5;
+    width: 5rem;
+    height: 5rem;
+  }
+}

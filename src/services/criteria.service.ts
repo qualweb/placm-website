@@ -15,12 +15,13 @@ export class CriteriaService {
 
   constructor(private http: HttpClient) { }
 
-  getData(serverName: string, filters?: any): Promise<any> {
+  getData(serverName: string, filters?: any, comparing?: boolean): Promise<any> {
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
+    let compare = comparing ? 'Compare' : '';
     if(filters)
       opts = opts.append('filters', filters);
-    return this.http.get(criteriaUrl + 'scData', {params: opts})
+    return this.http.get(criteriaUrl + 'scData' + compare, {params: opts})
       .pipe(
         retry(3),
         map(res => {

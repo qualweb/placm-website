@@ -16,55 +16,58 @@ export class CountryService {
   constructor(
     private http: HttpClient) { }
 
-  getCountryData(serverName: string, type?: string, filters?: any): Promise<any> {
-    let opts = new HttpParams();
-    opts = opts.append('name', serverName);
-    let types = type === 'scriteria' ? 'SC' : '';
-    if(filters)
-      opts = opts.append('filters', filters);
-    return this.http.get(countryUrl + 'countryData' + types, {params: opts})
-      .pipe(
-        retry(3),
-        map(res => {
-          if (res['success'] !== 1 || res['errors'] !== null) {
-            throw new PLACMError(res['success'], res['message']);
-          }
-          return res;
-        }),
-        catchError(err => {
-          console.log(err);
-          return throwError(err);
-        })
-      )
-      .toPromise();
-  }
-
-  getContinentData(serverName: string, type?: string): Promise<any> {
-    let opts = new HttpParams();
-    opts = opts.append('name', serverName);
-    let types = type === 'scriteria' ? 'SC' : '';
-    return this.http.get(countryUrl + 'continentData' + types, {params: opts})
-      .pipe(
-        retry(3),
-        map(res => {
-          if (res['success'] !== 1 || res['errors'] !== null) {
-            throw new PLACMError(res['success'], res['message']);
-          }
-          return res;
-        }),
-        catchError(err => {
-          console.log(err);
-          return throwError(err);
-        })
-      )
-      .toPromise();
-  }
-  
-
   getAllCountryNames(serverName: string): Promise<any> {
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
     return this.http.get(countryUrl + 'countryNames', {params: opts})
+      .pipe(
+        retry(3),
+        map(res => {
+          if (res['success'] !== 1 || res['errors'] !== null) {
+            throw new PLACMError(res['success'], res['message']);
+          }
+          return res;
+        }),
+        catchError(err => {
+          console.log(err);
+          return throwError(err);
+        })
+      )
+      .toPromise();
+  }
+
+  getCountryData(serverName: string, type?: string, filters?: any, comparing?: boolean): Promise<any> {
+    let opts = new HttpParams();
+    opts = opts.append('name', serverName);
+    let types = type === 'scriteria' ? 'SC' : '';
+    let compare = comparing ? 'Compare' : ''; 
+    if(filters)
+      opts = opts.append('filters', filters);
+    return this.http.get(countryUrl + 'countryData' + types + compare, {params: opts})
+      .pipe(
+        retry(3),
+        map(res => {
+          if (res['success'] !== 1 || res['errors'] !== null) {
+            throw new PLACMError(res['success'], res['message']);
+          }
+          return res;
+        }),
+        catchError(err => {
+          console.log(err);
+          return throwError(err);
+        })
+      )
+      .toPromise();
+  }
+
+  getContinentData(serverName: string, type?: string, filters?: any, comparing?: boolean): Promise<any> {
+    let opts = new HttpParams();
+    opts = opts.append('name', serverName);
+    let types = type === 'scriteria' ? 'SC' : '';
+    let compare = comparing ? 'Compare' : '';
+    if(filters)
+      opts = opts.append('filters', filters);
+    return this.http.get(countryUrl + 'continentData' + types + compare, {params: opts})
       .pipe(
         retry(3),
         map(res => {

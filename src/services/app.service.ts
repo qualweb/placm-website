@@ -33,13 +33,14 @@ export class AppService {
       .toPromise();
   }
 
-  getAppData(serverName: string, type?: string, filters?: any): Promise<any> {
+  getAppData(serverName: string, type?: string, filters?: any, comparing?: boolean): Promise<any> {
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
     let types = type === 'scriteria' ? 'SC' : '';
+    let compare = comparing ? 'Compare' : ''; 
     if(filters)
       opts = opts.append('filters', filters);
-    return this.http.get(appUrl + 'appData' + types, {params: opts})
+    return this.http.get(appUrl + 'appData' + types + compare, {params: opts})
       .pipe(
         retry(3),
         //todo error handling
@@ -47,13 +48,14 @@ export class AppService {
       .toPromise();
   }
 
-  getSectorData(serverName: string, type?: string, filters?: any): Promise<any> {
+  getSectorData(serverName: string, type?: string, filters?: any, comparing?: boolean): Promise<any> {
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
     let types = type === 'scriteria' ? 'SC' : '';
+    let compare = comparing ? 'Compare' : ''; 
     if(filters)
       opts = opts.append('filters', filters);
-    return this.http.get(appUrl + 'sectorData' + types, {params: opts})
+    return this.http.get(appUrl + 'sectorData' + types + compare, {params: opts})
       .pipe(
         retry(3),
         //todo error handling
@@ -61,13 +63,14 @@ export class AppService {
       .toPromise();
   }
 
-  getOrganizationData(serverName: string, type?: string, filters?: any): Promise<any> {
+  getOrganizationData(serverName: string, type?: string, filters?: any, comparing?: boolean): Promise<any> {
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
     let types = type === 'scriteria' ? 'SC' : '';
+    let compare = comparing ? 'Compare' : ''; 
     if(filters)
       opts = opts.append('filters', filters);
-    return this.http.get(appUrl + 'orgData' + types, {params: opts})
+    return this.http.get(appUrl + 'orgData' + types + compare, {params: opts})
       .pipe(
         retry(3),
         //todo error handling

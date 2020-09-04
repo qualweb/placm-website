@@ -28,75 +28,81 @@ export class CombinedService {
     private http: HttpClient
   ) { }
 
-  async getData(category: string, type?: string, queryParams?: any): Promise<any> {
-    let sessionName = this.getStorageName(category, type, [queryParams]);
+  async getData(category: string, type?: string, queryParams?: any, comparing?: boolean): Promise<any> {
+    let sessionName = this.getStorageName(category, type, [queryParams], comparing);
     let sessionData = this.session.getObject(sessionName);
+    let oneMinuteHasPassed = Date.now() - (sessionData ? sessionData.timedate : 0) > 60000;
+    let paramsExist = queryParams ? Object.keys(queryParams).length : false;
     let data;
     try {
-      if(sessionData === undefined){
+      if(sessionData === undefined || (sessionData.result === [] && oneMinuteHasPassed)){
         switch(category){
           case 'continent':
-            data = await this.countryService.getContinentData(SERVER_NAME, type);
+            if(paramsExist){
+              data = await this.countryService.getContinentData(SERVER_NAME, type, JSON.stringify(queryParams), comparing);
+            } else {
+              data = await this.countryService.getContinentData(SERVER_NAME, type);
+            }
             break;
           case 'country':
-            if(Object.keys(queryParams).length){
-              data = await this.countryService.getCountryData(SERVER_NAME, type, JSON.stringify(queryParams));
+            if(paramsExist){
+              data = await this.countryService.getCountryData(SERVER_NAME, type, JSON.stringify(queryParams), comparing);
             } else {
               data = await this.countryService.getCountryData(SERVER_NAME, type);
             }
             break;
           case 'tag':
-            if(Object.keys(queryParams).length){
-              data = await this.tagService.getData(SERVER_NAME, type, JSON.stringify(queryParams));
+            if(paramsExist){
+              data = await this.tagService.getData(SERVER_NAME, type, JSON.stringify(queryParams), comparing);
             } else {
               data = await this.tagService.getData(SERVER_NAME, type);
             }
             break;
           case 'sector':
-            if(Object.keys(queryParams).length){
-              data = await this.appService.getSectorData(SERVER_NAME, type, JSON.stringify(queryParams));
+            if(paramsExist){
+              data = await this.appService.getSectorData(SERVER_NAME, type, JSON.stringify(queryParams), comparing);
             } else {
               data = await this.appService.getSectorData(SERVER_NAME, type);
             }
             break;
           case 'org':
-            if(Object.keys(queryParams).length){
-              data = await this.appService.getOrganizationData(SERVER_NAME, type, JSON.stringify(queryParams));
+            if(paramsExist){
+              data = await this.appService.getOrganizationData(SERVER_NAME, type, JSON.stringify(queryParams), comparing);
             } else {
               data = await this.appService.getOrganizationData(SERVER_NAME, type);
             }
             break;
           case 'app':
-            if(Object.keys(queryParams).length){
-              data = await this.appService.getAppData(SERVER_NAME, type, JSON.stringify(queryParams));
+            if(paramsExist){
+              data = await this.appService.getAppData(SERVER_NAME, type, JSON.stringify(queryParams), comparing);
             } else {
               data = await this.appService.getAppData(SERVER_NAME, type);
             }
             break;
           case 'eval':
-            if(Object.keys(queryParams).length){
-              data = await this.evalService.getEvalutionToolData(SERVER_NAME, type, JSON.stringify(queryParams));
+            if(paramsExist){
+              data = await this.evalService.getEvalutionToolData(SERVER_NAME, type, JSON.stringify(queryParams), comparing);
             } else {
               data = await this.evalService.getEvalutionToolData(SERVER_NAME, type);
             }
             break;
           case 'sc':
-            if(Object.keys(queryParams).length){
-              data = await this.criteriaService.getData(SERVER_NAME, JSON.stringify(queryParams));
+            if(paramsExist){
+              data = await this.criteriaService.getData(SERVER_NAME, JSON.stringify(queryParams), comparing);
             } else {
               data = await this.criteriaService.getData(SERVER_NAME);
             }
             break;
           case 'type':
-            if(Object.keys(queryParams).length){
-              data = await this.ruleService.getElementTypeData(SERVER_NAME, JSON.stringify(queryParams));
+            if(paramsExist){
+              data = await this.ruleService.getElementTypeData(SERVER_NAME, JSON.stringify(queryParams), comparing);
             } else {
               data = await this.ruleService.getElementTypeData(SERVER_NAME);
             }
             break;
           case 'rule':
-            if(Object.keys(queryParams).length){
-              data = await this.ruleService.getRuleData(SERVER_NAME, JSON.stringify(queryParams));
+            if(paramsExist){
+              data = await this.ruleService.getRuleData(SERVER_NAME, JSON.stringify(queryParams), comparing);
             } else {
               data = await this.ruleService.getRuleData(SERVER_NAME);
             }
@@ -117,9 +123,7 @@ export class CombinedService {
         } 
       } else {
         if(category === 'tagNames'){
-          let queryDate = sessionData.timedate;
-          let currTime = Date.now();
-          if((currTime - queryDate) > 60000){
+          if(oneMinuteHasPassed){
             data = await this.tagService.getAllTagsNames(SERVER_NAME);
           }
         } else {
@@ -167,14 +171,17 @@ export class CombinedService {
     this.session.clear();
   }
 
-  private getStorageName(category: string, type: string, queryParams?: any): string {
+  private getStorageName(category: string, type: string, queryParams?: any, comparing?: boolean): string {
     let result = category;
+    let compare = comparing ? 'comp' : '';
     queryParams = queryParams ? this.sortObject(queryParams) : [];
     for(let param in queryParams[0]){
       if(POSSIBLE_FILTERS.includes(param) && param !== 'filter' && param !== 'p')
-        result = result + ';' + param.substring(0, 3) + '=' + queryParams[0][param];
+        result = result + ';' + param.substring(0, 3) + '=' + this.sortObject(queryParams[0][param].split(','));
     }
-    return type ? type.substring(0, 2) + '_' + result + '_' + SERVER_NAME : result + '_' + SERVER_NAME;
+    return comparing ? 
+    compare + '_' + type.substring(0, 2) + '_' + result + '_' + SERVER_NAME : 
+    type.substring(0, 2) + '_' + result + '_' + SERVER_NAME;
   }
 
   private sortObject(obj) {

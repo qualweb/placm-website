@@ -21,6 +21,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule } from '@angular/material/sort';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatRadioModule } from '@angular/material/radio';
 
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -41,12 +42,14 @@ import { DrilldownDialogComponent } from './dialogs/drilldown-dialog/drilldown-d
 import { GraphicPickerComponent } from './prototype/graphic-picker/graphic-picker.component';
 import { GraphicDisplayComponent } from './prototype/graphic-display/graphic-display.component';
 import { GraphicHeaderComponent } from './prototype/graphic-header/graphic-header.component';
+import { GraphicCompareComponent } from './prototype/graphic-compare/graphic-compare.component';
 import { AdminComponent } from './prototype/admin/admin.component';
 import { InformationDialogComponent } from './dialogs/information-dialog/information-dialog.component';
 import { DatabaseDialogComponent } from './dialogs/database-dialog/database-dialog.component';
 import { AppSCListComponent } from './prototype/app-sclist/app-sclist.component';
 import { GraphicBreadcrumbsComponent } from './prototype/graphic-breadcrumbs/graphic-breadcrumbs.component';
 import { SuccessDialogComponent } from './dialogs/success-dialog/success-dialog.component';
+import { CompareDialogComponent } from './dialogs/compare-dialog/compare-dialog.component';
 //import { LocationStrategy, PathLocationStrategy } from '@angular/common';
 
 const appRoutes: Routes = [
@@ -86,6 +89,37 @@ const appRoutes: Routes = [
     ]
   },
 
+  { path: 'compare',
+    children: [
+    { path: '', pathMatch: 'full', redirectTo: 'assertions' },
+    { path: 'assertions', 
+      children: [
+        { path: '', pathMatch: 'full', redirectTo: 'continent' },
+        { path: 'continent', component: GraphicCompareComponent },
+        { path: 'country', component: GraphicCompareComponent },
+        { path: 'tag', component: GraphicCompareComponent },
+        { path: 'sector', component: GraphicCompareComponent },
+        { path: 'org', component: GraphicCompareComponent },
+        { path: 'app', component: GraphicCompareComponent },
+        { path: 'eval', component: GraphicCompareComponent },
+        { path: 'sc', component: GraphicCompareComponent },
+        { path: 'type', component: GraphicCompareComponent },
+        { path: 'rule', component: GraphicCompareComponent }
+      ]},
+    { path: 'scriteria', 
+      children: [
+        { path: '', pathMatch: 'full', redirectTo: 'continent' },
+        { path: 'continent', component: GraphicCompareComponent },
+        { path: 'country', component: GraphicCompareComponent },
+        { path: 'tag', component: GraphicCompareComponent },
+        { path: 'sector', component: GraphicCompareComponent },
+        { path: 'org', component: GraphicCompareComponent },
+        { path: 'app', component: GraphicCompareComponent },
+        { path: 'eval', component: GraphicCompareComponent },
+      ]}
+    ]
+  },
+
   { path: 'admin', component: AdminComponent },
   
   // Error handling path
@@ -107,12 +141,14 @@ const appRoutes: Routes = [
     GraphicPickerComponent,
     GraphicDisplayComponent,
     GraphicHeaderComponent,
+    GraphicCompareComponent,
     AdminComponent,
     InformationDialogComponent,
     DatabaseDialogComponent,
     AppSCListComponent,
     GraphicBreadcrumbsComponent,
-    SuccessDialogComponent
+    SuccessDialogComponent,
+    CompareDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -141,7 +177,8 @@ const appRoutes: Routes = [
     MatTableModule,
     MatSortModule,
     MatDividerModule,
-    FlexLayoutModule
+    FlexLayoutModule,
+    MatRadioModule
   ],
   entryComponents: [ErrorDialogComponent],
   providers: [],

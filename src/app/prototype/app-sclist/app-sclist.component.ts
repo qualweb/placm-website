@@ -81,7 +81,7 @@ export class AppSCListComponent implements OnInit {
       }
     }
 
-    this.combinedService.getData('app', 'scriteria', []).then(response => {
+    this.combinedService.getData('app', 'scriteria').then(response => {
       if (!response || response['success'] !== 1) {
         this.error = true;
       } else {

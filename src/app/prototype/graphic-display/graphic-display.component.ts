@@ -1,4 +1,4 @@
-import { Component, OnInit, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatDialogConfig, MatDialog } from '@angular/material/dialog';
 import { DrilldownDialogComponent } from 'app/dialogs/drilldown-dialog/drilldown-dialog.component';
@@ -28,17 +28,20 @@ export class GraphicDisplayComponent implements OnInit {
   initChange = false;
   legendChange = false;
 
-  breadcrumbs: any;
-
   homepageUrl: string; 
 
   sCriteriaVisible: boolean;
+
+  chartsReady: boolean = false;
+  
+  breadcrumbsData = {};
 
   constructor(
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private dialog: MatDialog,
-    private combinedService: CombinedService) { }
+    private combinedService: CombinedService,
+    private cd: ChangeDetectorRef) { }
 
   ngOnInit(): void {    
     this.initChange = true;
@@ -69,7 +72,6 @@ export class GraphicDisplayComponent implements OnInit {
         await this.prepareApplicationGraphic(this.activatedRoute.snapshot.queryParams);
       }
     });
-    this.updateBreadcrumbs();
   }
 
   // type 0 = checkbox; type 1 = legend click
@@ -169,19 +171,25 @@ export class GraphicDisplayComponent implements OnInit {
         filter: this.actualFilter,
         name: data.category,
         variable: data.series['userOptions'].id,
-        id: filter(this.xAxisVars, 'checked')[data.index].id
+        id: filter(this.xAxisVars, 'checked')[data.index].id,
+        queryParams: this.activatedRoute.snapshot.queryParams
       }
       let dialogRef = this.dialog.open(DrilldownDialogComponent, dialogConfig);
       dialogRef.afterClosed().subscribe(cat => {
         if(cat){
-          //this.closedDialog.emit(cat);
-          this.submittedCategory(cat.selected, cat);
+          if(!cat.comparing){
+            //this.closedDialog.emit(cat);
+            this.submittedCategory(cat.selected, cat);
+          } else {
+            this.comparingCategory(cat);
+          }
         }
       })
     }
   }
   
   private async prepareApplicationGraphic(input: any){
+    this.breadcrumbsData = {};
     let data;
     let rawData;
     let filterArray;
@@ -189,6 +197,7 @@ export class GraphicDisplayComponent implements OnInit {
     let resultData = [];
     let subtitle = "";
     let subtitlePossibilities = [];
+    this.chartsReady = false;
 
     if(!isEmpty(input)){
       
@@ -272,6 +281,12 @@ export class GraphicDisplayComponent implements OnInit {
       }
     }
 
+    this.breadcrumbsData['category'] = this.actualCategory;
+    this.breadcrumbsData['type'] = this.actualGraphicType;
+
+    this.chartsReady = true;
+    this.cd.detectChanges();
+
     let visibleSeries = [];
     for(let i = 0; i <= 5; i++){
       visibleSeries.push(this.isSeriesVisible(i));
@@ -353,8 +368,10 @@ export class GraphicDisplayComponent implements OnInit {
           // toggle data table
           viewData: {
               onclick: () => {
+                let element;
+                // if it was visible - it will be removed
                 if(this.chart.options.exporting.showTable){
-                  let element = document.getElementsByClassName("highcharts-data-table");
+                  element = document.getElementsByClassName("highcharts-data-table");
                   if(element)
                     element[0].removeChild(element[0].childNodes[0]);
                 }
@@ -363,9 +380,18 @@ export class GraphicDisplayComponent implements OnInit {
                     showTable: !this.chart.options.exporting.showTable
                   }
                 });
+                this.updateMenuTableText(this.chart.options.exporting.showTable);
                 this.chart.reflow();
+
+                // if it is now visible - change tabindex to 0
+                // because default is -1
+                /* if(this.chart.options.exporting.showTable){
+                  element = document.getElementsByClassName("highcharts-data-table");
+                  if(element)
+                    element[0].childNodes[0].setAttribute("tabIndex", 0);
+                } */
               },
-              text: 'Toggle data table'
+              text: 'Show and go to data table'
           }
         },
       },
@@ -503,45 +529,12 @@ export class GraphicDisplayComponent implements OnInit {
       });
     }
   }
-
-  updateBreadcrumbs() {
-    this.breadcrumbs = [];
-    let queryParams = this.activatedRoute.snapshot.queryParams;
-
-    let removed;
-    let removableFilters = [this.actualFilter, 'filter', 'p'];
-    for(let f of removableFilters){
-      if(queryParams[f])
-        ({[f]: removed, ...queryParams} = queryParams);
-    }
-
-    let keys = (Object.keys(queryParams)).reverse();
-    let route = "";
-    let queryParamsToBe = []
-
-    for(let i = 0; i < keys.length; i++){
-      if(POSSIBLE_FILTERS.includes(keys[i])){
-        queryParamsToBe = [];
-        for(let j = i; j >= 0; j--) {
-          if(j === i){
-            route = keys[j].replace('Ids', '');
-          } else {
-            queryParamsToBe.push('"' + keys[j] + '":"' + queryParams[keys[j]] + '"');
-          }
-        }
-        this.breadcrumbs.push(
-          {
-            name: LABELS_SINGULAR[route],
-            route: '/' + this.actualGraphicType + '/' + route,
-            queryParams: JSON.parse('{' + queryParamsToBe.join(',') + '}')
-          });
-      }
-    }
-    this.breadcrumbs.push(
-      {
-        name: LABELS_SINGULAR[this.activatedRoute.snapshot.routeConfig.path]
-      }
-    );
+  
+  comparingCategory(data: any){
+    this.router.navigate(['../../compare/' + this.actualGraphicType + '/' + this.actualCategory], {
+      relativeTo: this.activatedRoute,
+      queryParams: data.queryParams
+    });
   }
 
   changeType() {
@@ -560,5 +553,27 @@ export class GraphicDisplayComponent implements OnInit {
         queryParamsHandling: 'merge'
       });
     }
+  }
+
+  updateMenuTableText(showTable: boolean) {
+    let updatedText = showTable ? 'Hide data table' : 'Show and go to data table';
+    this.chart.update(
+      {exporting: {
+        menuItemDefinitions: {
+          viewData: {
+            text: updatedText
+          }
+        }
+      }});
+  }
+
+  removeAllFilters() {
+    console.log(this.activatedRoute.snapshot);
+    this.router.navigate([], {
+      queryParams: {
+        filter: null
+      },
+      queryParamsHandling: 'merge'
+    });
   }
 }

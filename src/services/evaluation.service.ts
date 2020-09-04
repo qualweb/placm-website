@@ -24,13 +24,14 @@ export class EvaluationService {
       .toPromise();
   }
 
-  getEvalutionToolData(serverName: string, type?: string, filters?: any): Promise<any> {
+  getEvalutionToolData(serverName: string, type?: string, filters?: any, comparing?: boolean): Promise<any> {
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
     let types = type === 'scriteria' ? 'SC' : '';
+    let compare = comparing ? 'Compare' : ''; 
     if(filters)
       opts = opts.append('filters', filters);
-    return this.http.get(evaluationUrl + 'evalToolData' + types, {params: opts})
+    return this.http.get(evaluationUrl + 'evalToolData' + types + compare, {params: opts})
       .pipe(
         retry(3),
         map(res => {

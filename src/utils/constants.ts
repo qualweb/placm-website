@@ -44,19 +44,19 @@ const TYPES = {
 }
 
 const GENERATORS = [
-  {
-    name: 'Portuguese Generator Tool',
-    value: 'govpt'
-  },
-  {
-    name: 'W3 Generator Tool',
-    value: 'w3'
-  }
+  { name: 'Portuguese Generator Tool',
+    value: 'govpt' },
+  { name: 'W3 Generator Tool',
+    value: 'w3' }
 ];
 
 const FILEINPUT_LABEL = 'Choose file(s)';
 
-const queryParamsRegex = new RegExp(/^[0-9]([,]?[0-9])*$/);
+const queryParamsRegex = new RegExp(/^[0-9]([,.]?[0-9])*$/);
 
-export {BASE_URL, POSSIBLE_FILTERS, LABELS_PLURAL, LABELS_SINGULAR, SECTORS, TYPES, SERVER_NAME, FILEINPUT_LABEL, GENERATORS,
+export {BASE_URL, SERVER_NAME, 
+        POSSIBLE_FILTERS, 
+        LABELS_PLURAL, LABELS_SINGULAR, 
+        SECTORS, TYPES, GENERATORS,
+        FILEINPUT_LABEL,
         queryParamsRegex};
