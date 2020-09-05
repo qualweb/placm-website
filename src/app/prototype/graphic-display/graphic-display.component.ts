@@ -316,7 +316,6 @@ export class GraphicDisplayComponent implements OnInit {
         tableData.push(vars.nUntested);
         
         this.table = this.addDataToTable(name, tableData, rowIndex, this.table);
-        console.log(this.table[rowIndex]);
         rowIndex++;
       }
       
@@ -384,8 +383,6 @@ export class GraphicDisplayComponent implements OnInit {
       visible: visibleSeries[i]
     });
 
-    if(this.chart)
-      console.log(this.chart.options.exporting.showTable)
     this.chart = Highcharts.chart('chart', {
       chart: {
         type: 'column',
@@ -494,8 +491,6 @@ export class GraphicDisplayComponent implements OnInit {
 
     if(subtitle)
       this.chart.setSubtitle({text: subtitle});
-      
-    console.log(Highcharts.charts);
   }
 
   prepareSubtitle(data: any, subs: string[]): string {

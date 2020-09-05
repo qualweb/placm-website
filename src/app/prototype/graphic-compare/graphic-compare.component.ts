@@ -62,7 +62,6 @@ export class GraphicCompareComponent implements OnInit {
   ngOnInit(): void {    
     this.initChange = true;
     this.actualGraphicType = this.activatedRoute.snapshot.parent.url[0].path;
-    console.log(this.actualGraphicType);
     this.actualCategory = this.activatedRoute.snapshot.url[0].path;
     this.actualFilter = this.actualCategory + 'Ids';
     this.breadcrumbsData['names'] = [];
@@ -84,9 +83,9 @@ export class GraphicCompareComponent implements OnInit {
 
     // to fill some data when redirected to continent because of an error
     this.router.events.pipe(
-      filterRxjs(event => {console.log(event); return event instanceof NavigationEnd
+      filterRxjs(event => event instanceof NavigationEnd
         && (event.urlAfterRedirects === '/compare/assertions/continent' ||
-        event.urlAfterRedirects === '/compare/scriteria/continent');}
+        event.urlAfterRedirects === '/compare/scriteria/continent')
       )
     ).subscribe((event: NavigationEnd) => {
       const queryParams = {continentIds: "1,2,3,4,5,6"};
@@ -247,7 +246,6 @@ export class GraphicCompareComponent implements OnInit {
   }
   
   private async prepareApplicationGraphic(input: any){
-    console.log(this.actualGraphicType);
     this.breadcrumbsData = {
       comparing: true
     };
@@ -610,9 +608,7 @@ export class GraphicCompareComponent implements OnInit {
             elem.setAttribute("class", 'charty');
             element[0].appendChild(elem);
           }*/
-          console.log(this.actualCharts);
-          if(this.actualCharts[chartIndex])
-            console.log(this.actualCharts[chartIndex].options.exporting.showTable);
+          
           if(!(this.unitedChart && resultData.length !== paramArgIds.length)){
             chart = Highcharts.chart({
               //this.chart = Highcharts.chart('chart', {
