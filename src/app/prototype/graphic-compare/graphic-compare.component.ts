@@ -62,6 +62,7 @@ export class GraphicCompareComponent implements OnInit {
   ngOnInit(): void {    
     this.initChange = true;
     this.actualGraphicType = this.activatedRoute.snapshot.parent.url[0].path;
+    console.log(this.actualGraphicType);
     this.actualCategory = this.activatedRoute.snapshot.url[0].path;
     this.actualFilter = this.actualCategory + 'Ids';
     this.breadcrumbsData['names'] = [];
@@ -83,9 +84,9 @@ export class GraphicCompareComponent implements OnInit {
 
     // to fill some data when redirected to continent because of an error
     this.router.events.pipe(
-      filterRxjs(event => event instanceof NavigationEnd
+      filterRxjs(event => {console.log(event); return event instanceof NavigationEnd
         && (event.urlAfterRedirects === '/compare/assertions/continent' ||
-        event.urlAfterRedirects === '/compare/scriteria/continent')
+        event.urlAfterRedirects === '/compare/scriteria/continent');}
       )
     ).subscribe((event: NavigationEnd) => {
       const queryParams = {continentIds: "1,2,3,4,5,6"};
@@ -246,6 +247,7 @@ export class GraphicCompareComponent implements OnInit {
   }
   
   private async prepareApplicationGraphic(input: any){
+    console.log(this.actualGraphicType);
     this.breadcrumbsData = {
       comparing: true
     };
@@ -258,11 +260,23 @@ export class GraphicCompareComponent implements OnInit {
     let subtitle = "";
     let subtitlePossibilities = [];
     let checkboxesPossibilities = [];
+    // tableHeaders will be used to store variable names of chart and table headers
+    let variableName, tableHeaders = [];
     this.actualCharts = [];
     this.failedIds = [];
     this.chartsReady = false;
     this.tableReady = false;
-    
+
+    if(this.actualGraphicType === 'assertions'){
+      variableName = this.actualGraphicType;
+      tableHeaders = ['# pages']
+    } else {
+      variableName = 'criteria';
+    }
+    tableHeaders.push('# passed ' + variableName, 
+      '# failed ' + variableName, '# cantTell '+ variableName,
+      '# inapplicable ' + variableName, '# untested ' + variableName);
+  
     if(!isEmpty(input)){
       
       // removing actual filter from queryParams, because
@@ -394,9 +408,7 @@ export class GraphicCompareComponent implements OnInit {
     let test, testId;
     let chart, chartIndex = 0;
     let dataIndex = 0;
-    this.table = this.actualGraphicType === 'assertions' ? 
-      [['pages','passed','failed','cantTell','inapplicable','untested']] : 
-      [['passed','failed','cantTell','inapplicable','untested']];
+    this.table = [[...tableHeaders]];
     let columnIndex;
     this.colSpan = this.comparingSameType ? 1 : this.charts.length;
     let rowIndex = 1;
@@ -515,9 +527,9 @@ export class GraphicCompareComponent implements OnInit {
 
         if(this.unitedChart){
           if(this.actualGraphicType === 'assertions'){
-            names = ['nPages', 'nPassed', 'nFailed', 'nCantTell', 'nInapplicable', 'nUntested'];
+            names = ['# pages', '# passed', '# failed', '# cantTell', '# inapplicable', '# untested'];
           } else {
-            names = ['nPassed', 'nFailed', 'nCantTell', 'nInapplicable', 'nUntested'];
+            names = ['# passed', '# failed', '# cantTell', '# inapplicable', '# untested'];
           }
         }
 
@@ -531,12 +543,11 @@ export class GraphicCompareComponent implements OnInit {
 
           if(!this.unitedChart){
             let i = 0;
-            let variableName = this.actualGraphicType === 'assertions' ? this.actualGraphicType : 'criteria';
-      
+
             if(this.actualGraphicType === 'assertions'){
               resultData.push({
                 id: 'nPages',
-                name: '# pages',
+                name: tableHeaders[i],
                 data: nPages,
                 visible: visibleSeries[i]
               });
@@ -545,7 +556,7 @@ export class GraphicCompareComponent implements OnInit {
       
             resultData.push({
               id: 'nPassed',
-              name: '# passed ' + variableName,
+              name: tableHeaders[i],
               data: nPassed,
               visible: visibleSeries[i]
             });
@@ -553,7 +564,7 @@ export class GraphicCompareComponent implements OnInit {
       
             resultData.push({
               id: 'nFailed',
-              name: '# failed ' + variableName,
+              name: tableHeaders[i],
               data: nFailed,
               visible: visibleSeries[i]
             });
@@ -561,7 +572,7 @@ export class GraphicCompareComponent implements OnInit {
       
             resultData.push({
               id: 'nCantTell',
-              name: '# cantTell ' + variableName,
+              name: tableHeaders[i],
               data: nCantTell,
               visible: visibleSeries[i]
             });
@@ -569,7 +580,7 @@ export class GraphicCompareComponent implements OnInit {
       
             resultData.push({
               id: 'nInapplicable',
-              name: '# inapplicable ' + variableName,
+              name: tableHeaders[i],
               data: nInapplicable,
               visible: visibleSeries[i]
             });
@@ -577,7 +588,7 @@ export class GraphicCompareComponent implements OnInit {
       
             resultData.push({
               id: 'nUntested',
-              name: '# untested ' + variableName,
+              name: tableHeaders[i],
               data: nUntested,
               visible: visibleSeries[i]
             });
@@ -599,6 +610,9 @@ export class GraphicCompareComponent implements OnInit {
             elem.setAttribute("class", 'charty');
             element[0].appendChild(elem);
           }*/
+          console.log(this.actualCharts);
+          if(this.actualCharts[chartIndex])
+            console.log(this.actualCharts[chartIndex].options.exporting.showTable);
           if(!(this.unitedChart && resultData.length !== paramArgIds.length)){
             chart = Highcharts.chart({
               //this.chart = Highcharts.chart('chart', {

@@ -35,6 +35,9 @@ export class GraphicDisplayComponent implements OnInit {
   chartsReady: boolean = false;
   
   breadcrumbsData = {};
+  
+  table: any[];
+  showTable: boolean = false;
 
   constructor(
     private router: Router,
@@ -197,7 +200,23 @@ export class GraphicDisplayComponent implements OnInit {
     let resultData = [];
     let subtitle = "";
     let subtitlePossibilities = [];
+    let variableName, tableHeaders = [];
     this.chartsReady = false;
+
+    /* if(this.chart){
+      this.chart.destroy();
+      this.chart = undefined;
+    } */
+    if(this.actualGraphicType === 'assertions'){
+      variableName = this.actualGraphicType;
+      tableHeaders = ['# pages']
+    } else {
+      variableName = 'criteria';
+    }
+    tableHeaders.push('# passed ' + variableName, 
+      '# failed ' + variableName, '# cantTell '+ variableName,
+      '# inapplicable ' + variableName, '# untested ' + variableName);
+    this.table = [[...tableHeaders]];
 
     if(!isEmpty(input)){
       
@@ -241,7 +260,8 @@ export class GraphicDisplayComponent implements OnInit {
 
     let names = [], nApps = [], nPages = [], nPassed = [],
         nFailed = [], nCantTell = [], 
-        nInapplicable = [], nUntested = [];
+        nInapplicable = [], nUntested = [], tableData = [];
+    let name;
 
     // todo sorting
     /*rawData = rawData.sort(function (a,b) {
@@ -255,9 +275,11 @@ export class GraphicDisplayComponent implements OnInit {
     });*/
 
     this.xAxisVars = [];
+    this.table = [[...tableHeaders]];
 
-    let test, testId;
+    let test, testId, rowIndex = 1;
     for(let vars of rawData){
+      tableData = [];
       testId = vars.id ? vars.id : 0;
       if(this.actualCategory === 'sc'){
         test = vars.name ? 'SC ' + testId + ' - ' + vars.name : 'Unspecified';
@@ -267,18 +289,37 @@ export class GraphicDisplayComponent implements OnInit {
       idInParams = filterArray.includes(testId.toString());
       this.xAxisVars.push({name: test, id: testId, checked: !idInParams});
       if(!idInParams){
+
+        // handling x axis
         if(this.actualCategory === 'sc'){
-          names.push('SC ' + testId);
+          name = 'SC ' + testId;
         } else {
-          names.push(test);
+          name = test;
         }
-        nPages.push(vars.nPages);
+        names.push(name);
+
+        // handling y axis and table data
+        if(this.actualGraphicType === 'assertions'){
+          tableData.push(vars.nPages);
+          nPages.push(vars.nPages);
+        }
         nPassed.push(vars.nPassed);
         nFailed.push(vars.nFailed);
         nCantTell.push(vars.nCantTell);
         nInapplicable.push(vars.nInapplicable);
         nUntested.push(vars.nUntested);
+        
+        tableData.push(vars.nPassed);
+        tableData.push(vars.nFailed);
+        tableData.push(vars.nCantTell);
+        tableData.push(vars.nInapplicable);
+        tableData.push(vars.nUntested);
+        
+        this.table = this.addDataToTable(name, tableData, rowIndex, this.table);
+        console.log(this.table[rowIndex]);
+        rowIndex++;
       }
+      
     }
 
     this.breadcrumbsData['category'] = this.actualCategory;
@@ -293,12 +334,11 @@ export class GraphicDisplayComponent implements OnInit {
     }
 
     let i = 0;
-    let variableName = this.actualGraphicType === 'assertions' ? this.actualGraphicType : 'criteria';
 
     if(this.actualGraphicType === 'assertions'){
       resultData.push({
         id: 'nPages',
-        name: '# pages',
+        name: tableHeaders[i],
         data: nPages,
         visible: visibleSeries[i]
       });
@@ -307,7 +347,7 @@ export class GraphicDisplayComponent implements OnInit {
 
     resultData.push({
       id: 'nPassed',
-      name: '# passed ' + variableName,
+      name: tableHeaders[i],
       data: nPassed,
       visible: visibleSeries[i]
     });
@@ -315,7 +355,7 @@ export class GraphicDisplayComponent implements OnInit {
 
     resultData.push({
       id: 'nFailed',
-      name: '# failed ' + variableName,
+      name: tableHeaders[i],
       data: nFailed,
       visible: visibleSeries[i]
     });
@@ -323,7 +363,7 @@ export class GraphicDisplayComponent implements OnInit {
 
     resultData.push({
       id: 'nCantTell',
-      name: '# cantTell ' + variableName,
+      name: tableHeaders[i],
       data: nCantTell,
       visible: visibleSeries[i]
     });
@@ -331,7 +371,7 @@ export class GraphicDisplayComponent implements OnInit {
 
     resultData.push({
       id: 'nInapplicable',
-      name: '# inapplicable ' + variableName,
+      name: tableHeaders[i],
       data: nInapplicable,
       visible: visibleSeries[i]
     });
@@ -339,11 +379,13 @@ export class GraphicDisplayComponent implements OnInit {
 
     resultData.push({
       id: 'nUntested',
-      name: '# untested ' + variableName,
+      name: tableHeaders[i],
       data: nUntested,
       visible: visibleSeries[i]
     });
 
+    if(this.chart)
+      console.log(this.chart.options.exporting.showTable)
     this.chart = Highcharts.chart('chart', {
       chart: {
         type: 'column',
@@ -363,25 +405,36 @@ export class GraphicDisplayComponent implements OnInit {
         accessibility:{
           enabled: true
         },
-        showTable: this.chart ? this.chart.options.exporting.showTable : false,
+        showTable: false,//this.chart ? this.chart.options.exporting.showTable : false,
         menuItemDefinitions: {
           // toggle data table
           viewData: {
               onclick: () => {
                 let element;
+                this.showTable = !this.showTable;
+                this.cd.detectChanges();
+                element = document.getElementById("dataTable");
+                
+                if(this.showTable){
+                  element.focus();
+                  element.scrollIntoView();
+                } 
+
+                this.updateMenuTableText();
+                /* let element;
                 // if it was visible - it will be removed
-                if(this.chart.options.exporting.showTable){
+                if(this.showTable){
                   element = document.getElementsByClassName("highcharts-data-table");
                   if(element)
                     element[0].removeChild(element[0].childNodes[0]);
                 }
+                this.showTable = !this.showTable;
                 this.chart.update({
                   exporting: {
-                    showTable: !this.chart.options.exporting.showTable
+                    showTable: this.showTable
                   }
                 });
-                this.updateMenuTableText(this.chart.options.exporting.showTable);
-                this.chart.reflow();
+                this.updateMenuTableText(this.showTable); */
 
                 // if it is now visible - change tabindex to 0
                 // because default is -1
@@ -441,6 +494,8 @@ export class GraphicDisplayComponent implements OnInit {
 
     if(subtitle)
       this.chart.setSubtitle({text: subtitle});
+      
+    console.log(Highcharts.charts);
   }
 
   prepareSubtitle(data: any, subs: string[]): string {
@@ -555,8 +610,8 @@ export class GraphicDisplayComponent implements OnInit {
     }
   }
 
-  updateMenuTableText(showTable: boolean) {
-    let updatedText = showTable ? 'Hide data table' : 'Show and go to data table';
+  updateMenuTableText() {
+    let updatedText = this.showTable ? 'Hide data table' : 'Show and go to data table';
     this.chart.update(
       {exporting: {
         menuItemDefinitions: {
@@ -574,5 +629,20 @@ export class GraphicDisplayComponent implements OnInit {
       },
       queryParamsHandling: 'merge'
     });
+  }
+
+  addDataToTable(header: string, data: number[], rowIndex: number, table: any[]): any[] {
+    if(!table[rowIndex])
+      table[rowIndex] = [];
+
+    table[rowIndex][0] = header;
+
+    // +1 because header will be the first column
+    let actualColIndex = 1;
+    for(let i = 0; i < data.length; i++){
+      table[rowIndex][actualColIndex] = data[i];
+      actualColIndex++;
+    }
+    return table;
   }
 }

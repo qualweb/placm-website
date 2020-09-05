@@ -70,3 +70,44 @@
     height: 5rem;
   }
 }
+
+/**** Data table ****/
+.data-table {
+  overflow-x: auto;
+}
+.data-table tr {
+  text-align: center;
+  vertical-align: middle;
+}
+/*.data-table tr:nth-of-type(1) td:nth-of-type(1){
+  padding-left: 5rem;
+}*/
+.data-table .sameTypes tr:nth-of-type(1) {
+  background-color: #3f51b5;
+  color: white;
+}
+.data-table .differentTypes tr:nth-of-type(-n+2){
+  background-color: #3f51b5;
+  color: white;
+}
+.data-table th{
+  padding: 0.25em 0.75em;
+}
+/*.data-table .sticky th{
+  padding: unset;
+}*/
+.data-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+/*.data-table .sticky th {
+  position: absolute;
+  left: auto;
+  width: 5rem;
+  top: auto;
+}*/
+.data-table .header:nth-of-type(even) th{
+  background-color: #f2f2f2;
+}
+.data-table .header:nth-of-type(odd) th {
+  background-color: white;
+}
