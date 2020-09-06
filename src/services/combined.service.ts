@@ -132,9 +132,9 @@ export class CombinedService {
       }
 
       if(await data && data.success === 1){
-        // because the first 6 items in result array are OkPackets and not RowDataPackets
+        // because the first 5 items in result array are OkPackets and not RowDataPackets
         if(type === 'scriteria')
-          data.result = data.result[6];
+          data.result = data.result[5];
         // because the first 8 items in result array are OkPackets and not RowDataPackets
         if(type === 'scApp')
           data.result = data.result[8];
