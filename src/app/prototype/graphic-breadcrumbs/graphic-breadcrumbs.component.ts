@@ -1,6 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { POSSIBLE_FILTERS, LABELS_SINGULAR, LABELS_PLURAL } from 'utils/constants';
+import { POSSIBLE_FILTERS, LABELS_SINGULAR, LABELS_PLURAL, queryParamsRegex } from 'utils/constants';
 
 @Component({
   selector: 'app-graphic-breadcrumbs',
@@ -13,8 +13,8 @@ export class GraphicBreadcrumbsComponent implements OnInit {
   graphicType: string;
   category: string;
   comparing: boolean;
+  appNames: string[];
 
-  @Input('appNames') appNames: string[] = [];
   @Input('data') data: any;
   constructor(
     private activatedRoute: ActivatedRoute
@@ -29,6 +29,9 @@ export class GraphicBreadcrumbsComponent implements OnInit {
     this.comparing = this.data.comparing;
     this.graphicType = this.data.type;
     this.category = this.data.category;
+    // scApp only
+    this.appNames = this.data.appNames;
+    console.log(this.appNames);
 
     this.activatedRoute.queryParams.subscribe(() => {
       if(this.comparing)
@@ -41,6 +44,7 @@ export class GraphicBreadcrumbsComponent implements OnInit {
   prepareBreadcrumbs(): void {
     this.breadcrumbs = [];
     let queryParams = this.activatedRoute.snapshot.queryParams;
+    console.log(queryParams);
     let removed;
     let removableFilters = ['filter', 'p'];
     for(let f of removableFilters){
@@ -86,6 +90,7 @@ export class GraphicBreadcrumbsComponent implements OnInit {
         }
       );
     }
+    console.log(this.breadcrumbs);
   }
 
   prepareComparingBreadcrumbs(): void {

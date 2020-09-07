@@ -50,6 +50,7 @@ import { AppSCListComponent } from './prototype/app-sclist/app-sclist.component'
 import { GraphicBreadcrumbsComponent } from './prototype/graphic-breadcrumbs/graphic-breadcrumbs.component';
 import { SuccessDialogComponent } from './dialogs/success-dialog/success-dialog.component';
 import { CompareDialogComponent } from './dialogs/compare-dialog/compare-dialog.component';
+import { ErrorPageComponent } from './prototype/error-page/error-page.component';
 //import { LocationStrategy, PathLocationStrategy } from '@angular/common';
 
 const appRoutes: Routes = [
@@ -148,7 +149,8 @@ const appRoutes: Routes = [
     AppSCListComponent,
     GraphicBreadcrumbsComponent,
     SuccessDialogComponent,
-    CompareDialogComponent
+    CompareDialogComponent,
+    ErrorPageComponent
   ],
   imports: [
     BrowserModule,

@@ -51,6 +51,9 @@ export class GraphicCompareComponent implements OnInit {
   breadcrumbsData = {
     comparing: true
   };
+  
+  error: boolean = false;
+  errorMessage: number = 0;
 
   constructor(
     private router: Router,
@@ -306,489 +309,477 @@ export class GraphicCompareComponent implements OnInit {
 
     // input can be sent as '{}' in this function
     // only send first queryParam while comparing!
-    let firstParam = Object.keys(input)[0]
+    let firstParam = Object.keys(input)[0];
     let firstParamInput = JSON.parse('{"' + firstParam + '":"' + input[firstParam] + '"}');
-    data = await this.combinedService.getData(this.actualCategory, this.actualGraphicType, firstParamInput, true);
-    if(data['success'] === 1){
+
+    try{
+      data = await this.combinedService.getData(this.actualCategory, this.actualGraphicType, firstParamInput, true);
+    } catch (err){
+      this.error = true;
+      this.errorMessage = 3;
+    }
+
+    if(data && data['success'] === 1){
       rawData = data['result'];
-      //subtitle = this.prepareSubtitle(rawData, subtitlePossibilities);
     } else {
-      //todo query error
+      this.error = true;
+      this.errorMessage = 4;
     }
 
-    filterArray = this.getFilterParamsArray();
-    orderByParam = this.getOrderByParam(input);
-    this.comparingSameType = orderByParam === 'id' || orderByParam === 'name';
-    this.unitedChart = this.comparingSameType && 
-      this.activatedRoute.snapshot.queryParams.graph === '1';
-    orderByParamName = this.comparingSameType ? 'name' : orderByParam.replace('Id','Name');
-    let titleCategory = this.comparingSameType ? this.actualCategory : orderByParam.replace('Id','');
+    if(!this.error){    
+      filterArray = this.getFilterParamsArray();
+      orderByParam = this.getOrderByParam(input);
+      this.comparingSameType = orderByParam === 'id' || orderByParam === 'name';
+      this.unitedChart = this.comparingSameType && 
+        this.activatedRoute.snapshot.queryParams.graph === '1';
+      orderByParamName = this.comparingSameType ? 'name' : orderByParam.replace('Id','Name');
+      let titleCategory = this.comparingSameType ? this.actualCategory : orderByParam.replace('Id','');
 
-    // splitting result by filter ids and storing it in graphSplitData
-    let existentIds = [];
-    let paramArg = this.comparingSameType ? this.actualCategory + 'Ids' : orderByParam + 's';
-    let paramArgIds = Object.keys(input).length ? input[paramArg].split(',') : [];
-    let graphSplitData: IHash = {};
-    for(let i = 0; i < paramArgIds.length; i++){
-      graphSplitData[paramArgIds[i]] = [];
-    }
-
-    // sort data based on order of ids in sorting filter param
-    rawData.sort(function(a, b){
-      return paramArgIds.indexOf(a[orderByParam].toString()) - paramArgIds.indexOf(b[orderByParam].toString());
-    });
-
-    for(let vars of rawData) {
-      if(this.comparingSameType){
-        if(graphSplitData[vars.id]){
-          graphSplitData[vars.id].push(vars);
-          this.breadcrumbsData['names'].push(vars[orderByParamName]);
-        }
-      } else {
-        if(!existentIds.includes(vars.id)){
-          existentIds.push(vars.id);
-        }
-        if(!this.breadcrumbsData['names'].includes(vars[orderByParamName]))
-          this.breadcrumbsData['names'].push(vars[orderByParamName]);
-        graphSplitData[vars[orderByParam]].push(vars);
+      // splitting result by filter ids and storing it in graphSplitData
+      let existentIds = [];
+      let paramArg = this.comparingSameType ? this.actualCategory + 'Ids' : orderByParam + 's';
+      let paramArgIds = Object.keys(input).length ? input[paramArg].split(',') : [];
+      let graphSplitData: IHash = {};
+      for(let i = 0; i < paramArgIds.length; i++){
+        graphSplitData[paramArgIds[i]] = [];
       }
-    }
 
-    this.breadcrumbsData['category'] = this.actualCategory;
-    this.breadcrumbsData['title'] = titleCategory;
-    this.breadcrumbsData['type'] = this.actualGraphicType;
+      // sort data based on order of ids in sorting filter param
+      rawData.sort(function(a, b){
+        return paramArgIds.indexOf(a[orderByParam].toString()) - paramArgIds.indexOf(b[orderByParam].toString());
+      });
 
-    this.charts = Object.keys(graphSplitData).filter(k => {
-      if(graphSplitData[k].length > 0) 
-        return k;
-    });
-    this.chartsReady = true;
-    this.cd.detectChanges();
-    
-    // fill graphSplitData with nulls in empty spaces to make data correlation easier
-    for(let i = 0; i < existentIds.length; i++){
-      paramArgIds.forEach(id => {
-        // if theres any data
-        let value = graphSplitData[id];
-        if(value.length > 0){
-          if(!value[i] || (value[i]['id'] !== existentIds[i])){
-            value.splice(i, 0, {id: existentIds[i], index: i});
+      for(let vars of rawData) {
+        if(this.comparingSameType){
+          if(graphSplitData[vars.id]){
+            graphSplitData[vars.id].push(vars);
+            this.breadcrumbsData['names'].push(vars[orderByParamName]);
           }
-        }
-      })
-      /*Object.values(graphSplitData).forEach((value) => {
-        // if theres any data
-        if(value.length > 0){
-          if(!value[i] || (value[i]['id'] !== existentIds[i])){
-            value.splice(i, 0, {id: existentIds[i], index: i});
+        } else {
+          if(!existentIds.includes(vars.id)){
+            existentIds.push(vars.id);
           }
+          if(!this.breadcrumbsData['names'].includes(vars[orderByParamName]))
+            this.breadcrumbsData['names'].push(vars[orderByParamName]);
+          graphSplitData[vars[orderByParam]].push(vars);
         }
+      }
+
+      this.breadcrumbsData['category'] = this.actualCategory;
+      this.breadcrumbsData['title'] = titleCategory;
+      this.breadcrumbsData['type'] = this.actualGraphicType;
+
+      this.charts = Object.keys(graphSplitData).filter(k => {
+        if(graphSplitData[k].length > 0) 
+          return k;
+      });
+      this.chartsReady = true;
+      this.cd.detectChanges();
+      
+      // fill graphSplitData with nulls in empty spaces to make data correlation easier
+      for(let i = 0; i < existentIds.length; i++){
+        paramArgIds.forEach(id => {
+          // if theres any data
+          let value = graphSplitData[id];
+          if(value.length > 0){
+            if(!value[i] || (value[i]['id'] !== existentIds[i])){
+              value.splice(i, 0, {id: existentIds[i], index: i});
+            }
+          }
+        })
+      }
+
+      let names = [], nApps = [], nPages = [], nPassed = [],
+          nFailed = [], nCantTell = [], 
+          nInapplicable = [], nUntested = [];
+
+      // todo sorting
+      /*rawData = rawData.sort(function (a,b) {
+        let comparison = 0;
+        if (a.name > b.name) {
+          comparison = 1;
+        } else if (a.name < b.name) {
+          comparison = -1;
+        }
+        return comparison;
       });*/
-    }
 
+      this.xAxisVars = [];
+      let test, testId;
+      let chart, chartIndex = 0;
+      let dataIndex = 0;
+      this.table = [[...tableHeaders]];
+      let columnIndex;
+      this.colSpan = this.comparingSameType ? 1 : this.charts.length;
+      let rowIndex = 1;
+      let tableData: any[];
+      let columnHeaders: string[] = [];
+      let name;
+      let titleName;
 
-    let names = [], nApps = [], nPages = [], nPassed = [],
-        nFailed = [], nCantTell = [], 
-        nInapplicable = [], nUntested = [];
+      let chartData: IHashString = {};
 
-    // todo sorting
-    /*rawData = rawData.sort(function (a,b) {
-      let comparison = 0;
-      if (a.name > b.name) {
-        comparison = 1;
-      } else if (a.name < b.name) {
-        comparison = -1;
-      }
-      return comparison;
-    });*/
+      paramArgIds.forEach((key) => {
+        if(graphSplitData[key].length > 0){
+          columnIndex = this.comparingSameType ? 0 : this.charts.indexOf(key);
+          rowIndex = this.comparingSameType ? rowIndex : 2;
+          names = [], nApps = [], nPages = [], nPassed = [],
+          nFailed = [], nCantTell = [], 
+          nInapplicable = [], nUntested = [];
+          resultData = [];
+          dataIndex = 0;
+          titleName = '';
+          for(let vars of graphSplitData[key]){
+            tableData = [];
+            testId = vars.id ? vars.id : 0;
+            name = '';
 
-    this.xAxisVars = [];
-    let test, testId;
-    let chart, chartIndex = 0;
-    let dataIndex = 0;
-    this.table = [[...tableHeaders]];
-    let columnIndex;
-    this.colSpan = this.comparingSameType ? 1 : this.charts.length;
-    let rowIndex = 1;
-    let tableData: any[];
-    let columnHeaders: string[] = [];
-    let name;
-    let titleName;
-
-    let chartData: IHashString = {};
-
-    paramArgIds.forEach((key) => {
-      if(graphSplitData[key].length > 0){
-        columnIndex = this.comparingSameType ? 0 : this.charts.indexOf(key);
-        rowIndex = this.comparingSameType ? rowIndex : 2;
-        names = [], nApps = [], nPages = [], nPassed = [],
-        nFailed = [], nCantTell = [], 
-        nInapplicable = [], nUntested = [];
-        resultData = [];
-        dataIndex = 0;
-        titleName = '';
-        for(let vars of graphSplitData[key]){
-          tableData = [];
-          testId = vars.id ? vars.id : 0;
-          name = '';
-
-          if(vars.index !== undefined){
-            test = '-';
-          } else {
-            // get name of variable to put on checkboxes and data
-            if(this.actualCategory === 'sc'){
-              test = vars.name ? 'SC ' + testId + ' - ' + vars.name : 'Unspecified';
-            } else {
-              test = vars.name ? vars.name : 'Unspecified';
-            }
-            // get name of orderByParam to put on chart title
-            if(titleName.length === 0){
-              titleName = vars[orderByParamName];
-              // adding titleName to legend
-            }
-
-            if(this.unitedChart)
-              chartData[titleName] = [];
-          }
-          
-          idInParams = filterArray.includes(testId.toString());
-          if(test !== '-' && !checkboxesPossibilities.includes(test)){
-            checkboxesPossibilities.push(test);
-            this.xAxisVars.push({name: test, id: testId, checked: !idInParams});
-          }
-
-          // only passes if [id not in filter] or [it was manually filled with null and not same index]
-          if(!idInParams || (vars.index !== undefined && vars.index !== dataIndex)){
-  
-            // handling x axis
-            if(this.actualCategory === 'sc'){
-              name = 'SC ' + testId;
-            } else {
-              name = test;
-            }
-            names.push(name);
-  
-            // handling y axis and table data
             if(vars.index !== undefined){
-              if(this.actualGraphicType === 'assertions'){
-                tableData.push(0);
-                if(!this.unitedChart)
-                  nPages.push(0);
-              }
-              tableData.push(0,0,0,0,0);
-
-              if(!this.unitedChart){
-                nPassed.push(0);
-                nFailed.push(0);
-                nCantTell.push(0);
-                nInapplicable.push(0);
-                nUntested.push(0);
-              } else {
-                chartData[titleName].push(...tableData);
-              }
+              test = '-';
             } else {
-              if(this.actualGraphicType === 'assertions'){
-                tableData.push(vars.nPages);
-                if(!this.unitedChart)
-                  nPages.push(vars.nPages);
-              }
-              tableData.push(vars.nPassed);
-              tableData.push(vars.nFailed);
-              tableData.push(vars.nCantTell);
-              tableData.push(vars.nInapplicable);
-              tableData.push(vars.nUntested);
-
-              if(!this.unitedChart){
-                nPassed.push(vars.nPassed);
-                nFailed.push(vars.nFailed);
-                nCantTell.push(vars.nCantTell);
-                nInapplicable.push(vars.nInapplicable);
-                nUntested.push(vars.nUntested);
+              // get name of variable to put on checkboxes and data
+              if(this.actualCategory === 'sc'){
+                test = vars.name ? 'SC ' + testId + ' - ' + vars.name : 'Unspecified';
               } else {
-                chartData[titleName].push(...tableData);
+                test = vars.name ? vars.name : 'Unspecified';
               }
-  
-            }
-            this.table = this.addDataToTable(tableData, rowIndex, columnIndex, this.colSpan, this.table);
-            this.table = this.addRowHeaderToTable(name, rowIndex, this.table);
-            rowIndex++;
-          }
-          // handling table headers
-          if(!this.comparingSameType){
-            if(vars[orderByParamName] && !columnHeaders.includes(vars[orderByParamName])){
-              columnHeaders.push(vars[orderByParamName]);
-              this.table = this.addColumnHeaderToTable(vars[orderByParamName], columnIndex, this.colSpan, this.table);
-            }
-          }
-          dataIndex++;
-        }
+              // get name of orderByParam to put on chart title
+              if(titleName.length === 0){
+                titleName = vars[orderByParamName];
+                // adding titleName to legend
+              }
 
-        if(this.unitedChart){
-          if(this.actualGraphicType === 'assertions'){
-            names = ['# pages', '# passed', '# failed', '# cantTell', '# inapplicable', '# untested'];
-          } else {
-            names = ['# passed', '# failed', '# cantTell', '# inapplicable', '# untested'];
-          }
-        }
+              if(this.unitedChart)
+                chartData[titleName] = [];
+            }
+            
+            idInParams = filterArray.includes(testId.toString());
+            if(test !== '-' && !checkboxesPossibilities.includes(test)){
+              checkboxesPossibilities.push(test);
+              this.xAxisVars.push({name: test, id: testId, checked: !idInParams});
+            }
 
-        // if theres data to present -> does not load empty charts
-        if(names.length > 0){
+            // only passes if [id not in filter] or [it was manually filled with null and not same index]
+            if(!idInParams || (vars.index !== undefined && vars.index !== dataIndex)){
     
-          let visibleSeries = [];
-          for(let i = 0; i <= 5; i++){
-            visibleSeries.push(this.isSeriesVisible(i));
+              // handling x axis
+              if(this.actualCategory === 'sc'){
+                name = 'SC ' + testId;
+              } else {
+                name = test;
+              }
+              names.push(name);
+    
+              // handling y axis and table data
+              if(vars.index !== undefined){
+                if(this.actualGraphicType === 'assertions'){
+                  tableData.push(0);
+                  if(!this.unitedChart)
+                    nPages.push(0);
+                }
+                tableData.push(0,0,0,0,0);
+
+                if(!this.unitedChart){
+                  nPassed.push(0);
+                  nFailed.push(0);
+                  nCantTell.push(0);
+                  nInapplicable.push(0);
+                  nUntested.push(0);
+                } else {
+                  chartData[titleName].push(...tableData);
+                }
+              } else {
+                if(this.actualGraphicType === 'assertions'){
+                  tableData.push(vars.nPages);
+                  if(!this.unitedChart)
+                    nPages.push(vars.nPages);
+                }
+                tableData.push(vars.nPassed);
+                tableData.push(vars.nFailed);
+                tableData.push(vars.nCantTell);
+                tableData.push(vars.nInapplicable);
+                tableData.push(vars.nUntested);
+
+                if(!this.unitedChart){
+                  nPassed.push(vars.nPassed);
+                  nFailed.push(vars.nFailed);
+                  nCantTell.push(vars.nCantTell);
+                  nInapplicable.push(vars.nInapplicable);
+                  nUntested.push(vars.nUntested);
+                } else {
+                  chartData[titleName].push(...tableData);
+                }
+    
+              }
+              this.table = this.addDataToTable(tableData, rowIndex, columnIndex, this.colSpan, this.table);
+              this.table = this.addRowHeaderToTable(name, rowIndex, this.table);
+              rowIndex++;
+            }
+            // handling table headers
+            if(!this.comparingSameType){
+              if(vars[orderByParamName] && !columnHeaders.includes(vars[orderByParamName])){
+                columnHeaders.push(vars[orderByParamName]);
+                this.table = this.addColumnHeaderToTable(vars[orderByParamName], columnIndex, this.colSpan, this.table);
+              }
+            }
+            dataIndex++;
           }
 
-          if(!this.unitedChart){
-            let i = 0;
+          // if its united chart, names will be filled only with one name so we need to fill it with the correct xAxis names
+          if(this.unitedChart){
+            names = [...tableHeaders];
+          }
 
-            if(this.actualGraphicType === 'assertions'){
+          // if theres data to present -> does not load empty charts
+          if(names.length > 0){
+      
+            let visibleSeries = [];
+            for(let i = 0; i <= 5; i++){
+              visibleSeries.push(this.isSeriesVisible(i));
+            }
+
+            if(!this.unitedChart){
+              let i = 0;
+
+              if(this.actualGraphicType === 'assertions'){
+                resultData.push({
+                  id: 'nPages',
+                  name: tableHeaders[i],
+                  data: nPages,
+                  visible: visibleSeries[i]
+                });
+                i++;
+              }
+        
               resultData.push({
-                id: 'nPages',
+                id: 'nPassed',
                 name: tableHeaders[i],
-                data: nPages,
+                data: nPassed,
                 visible: visibleSeries[i]
               });
               i++;
-            }
-      
-            resultData.push({
-              id: 'nPassed',
-              name: tableHeaders[i],
-              data: nPassed,
-              visible: visibleSeries[i]
-            });
-            i++;
-      
-            resultData.push({
-              id: 'nFailed',
-              name: tableHeaders[i],
-              data: nFailed,
-              visible: visibleSeries[i]
-            });
-            i++;
-      
-            resultData.push({
-              id: 'nCantTell',
-              name: tableHeaders[i],
-              data: nCantTell,
-              visible: visibleSeries[i]
-            });
-            i++;
-      
-            resultData.push({
-              id: 'nInapplicable',
-              name: tableHeaders[i],
-              data: nInapplicable,
-              visible: visibleSeries[i]
-            });
-            i++;
-      
-            resultData.push({
-              id: 'nUntested',
-              name: tableHeaders[i],
-              data: nUntested,
-              visible: visibleSeries[i]
-            });
-          } else {
-            Object.keys(chartData).forEach((k) => {
+        
               resultData.push({
-                id: k,
-                name: k,
-                data: chartData[k]
+                id: 'nFailed',
+                name: tableHeaders[i],
+                data: nFailed,
+                visible: visibleSeries[i]
               });
-            });
-          }
-    
-    
-          /*let element = document.getElementsByClassName("graphic");
-          if(element){
-            let elem = document.createElement("div");  
-            elem.setAttribute("id", 'chart'+i.toString());  
-            elem.setAttribute("class", 'charty');
-            element[0].appendChild(elem);
-          }*/
-          
-          if(!(this.unitedChart && resultData.length !== paramArgIds.length)){
-            chart = Highcharts.chart({
-              //this.chart = Highcharts.chart('chart', {
-              chart: {
-                type: 'column',
-                animation: false,
-                renderTo: 'chart'+chartIndex
-              },
-              title: {
-                text: !this.unitedChart ? 
-                  LABELS_SINGULAR[titleCategory] + ' ' + titleName + ' column chart':
-                  LABELS_PLURAL[titleCategory] + ' ' + 
-                  Object.keys(chartData).slice(0, -1).join(', ') + ' and ' + Object.keys(chartData).slice(-1) + 
-                  ' column chart'
-              },
-              //to enable a single tooltip to all series at one point
-              tooltip: {
-                enabled: true,
-                shared: true
-              },
-              credits: {
-                enabled: false
-              },
-              exporting: {
-                accessibility:{
-                  enabled: true
-                },
-                showTable: this.actualCharts[chartIndex] ? this.actualCharts[chartIndex].options.exporting.showTable : false,
-                menuItemDefinitions: {
-                  // toggle data table
-                  viewData: {
-                      onclick: () => {
-                        let element;
-                        this.showTable = !this.showTable;
-                        this.cd.detectChanges();
-                        if(this.comparingSameType)
-                          element = document.getElementById("tableSame");
-                        else
-                          element = document.getElementById("tableDiff");
-                        
-                        if(this.showTable){
-                          element.focus();
-                          element.scrollIntoView();
-                        } 
-      
-                        this.updateMenuTableText();
-                        /*if(this.actualCharts[chartIndex] && this.actualCharts[chartIndex].options.exporting.showTable){
-                          let element = document.getElementsByClassName("highcharts-data-table");
-                          if(element)
-                            element[0].removeChild(element[0].childNodes[0]);
-                        }
-                        this.actualCharts[chartIndex].update({
-                          exporting: {
-                            showTable: !this.actualCharts[chartIndex].options.exporting.showTable
-                          }
-                        });*/
-                        //testCharts[i].reflow();
-                      },
-                      text: this.showTable ? 'Hide data table' : 'Show and go to data table'
-                  }
-                },
-              },
-              accessibility: {
-                announceNewData: {
-                    enabled: true
-                }
-              },
-              //eixo dos x - nomes de cada coluna
-              xAxis: {
-                categories: names,
-                crosshair: true
-              },
-              /*legend: {
-                accessibility: {
-                  enabled: true,
-                  keyboardNavigation: {
-                    enabled: true
-                  }
-                },
-                itemHoverStyle: {}
-              },*/
-              plotOptions: {
-                series: {
-                  // disabling graphic animations
+              i++;
+        
+              resultData.push({
+                id: 'nCantTell',
+                name: tableHeaders[i],
+                data: nCantTell,
+                visible: visibleSeries[i]
+              });
+              i++;
+        
+              resultData.push({
+                id: 'nInapplicable',
+                name: tableHeaders[i],
+                data: nInapplicable,
+                visible: visibleSeries[i]
+              });
+              i++;
+        
+              resultData.push({
+                id: 'nUntested',
+                name: tableHeaders[i],
+                data: nUntested,
+                visible: visibleSeries[i]
+              });
+            } else {
+              Object.keys(chartData).forEach((k) => {
+                resultData.push({
+                  id: k,
+                  name: k,
+                  data: chartData[k]
+                });
+              });
+            }
+            
+            if(!(this.unitedChart && resultData.length !== paramArgIds.length)){
+              chart = Highcharts.chart({
+                chart: {
+                  type: 'column',
                   animation: false,
-                  cursor: !this.comparingSameType ? 'pointer' : undefined,
-                  events: {
-                      legendItemClick: (e) => {
-                        this.updateBySelection(e.target['_i'], 1, e);
-                      }              
+                  renderTo: 'chart'+chartIndex
+                },
+                title: {
+                  text: !this.unitedChart ? 
+                    LABELS_SINGULAR[titleCategory] + ' ' + titleName + ' column chart':
+                    LABELS_PLURAL[titleCategory] + ' ' + 
+                    Object.keys(chartData).slice(0, -1).join(', ') + ' and ' + Object.keys(chartData).slice(-1) + 
+                    ' column chart'
+                },
+                //to enable a single tooltip to all series at one point
+                tooltip: {
+                  enabled: true,
+                  shared: true
+                },
+                credits: {
+                  enabled: false
+                },
+                exporting: {
+                  accessibility:{
+                    enabled: true
                   },
-                  point: {
-                    events: {
-                      click: (e) => {
-                        if(!this.comparingSameType)
-                          this.onPointSelect(e, key);
-                      }
+                  showTable: this.actualCharts[chartIndex] ? this.actualCharts[chartIndex].options.exporting.showTable : false,
+                  menuItemDefinitions: {
+                    // toggle data table
+                    viewData: {
+                        onclick: () => {
+                          let element;
+                          this.showTable = !this.showTable;
+                          this.cd.detectChanges();
+                          if(this.comparingSameType)
+                            element = document.getElementById("tableSame");
+                          else
+                            element = document.getElementById("tableDiff");
+                          
+                          if(this.showTable){
+                            element.focus();
+                            element.scrollIntoView();
+                          } 
+        
+                          this.updateMenuTableText();
+                          /*if(this.actualCharts[chartIndex] && this.actualCharts[chartIndex].options.exporting.showTable){
+                            let element = document.getElementsByClassName("highcharts-data-table");
+                            if(element)
+                              element[0].removeChild(element[0].childNodes[0]);
+                          }
+                          this.actualCharts[chartIndex].update({
+                            exporting: {
+                              showTable: !this.actualCharts[chartIndex].options.exporting.showTable
+                            }
+                          });*/
+                          //testCharts[i].reflow();
+                        },
+                        text: this.showTable ? 'Hide data table' : 'Show and go to data table'
                     }
                   },
-                  compare: 'value',
-                  showInNavigator: true
-                }
-              },
-              series: resultData
-            });
-      
-            if(subtitle)
-              chart.setSubtitle({text: subtitle});
-      
-            this.actualCharts.push(chart);
-            chartIndex++;
+                },
+                accessibility: {
+                  announceNewData: {
+                      enabled: true
+                  }
+                },
+                //eixo dos x - nomes de cada coluna
+                xAxis: {
+                  categories: names,
+                  crosshair: true
+                },
+                /*legend: {
+                  accessibility: {
+                    enabled: true,
+                    keyboardNavigation: {
+                      enabled: true
+                    }
+                  },
+                  itemHoverStyle: {}
+                },*/
+                plotOptions: {
+                  series: {
+                    // disabling graphic animations
+                    animation: false,
+                    cursor: !this.comparingSameType ? 'pointer' : undefined,
+                    events: {
+                        legendItemClick: (e) => {
+                          this.updateBySelection(e.target['_i'], 1, e);
+                        }              
+                    },
+                    point: {
+                      events: {
+                        click: (e) => {
+                          if(!this.comparingSameType)
+                            this.onPointSelect(e, key);
+                        }
+                      }
+                    },
+                    compare: 'value',
+                    showInNavigator: true
+                  }
+                },
+                series: resultData
+              });
+        
+              if(subtitle)
+                chart.setSubtitle({text: subtitle});
+        
+              this.actualCharts.push(chart);
+              chartIndex++;
+            }
           }
+        } else {
+          this.failedIds.push(key);
         }
-      } else {
-        this.failedIds.push(key);
-      }
-    });
-    console.log('failedIds', this.failedIds);
-    this.tableReady = true;
+      });
+      console.log('failedIds', this.failedIds);
+      this.tableReady = true;
 
-    if(this.actualCategory === 'eval'){
-      this.xAxisVars.sort(function(a, b){
-        return a.name.localeCompare(b.name);
+      if(this.actualCategory === 'eval'){
+        this.xAxisVars.sort(function(a, b){
+          return a.name.localeCompare(b.name);
+        });
+      }
+
+      // show tooltip on all graphic on mouse hover or keyboard focus
+      Array.from(document.getElementsByClassName('chart')).forEach((x) => {
+        ['mousemove', 'touchmove', 'touchstart', 'keyup', 'mouseleave'].forEach((eventType) => {
+          x.addEventListener( 
+            eventType,
+            (e) => {
+              if(e.type === 'mouseleave'){
+                for (let i = 0; i < this.actualCharts.length; i++) {
+                  chart = this.actualCharts[i];
+                  if (chart) chart.pointer.reset();
+                }
+              } else {
+                if(e.target['point']){
+                  let chart, point, i, j, event, serie, points = [];
+                  //let chartIndex = +e['path'][5]['id'].replace('chart','');
+                  for (i = 0; i < this.actualCharts.length; i++) {
+                    points = [];
+                    chart = this.actualCharts[i];
+                    if (!chart) continue;
+    
+                    // Find coordinates within the chart
+                    event = chart.pointer.normalize(e);
+            
+                    for (j = 0; j < chart.series.length; j++) {
+                      serie = chart.series[j];
+                      if (!serie.visible || serie.enableMouseTracking === false) continue;
+    
+                      point = serie.points[e.target['point']['index']];
+    
+                      // Get point differently if it's from a keyboard focus ou a mouse hover
+                      /*if(e['keyCode'] && [37, 38, 39, 40].includes(e['keyCode'])){
+                      point = serie.points[e.target['point']['index']];
+                      } else {
+                        point = serie.searchPoint(event, false);
+                      }*/
+    
+                      // Get the hovered point
+                      if (point) points.push(point); 
+                    }
+    
+                    if (points.length) {
+                      if (chart.tooltip.shared) {
+                          chart.tooltip.refresh(points);
+                      } else {
+                          chart.tooltip.refresh(points[0]);
+                      }
+                      chart.xAxis[0].drawCrosshair(e, points[0]);
+                    }
+                  }
+                }
+              }
+            }
+          );
+        });
       });
     }
-
-    Array.from(document.getElementsByClassName('chart')).forEach((x) => {
-      ['mousemove', 'touchmove', 'touchstart', 'keyup', 'mouseleave'].forEach((eventType) => {
-        x.addEventListener( 
-          eventType,
-          (e) => {
-            if(e.type === 'mouseleave'){
-              for (let i = 0; i < this.actualCharts.length; i++) {
-                chart = this.actualCharts[i];
-                if (chart) chart.pointer.reset();
-              }
-            } else {
-              if(e.target['point']){
-                let chart, point, i, j, event, serie, points = [];
-                //let chartIndex = +e['path'][5]['id'].replace('chart','');
-                for (i = 0; i < this.actualCharts.length; i++) {
-                  points = [];
-                  chart = this.actualCharts[i];
-                  if (!chart) continue;
-  
-                  // Find coordinates within the chart
-                  event = chart.pointer.normalize(e);
-          
-                  for (j = 0; j < chart.series.length; j++) {
-                    serie = chart.series[j];
-                    if (!serie.visible || serie.enableMouseTracking === false) continue;
-  
-                    point = serie.points[e.target['point']['index']];
-  
-                    // Get point differently if it's from a keyboard focus ou a mouse hover
-                    /*if(e['keyCode'] && [37, 38, 39, 40].includes(e['keyCode'])){
-                    point = serie.points[e.target['point']['index']];
-                    } else {
-                      point = serie.searchPoint(event, false);
-                    }*/
-  
-                    // Get the hovered point
-                    if (point) points.push(point); 
-                  }
-  
-                  if (points.length) {
-                    if (chart.tooltip.shared) {
-                        chart.tooltip.refresh(points);
-                    } else {
-                        chart.tooltip.refresh(points[0]);
-                    }
-                    chart.xAxis[0].drawCrosshair(e, points[0]);
-                  }
-                }
-              }
-            }
-          }
-        );
-      });
-    });
   }
 
   addDataToTable(data: number[], rowIndex: number, columnIndex: number, addColumnIndex: number, table: any[]): any[] {
@@ -834,61 +825,6 @@ export class GraphicCompareComponent implements OnInit {
           }
         }});
     }
-  }
-
-  prepareSubtitle(data: any, subs: string[]): string {
-    let result = "";
-    if(data.length > 0){
-      for(let sub of subs){
-        let infoQuery = data[0][sub + 'Names'];
-        if(infoQuery){
-          let arrayInfoQuery = JSON.parse(infoQuery);
-
-          if(result){
-            result = result + "; ";
-          }
-
-          if(arrayInfoQuery.length > 1) {
-            result = result + LABELS_PLURAL[sub];
-            let allNames = [];
-            for(let name of arrayInfoQuery){
-              allNames.push(name);
-            }
-            result = result + ' ' + allNames.slice(0, -1).join(', ') + ' and ' + allNames.slice(-1);
-          } else {
-            result = result + LABELS_SINGULAR[sub] + ' ' + arrayInfoQuery[0];
-          }
-        } else {
-          if(sub === 'sector'){
-            
-            if(result) {
-              result = result + "; ";
-            }
-            let sectorIds = this.activatedRoute.snapshot.queryParams['sectorIds'];
-            sectorIds = sectorIds.split(',');
-            
-            //remove all sectorIds manually inserted
-            sectorIds = remove(sectorIds, function(n) {
-              return n !== 0 && n !== 1;
-            });
-
-            if(sectorIds.length > 1) {
-              let allNames = [];
-              for(let id of sectorIds){
-                allNames.push(SECTORS[id]);
-              }
-              result = result + allNames.slice(0, -1).join(', ') + ' and ' + allNames.slice(-1);
-              result = result + ' ' + LABELS_PLURAL[sub];
-            } else {
-              result = result + SECTORS[sectorIds[0]] + ' ' + LABELS_SINGULAR[sub];
-            }
-          }
-          // Theres no info about this queryParam in this SQL Query!
-          //console.log(sub);
-        }
-      }
-    }
-    return result;
   }
 
   isSeriesVisible(index: number): boolean {
@@ -960,6 +896,7 @@ export class GraphicCompareComponent implements OnInit {
     });
   }
 }
+
 export interface IHash {
   [index: number] : any[];
 } 

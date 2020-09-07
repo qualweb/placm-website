@@ -39,6 +39,9 @@ export class GraphicDisplayComponent implements OnInit {
   table: any[];
   showTable: boolean = false;
 
+  error: boolean = false;
+  errorMessage: number = 0;
+
   constructor(
     private router: Router,
     private activatedRoute: ActivatedRoute,
@@ -247,250 +250,258 @@ export class GraphicDisplayComponent implements OnInit {
       }
     }    
 
-    // input can be sent as '{}' in this function
-    data = await this.combinedService.getData(this.actualCategory, this.actualGraphicType, input);
     filterArray = this.getFilterParamsArray();
+    try{
+      // input can be sent as '{}' in this function
+      data = await this.combinedService.getData(this.actualCategory, this.actualGraphicType, input);
+    } catch(err) {
+      this.error = true;
+      this.errorMessage = 1;
+    }
 
-    if(data['success'] === 1){
+    if(data && data['success'] === 1){
       rawData = data['result'];
       subtitle = this.prepareSubtitle(rawData, subtitlePossibilities);
     } else {
-      //todo query error
+      this.error = true;
+      this.errorMessage = 2;
     }
 
-    let names = [], nApps = [], nPages = [], nPassed = [],
-        nFailed = [], nCantTell = [], 
-        nInapplicable = [], nUntested = [], tableData = [];
-    let name;
+    if(!this.error){
+      let names = [], nPages = [], nPassed = [],
+          nFailed = [], nCantTell = [], 
+          nInapplicable = [], nUntested = [], tableData = [];
+      let name;
 
-    // todo sorting
-    /*rawData = rawData.sort(function (a,b) {
-      let comparison = 0;
-      if (a.name > b.name) {
-        comparison = 1;
-      } else if (a.name < b.name) {
-        comparison = -1;
-      }
-      return comparison;
-    });*/
+      // todo sorting
+      /*rawData = rawData.sort(function (a,b) {
+        let comparison = 0;
+        if (a.name > b.name) {
+          comparison = 1;
+        } else if (a.name < b.name) {
+          comparison = -1;
+        }
+        return comparison;
+      });*/
 
-    this.xAxisVars = [];
-    this.table = [[...tableHeaders]];
+      this.xAxisVars = [];
+      this.table = [[...tableHeaders]];
 
-    let test, testId, rowIndex = 1;
-    for(let vars of rawData){
-      tableData = [];
-      testId = vars.id ? vars.id : 0;
-      if(this.actualCategory === 'sc'){
-        test = vars.name ? 'SC ' + testId + ' - ' + vars.name : 'Unspecified';
-      } else {
-        test = vars.name ? vars.name : 'Unspecified';
-      }
-      idInParams = filterArray.includes(testId.toString());
-      this.xAxisVars.push({name: test, id: testId, checked: !idInParams});
-      if(!idInParams){
-
-        // handling x axis
+      let test, testId, rowIndex = 1;
+      for(let vars of rawData){
+        tableData = [];
+        testId = vars.id ? vars.id : 0;
         if(this.actualCategory === 'sc'){
-          name = 'SC ' + testId;
+          test = vars.name ? 'SC ' + testId + ' - ' + vars.name : 'Unspecified';
         } else {
-          name = test;
+          test = vars.name ? vars.name : 'Unspecified';
         }
-        names.push(name);
+        idInParams = filterArray.includes(testId.toString());
+        this.xAxisVars.push({name: test, id: testId, checked: !idInParams});
+        if(!idInParams){
 
-        // handling y axis and table data
-        if(this.actualGraphicType === 'assertions'){
-          tableData.push(vars.nPages);
-          nPages.push(vars.nPages);
+          // handling x axis
+          if(this.actualCategory === 'sc'){
+            name = 'SC ' + testId;
+          } else {
+            name = test;
+          }
+          names.push(name);
+
+          // handling y axis and table data
+          if(this.actualGraphicType === 'assertions'){
+            tableData.push(vars.nPages);
+            nPages.push(vars.nPages);
+          }
+          nPassed.push(vars.nPassed);
+          nFailed.push(vars.nFailed);
+          nCantTell.push(vars.nCantTell);
+          nInapplicable.push(vars.nInapplicable);
+          nUntested.push(vars.nUntested);
+          
+          tableData.push(vars.nPassed);
+          tableData.push(vars.nFailed);
+          tableData.push(vars.nCantTell);
+          tableData.push(vars.nInapplicable);
+          tableData.push(vars.nUntested);
+          
+          this.table = this.addDataToTable(name, tableData, rowIndex, this.table);
+          rowIndex++;
         }
-        nPassed.push(vars.nPassed);
-        nFailed.push(vars.nFailed);
-        nCantTell.push(vars.nCantTell);
-        nInapplicable.push(vars.nInapplicable);
-        nUntested.push(vars.nUntested);
         
-        tableData.push(vars.nPassed);
-        tableData.push(vars.nFailed);
-        tableData.push(vars.nCantTell);
-        tableData.push(vars.nInapplicable);
-        tableData.push(vars.nUntested);
-        
-        this.table = this.addDataToTable(name, tableData, rowIndex, this.table);
-        rowIndex++;
       }
-      
-    }
 
-    this.breadcrumbsData['category'] = this.actualCategory;
-    this.breadcrumbsData['type'] = this.actualGraphicType;
+      this.breadcrumbsData['category'] = this.actualCategory;
+      this.breadcrumbsData['type'] = this.actualGraphicType;
 
-    this.chartsReady = true;
-    this.cd.detectChanges();
+      this.chartsReady = true;
+      this.cd.detectChanges();
 
-    let visibleSeries = [];
-    for(let i = 0; i <= 5; i++){
-      visibleSeries.push(this.isSeriesVisible(i));
-    }
+      let visibleSeries = [];
+      for(let i = 0; i <= 5; i++){
+        visibleSeries.push(this.isSeriesVisible(i));
+      }
 
-    let i = 0;
+      let i = 0;
 
-    if(this.actualGraphicType === 'assertions'){
+      if(this.actualGraphicType === 'assertions'){
+        resultData.push({
+          id: 'nPages',
+          name: tableHeaders[i],
+          data: nPages,
+          visible: visibleSeries[i]
+        });
+        i++;
+      }
+
       resultData.push({
-        id: 'nPages',
+        id: 'nPassed',
         name: tableHeaders[i],
-        data: nPages,
+        data: nPassed,
         visible: visibleSeries[i]
       });
       i++;
-    }
 
-    resultData.push({
-      id: 'nPassed',
-      name: tableHeaders[i],
-      data: nPassed,
-      visible: visibleSeries[i]
-    });
-    i++;
+      resultData.push({
+        id: 'nFailed',
+        name: tableHeaders[i],
+        data: nFailed,
+        visible: visibleSeries[i]
+      });
+      i++;
 
-    resultData.push({
-      id: 'nFailed',
-      name: tableHeaders[i],
-      data: nFailed,
-      visible: visibleSeries[i]
-    });
-    i++;
+      resultData.push({
+        id: 'nCantTell',
+        name: tableHeaders[i],
+        data: nCantTell,
+        visible: visibleSeries[i]
+      });
+      i++;
 
-    resultData.push({
-      id: 'nCantTell',
-      name: tableHeaders[i],
-      data: nCantTell,
-      visible: visibleSeries[i]
-    });
-    i++;
+      resultData.push({
+        id: 'nInapplicable',
+        name: tableHeaders[i],
+        data: nInapplicable,
+        visible: visibleSeries[i]
+      });
+      i++;
 
-    resultData.push({
-      id: 'nInapplicable',
-      name: tableHeaders[i],
-      data: nInapplicable,
-      visible: visibleSeries[i]
-    });
-    i++;
+      resultData.push({
+        id: 'nUntested',
+        name: tableHeaders[i],
+        data: nUntested,
+        visible: visibleSeries[i]
+      });
 
-    resultData.push({
-      id: 'nUntested',
-      name: tableHeaders[i],
-      data: nUntested,
-      visible: visibleSeries[i]
-    });
-
-    this.chart = Highcharts.chart('chart', {
-      chart: {
-        type: 'column',
-        animation: false
-      },
-      title: {
-        text: LABELS_PLURAL[this.actualCategory] + ' column chart'
-      },
-      //to enable a single tooltip to all series at one point
-      tooltip: {
-        shared: true
-      },
-      credits: {
-        enabled: false
-      },
-      exporting: {
-        accessibility:{
-          enabled: true
+      this.chart = Highcharts.chart('chart', {
+        chart: {
+          type: 'column',
+          animation: false
         },
-        showTable: false,//this.chart ? this.chart.options.exporting.showTable : false,
-        menuItemDefinitions: {
-          // toggle data table
-          viewData: {
-              onclick: () => {
-                let element;
-                this.showTable = !this.showTable;
-                this.cd.detectChanges();
-                element = document.getElementById("dataTable");
-                
-                if(this.showTable){
-                  element.focus();
-                  element.scrollIntoView();
-                } 
-
-                this.updateMenuTableText();
-                /* let element;
-                // if it was visible - it will be removed
-                if(this.showTable){
-                  element = document.getElementsByClassName("highcharts-data-table");
-                  if(element)
-                    element[0].removeChild(element[0].childNodes[0]);
-                }
-                this.showTable = !this.showTable;
-                this.chart.update({
-                  exporting: {
-                    showTable: this.showTable
-                  }
-                });
-                this.updateMenuTableText(this.showTable); */
-
-                // if it is now visible - change tabindex to 0
-                // because default is -1
-                /* if(this.chart.options.exporting.showTable){
-                  element = document.getElementsByClassName("highcharts-data-table");
-                  if(element)
-                    element[0].childNodes[0].setAttribute("tabIndex", 0);
-                } */
-              },
-              text: 'Show and go to data table'
-          }
+        title: {
+          text: LABELS_PLURAL[this.actualCategory] + ' column chart'
         },
-      },
-      accessibility: {
-        announceNewData: {
+        //to enable a single tooltip to all series at one point
+        tooltip: {
+          shared: true
+        },
+        credits: {
+          enabled: false
+        },
+        exporting: {
+          accessibility:{
             enabled: true
-        }
-      },
-      //eixo dos x - nomes de cada coluna
-      xAxis: {
-        categories: names,
-        crosshair: true
-      },
-      /*legend: {
-        accessibility: {
-          enabled: true,
-          keyboardNavigation: {
-            enabled: true
-          }
-        },
-        itemHoverStyle: {}
-      },*/
-      plotOptions: {
-        series: {
-          // disabling graphic animations
-          animation: false,
-          cursor: 'pointer',
-          events: {
-              legendItemClick: (e) => {
-                this.updateBySelection(e.target['_i'], 1);
-              }              
           },
-          point: {
-            events: {
-              click: (e) => {
-                this.onPointSelect(e);
-              }
+          showTable: false,//this.chart ? this.chart.options.exporting.showTable : false,
+          menuItemDefinitions: {
+            // toggle data table
+            viewData: {
+                onclick: () => {
+                  let element;
+                  this.showTable = !this.showTable;
+                  this.cd.detectChanges();
+                  element = document.getElementById("dataTable");
+                  
+                  if(this.showTable){
+                    element.focus();
+                    element.scrollIntoView();
+                  } 
+
+                  this.updateMenuTableText();
+                  /* let element;
+                  // if it was visible - it will be removed
+                  if(this.showTable){
+                    element = document.getElementsByClassName("highcharts-data-table");
+                    if(element)
+                      element[0].removeChild(element[0].childNodes[0]);
+                  }
+                  this.showTable = !this.showTable;
+                  this.chart.update({
+                    exporting: {
+                      showTable: this.showTable
+                    }
+                  });
+                  this.updateMenuTableText(this.showTable); */
+
+                  // if it is now visible - change tabindex to 0
+                  // because default is -1
+                  /* if(this.chart.options.exporting.showTable){
+                    element = document.getElementsByClassName("highcharts-data-table");
+                    if(element)
+                      element[0].childNodes[0].setAttribute("tabIndex", 0);
+                  } */
+                },
+                text: 'Show and go to data table'
             }
           },
-          compare: 'value',
-          showInNavigator: true
-          
-        }
-      },
-      series: resultData
-    });
+        },
+        accessibility: {
+          announceNewData: {
+              enabled: true
+          }
+        },
+        //eixo dos x - nomes de cada coluna
+        xAxis: {
+          categories: names,
+          crosshair: true
+        },
+        /*legend: {
+          accessibility: {
+            enabled: true,
+            keyboardNavigation: {
+              enabled: true
+            }
+          },
+          itemHoverStyle: {}
+        },*/
+        plotOptions: {
+          series: {
+            // disabling graphic animations
+            animation: false,
+            cursor: 'pointer',
+            events: {
+                legendItemClick: (e) => {
+                  this.updateBySelection(e.target['_i'], 1);
+                }              
+            },
+            point: {
+              events: {
+                click: (e) => {
+                  this.onPointSelect(e);
+                }
+              }
+            },
+            compare: 'value',
+            showInNavigator: true
+            
+          }
+        },
+        series: resultData
+      });
 
-    if(subtitle)
-      this.chart.setSubtitle({text: subtitle});
+      if(subtitle)
+        this.chart.setSubtitle({text: subtitle});
+    }
   }
 
   prepareSubtitle(data: any, subs: string[]): string {

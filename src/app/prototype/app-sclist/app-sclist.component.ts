@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, QueryList, ViewChildren, AfterViewInit, AfterContentInit, HostListener } from '@angular/core';
+import { Component, OnInit, ViewChild, QueryList, ViewChildren, AfterViewInit, AfterContentInit, HostListener, ChangeDetectorRef } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { CombinedService } from 'services/combined.service';
 import { ActivatedRoute } from '@angular/router';
@@ -21,9 +21,13 @@ export class AppSCListComponent implements OnInit {
   sortedData: any = [];
   outcomes: any = [];
   chart: any;
+  chartReady: boolean = false;
   names: string[] = [];
+  breadcrumbsData: string[] = [];
+  breadcrumbsReady: boolean = false;
 
-  error: any;
+  error: boolean = false;
+  errorMessage: number = 0;
   
   displayedColumns: string[] = [
     'outcome',
@@ -45,14 +49,15 @@ export class AppSCListComponent implements OnInit {
   
   constructor(
     private activatedRoute: ActivatedRoute,
-    private combinedService: CombinedService) {
+    private combinedService: CombinedService,
+    private cd: ChangeDetectorRef) {
   }
 
-  ngOnInit(): void {
-    this.prepareQuery();
+  async ngOnInit(): Promise<void> {
+    await this.prepareQuery();
   }
 
-  prepareQuery(): void {
+  async prepareQuery(): Promise<void> {
     let input = this.activatedRoute.snapshot.queryParams;
     // get appIds and filters
     if(!isEmpty(input)){
@@ -81,33 +86,60 @@ export class AppSCListComponent implements OnInit {
       }
     }
 
-    this.combinedService.getData('app', 'scriteria').then(response => {
-      if (!response || response['success'] !== 1) {
-        this.error = true;
-      } else {
-        let result = response['result'];
-        this.prepareGraphic(result, input);
-      }
-    });
+    let response;
+    let result;
+    try{
+      response = await this.combinedService.getData('app', 'scriteria');
+    } catch (err){
+      this.error = true;
+      this.errorMessage = 6;
+    }
+    if (response && response['success'] === 1) {
+      result = response['result'];
+    } else {
+      this.error = true;
+      this.errorMessage = 7;
+    }
 
-    this.combinedService.getData('scApp', 'scApp', input).then(response => {
-      if (!response || response['success'] !== 1) {
+    if(!this.error){
+      try{
+        response = await this.combinedService.getData('scApp', 'scApp', input);
+      } catch (err){
         this.error = true;
-      } else {
-        this.data = response['result'];
-        for(let i = 0; i < this.data.length; i++){
-          this.data[i].Assertions = JSON.parse(this.data[i].Assertions);
-          this.data[i].table = new MatTableDataSource(this.data[i].Assertions);
-        }
-        this.prepareAccordions();
-        // this for loop is really important - sort data by outcome to make matSort work properly
-        for(let d of this.outcomes){
-          this.sortedData.push(...d.data); 
-        }
-        this.allLoaded = true;
+        this.errorMessage = 8;
       }
-      this.loadingResponse = false;
-    });
+      console.log(this.errorMessage);
+      if(!this.error){
+
+        // only prepareGraphic after making sure both queries dont return error
+        this.chartReady = true;
+        this.cd.detectChanges();
+        this.prepareGraphic(result, input);
+        this.breadcrumbsData['comparing'] = false;
+        this.breadcrumbsData['type'] = 'scriteria';
+        this.breadcrumbsData['category'] = 'scApp';
+        this.breadcrumbsData['appNames'] = this.names;
+        this.breadcrumbsReady = true;
+
+        if (response && response['success'] === 1) {
+          this.data = response['result'];
+          for(let i = 0; i < this.data.length; i++){
+            this.data[i].Assertions = JSON.parse(this.data[i].Assertions);
+            this.data[i].table = new MatTableDataSource(this.data[i].Assertions);
+          }
+          this.prepareAccordions();
+          // this for loop is really important - sort data by outcome to make matSort work properly
+          for(let d of this.outcomes){
+            this.sortedData.push(...d.data); 
+          }
+          this.allLoaded = true;
+          this.loadingResponse = false;
+        }
+      } else {
+        this.error = true;
+        this.errorMessage = 9;
+      }
+    }
   }
 
   prepareGraphic(appsData: any, input: any): void {
@@ -124,6 +156,8 @@ export class AppSCListComponent implements OnInit {
       });
     } else {
       // nao ha params, nao ha grafico -> todo error
+      this.error = true;
+      this.errorMessage = 5;
     }
 
     if(data && data.length){

@@ -2,6 +2,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { BASE_URL } from '../utils/constants';
 import { retry } from 'rxjs/internal/operators/retry';
+import { map } from 'rxjs/internal/operators/map';
+import { PLACMError } from 'models/error';
+import { catchError } from 'rxjs/internal/operators/catchError';
+import { throwError } from 'rxjs/internal/observable/throwError';
 
 const appUrl = BASE_URL + 'application/';
 
@@ -43,7 +47,16 @@ export class AppService {
     return this.http.get(appUrl + 'appData' + types + compare, {params: opts})
       .pipe(
         retry(3),
-        //todo error handling
+        map(res => {
+          if (res['success'] !== 1 || res['errors'] !== null) {
+            throw new PLACMError(res['success'], res['message']);
+          }
+          return res;
+        }),
+        catchError(err => {
+          console.log(err);
+          return throwError(err);
+        })
       )
       .toPromise();
   }
@@ -58,7 +71,16 @@ export class AppService {
     return this.http.get(appUrl + 'sectorData' + types + compare, {params: opts})
       .pipe(
         retry(3),
-        //todo error handling
+        map(res => {
+          if (res['success'] !== 1 || res['errors'] !== null) {
+            throw new PLACMError(res['success'], res['message']);
+          }
+          return res;
+        }),
+        catchError(err => {
+          console.log(err);
+          return throwError(err);
+        })
       )
       .toPromise();
   }
@@ -73,7 +95,16 @@ export class AppService {
     return this.http.get(appUrl + 'orgData' + types + compare, {params: opts})
       .pipe(
         retry(3),
-        //todo error handling
+        map(res => {
+          if (res['success'] !== 1 || res['errors'] !== null) {
+            throw new PLACMError(res['success'], res['message']);
+          }
+          return res;
+        }),
+        catchError(err => {
+          console.log(err);
+          return throwError(err);
+        })
       )
       .toPromise();
   }
@@ -86,7 +117,16 @@ export class AppService {
     return this.http.get(appUrl + 'scApp', {params: opts})
       .pipe(
         retry(3),
-        //todo error handling
+        map(res => {
+          if (res['success'] !== 1 || res['errors'] !== null) {
+            throw new PLACMError(res['success'], res['message']);
+          }
+          return res;
+        }),
+        catchError(err => {
+          console.log(err);
+          return throwError(err);
+        })
       )
       .toPromise();
   }

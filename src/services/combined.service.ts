@@ -127,7 +127,7 @@ export class CombinedService {
             data = await this.tagService.getAllTagsNames(SERVER_NAME);
           }
         } else {
-          // if it reaches here, means data exists on sessionstorage
+          // if it reaches here, it means data exists on sessionstorage
         }
       }
 
@@ -144,7 +144,7 @@ export class CombinedService {
       }
       return this.session.getObject(sessionName);
     } catch (err){
-      return throwError(err);
+      return Promise.reject(err);
     }
   }
 
