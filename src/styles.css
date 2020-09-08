@@ -5,6 +5,10 @@
   font-family: Roboto, sans-serif;
 }
 
+.mat-tab-body {
+  max-height: 50vh;
+}
+
 /* begin app-sclist - accordeon */
 .mat-expansion-panel-spacing {
   margin: 0 0 !important;

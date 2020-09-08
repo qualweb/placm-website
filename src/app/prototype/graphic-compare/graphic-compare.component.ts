@@ -663,6 +663,11 @@ export class GraphicCompareComponent implements OnInit {
                         text: this.showTable ? 'Hide data table' : 'Show and go to data table'
                     }
                   },
+                  buttons: {
+                    contextButton: {
+                      menuItems: ['viewData', 'separator', "viewFullscreen", "printChart", "separator", "downloadPNG", "downloadPDF", "downloadSVG", 'separator', 'downloadCSV', 'downloadXLS']
+                    }
+                  }
                 },
                 accessibility: {
                   announceNewData: {

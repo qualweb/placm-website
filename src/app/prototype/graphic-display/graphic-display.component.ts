@@ -458,6 +458,11 @@ export class GraphicDisplayComponent implements OnInit {
                 text: 'Show and go to data table'
             }
           },
+          buttons: {
+            contextButton: {
+              menuItems: ['viewData', 'separator', "viewFullscreen", "printChart", "separator", "downloadPNG", "downloadPDF", "downloadSVG", 'separator', 'downloadCSV', 'downloadXLS']
+            }
+          }
         },
         accessibility: {
           announceNewData: {
