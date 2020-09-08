@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
-import { POSSIBLE_FILTERS } from 'utils/constants';
+import { POSSIBLE_FILTERS, SERVER_NAME } from 'utils/constants';
 
 @Component({
   selector: 'app-graphic-header',
@@ -10,6 +10,7 @@ import { POSSIBLE_FILTERS } from 'utils/constants';
 export class GraphicHeaderComponent implements OnInit {
 
   type: string;
+  serverName = SERVER_NAME;
 
   constructor(
     private activatedRoute: ActivatedRoute,

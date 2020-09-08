@@ -3,7 +3,8 @@ import { environment } from '../environments/environment';
 const BASE_URL = environment.production ? '/' : 'http://localhost:3443/' ;
 //const BASE_URL = 'http://localhost:3443/' ;
 
-const SERVER_NAME = 'proto';
+// already exists: '', 'pt', 'test'
+const SERVER_NAME = '';
 
 const POSSIBLE_FILTERS = ['continentIds', 'countryIds', 'sectorIds', 'orgIds', 'tagIds', 'appIds', 'evalIds', 'scIds', 'typeIds', 'ruleIds', 'filter', 'p'];
 

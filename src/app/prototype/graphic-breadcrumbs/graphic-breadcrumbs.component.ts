@@ -1,6 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { POSSIBLE_FILTERS, LABELS_SINGULAR, LABELS_PLURAL, queryParamsRegex } from 'utils/constants';
+import { POSSIBLE_FILTERS, SERVER_NAME, LABELS_SINGULAR, LABELS_PLURAL, queryParamsRegex } from 'utils/constants';
 
 @Component({
   selector: 'app-graphic-breadcrumbs',
@@ -14,6 +14,8 @@ export class GraphicBreadcrumbsComponent implements OnInit {
   category: string;
   comparing: boolean;
   appNames: string[];
+
+  serverName = SERVER_NAME;
 
   @Input('data') data: any;
   constructor(

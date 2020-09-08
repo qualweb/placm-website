@@ -5,7 +5,7 @@
     <span class="fill-remaining-space"></span>
 
     <!--a mat-icon-button href="/placm/pt" class="homeicon"-->
-    <a mat-icon-button href="/placm/" class="homeicon">
+    <a mat-icon-button href="/placm/{{serverName}}" class="homeicon">
         <mat-icon aria-hidden="false" aria-label="Home icon">home</mat-icon>
     </a>
     <app-graphic-picker [showAll]="true" (submit)="submittedCategory($event)"></app-graphic-picker>
