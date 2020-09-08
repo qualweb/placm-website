@@ -36,7 +36,10 @@ export class AdminComponent implements OnInit {
     const dialogConfig = new MatDialogConfig();
     dialogConfig.autoFocus = true;
     dialogConfig.disableClose = true;
-    dialogConfig.width = "40vw";
+    dialogConfig.width = '50rem';
+    dialogConfig.position = {
+      top: '20vh'
+    };
     const dialog = this.dialog.open(DatabaseDialogComponent, dialogConfig);
     dialog.afterClosed().subscribe(() => {
       // Do stuff after the dialog has closed

@@ -31,7 +31,6 @@ export class CriteriaService {
           return res;
         }),
         catchError(err => {
-          console.log(err);
           return throwError(err);
         })
       )

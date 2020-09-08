@@ -34,11 +34,13 @@ export class DrilldownDialogComponent implements OnInit {
   sameNamesOptions: Observable<any[]>;
   categoriesOptions: Observable<any[]>;
   namesOptions: Observable<any[]>;
+  namesOptionsReady: boolean = false;
 
   constructor(@Inject(MAT_DIALOG_DATA) data,
     public dialog: MatDialog,
     private dialogRef: MatDialogRef<DrilldownDialogComponent>,
-    private combinedService: CombinedService) {
+    private combinedService: CombinedService,
+    private cd: ChangeDetectorRef) {
       this.category = data.category;
       this.categoryName = LABELS_SINGULAR[this.category].toLowerCase();
       this.categoryNamePlural = LABELS_PLURAL[this.category].toLowerCase();
@@ -118,7 +120,7 @@ export class DrilldownDialogComponent implements OnInit {
 
   async prepareNames(): Promise<void> {
     this.sameNames = await this.combinedService.getData(this.category, this.type, this.queryParams);
-    if(this.sameNames['success'] === 1){
+    if(this.sameNames && this.sameNames['success'] === 1 && this.sameNames['result'].length > 0){
       this.sameNames = this.sameNames['result'];
       this.compareForm.get('sameNames').setValue(this.sameNames.filter(x => {if(x.id === this.id) return x}));
     } else {
@@ -215,10 +217,11 @@ export class DrilldownDialogComponent implements OnInit {
       if (isValueTrue.length === 0){
           this.compareForm.get('category').setValue('');
       } else {
+        this.namesOptionsReady = false;
         let selectedCategory = this.compareForm.controls['category'].value.value;
         let selectedCategoryIds = selectedCategory + 'Ids';
         this.names = await this.combinedService.getData(selectedCategory, this.type, this.queryParams);
-        if(this.names['success'] === 1){
+        if(this.names && this.names['success'] === 1 && this.names['result'].length > 0){
           this.names = this.names['result'];
           if(Object.keys(this.queryParams).includes(selectedCategoryIds)){
             this.compareForm.get('names').setValue(this.names.filter(x => {if(this.queryParams[selectedCategoryIds].includes(x.id)) return x}));
@@ -228,6 +231,8 @@ export class DrilldownDialogComponent implements OnInit {
         } else {
           this.names = [];
         }
+        this.namesOptionsReady = true;
+        this.cd.detectChanges();
       }
     }, 100);
   }

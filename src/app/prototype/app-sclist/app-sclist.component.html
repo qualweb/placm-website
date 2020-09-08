@@ -16,7 +16,7 @@
     <div id="chart"></div>
     
     <mat-accordion multi>
-      <mat-expansion-panel *ngFor="let i of outcomes; let j = index" [disabled]="i.data.length === 0" [class.alternate]="j % 2 === 0">
+      <mat-expansion-panel *ngFor="let i of outcomes; let j = index" [disabled]="i.data.length === 0" class="headers"> <!--[class.alternate]="j % 2 === 0"-->
         <mat-expansion-panel-header>
           <mat-panel-title>
             {{i.title}}
@@ -27,8 +27,8 @@
         </mat-expansion-panel-header>
 
         <mat-accordion multi>
-          <mat-expansion-panel *ngFor="let x of i.data; let k = index" 
-            [class.alternate]="(j%2 === 0 && k%2 !== 0) || (j%2 !== 0 && k%2 === 0)">
+          <mat-expansion-panel *ngFor="let x of i.data; index as k; even as isEven" [class.alternate]="isEven">
+            <!-- [class.alternate]="(j%2 === 0 && k%2 !== 0) || (j%2 !== 0 && k%2 === 0)" -->
             <mat-expansion-panel-header>
               <mat-panel-title>
                   {{x.SCId}}
@@ -38,38 +38,40 @@
               </mat-panel-description>
             </mat-expansion-panel-header>
 
-            <mat-table matSort [dataSource]="x.table" 
-            [matSortDisableClear]="true"
-            matSortActive="page"
-            matSortDirection="asc">
-              <ng-container matColumnDef="outcome">
-                <mat-header-cell *matHeaderCellDef mat-sort-header>Outcome</mat-header-cell>
-                <mat-cell *matCellDef="let s">{{s['outcome']}}
-                </mat-cell>
-              </ng-container>
-              <ng-container matColumnDef="rulename">
-                <mat-header-cell *matHeaderCellDef mat-sort-header>Rule</mat-header-cell>
-                <mat-cell *matCellDef="let s"><a [href]="s['rulelink']" target="_blank">{{s['rulename']}}</a></mat-cell>
-              </ng-container>
-              <ng-container matColumnDef="page">
-                <mat-header-cell *matHeaderCellDef mat-sort-header>Page</mat-header-cell>
-                <mat-cell *matCellDef="let s"><a [href]="s['page']" target="_blank">{{s['page']}}</a>
-                </mat-cell>
-              </ng-container>
-              <ng-container matColumnDef="eval">
-                <mat-header-cell *matHeaderCellDef mat-sort-header>Evaluation tool</mat-header-cell>
-                <mat-cell *matCellDef="let s"><span>{{s['eval']}}</span>
-                </mat-cell>
-              </ng-container>
-              <ng-container matColumnDef="description">
-                <mat-header-cell *matHeaderCellDef>Description</mat-header-cell>
-                <mat-cell *matCellDef="let s"><span>{{s['description']}}</span>
-                </mat-cell>
-              </ng-container>
+            <ng-template matExpansionPanelContent>
+              <mat-table matSort [dataSource]="x.table" 
+              [matSortDisableClear]="true"
+              matSortActive="page"
+              matSortDirection="asc">
+                <ng-container matColumnDef="outcome">
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Outcome</mat-header-cell>
+                  <mat-cell *matCellDef="let s">{{s['outcome']}}
+                  </mat-cell>
+                </ng-container>
+                <ng-container matColumnDef="rulename">
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Rule</mat-header-cell>
+                  <mat-cell *matCellDef="let s"><a [href]="s['rulelink']" target="_blank">{{s['rulename']}}</a></mat-cell>
+                </ng-container>
+                <ng-container matColumnDef="page">
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Page</mat-header-cell>
+                  <mat-cell *matCellDef="let s"><a [href]="s['page']" target="_blank">{{s['page']}}</a>
+                  </mat-cell>
+                </ng-container>
+                <ng-container matColumnDef="eval">
+                  <mat-header-cell *matHeaderCellDef mat-sort-header>Evaluation tool</mat-header-cell>
+                  <mat-cell *matCellDef="let s"><span>{{s['eval']}}</span>
+                  </mat-cell>
+                </ng-container>
+                <ng-container matColumnDef="description">
+                  <mat-header-cell *matHeaderCellDef>Description</mat-header-cell>
+                  <mat-cell *matCellDef="let s"><span>{{s['description']}}</span>
+                  </mat-cell>
+                </ng-container>
 
-              <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-              <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-            </mat-table>
+                <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+                <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+              </mat-table>
+            </ng-template>
             
           </mat-expansion-panel>
         </mat-accordion>

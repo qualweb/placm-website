@@ -40,7 +40,6 @@ export class StatementService {
           return <boolean>response.result;
         }),
         catchError(err => {
-          console.log(err);
           return of(null);
         })
       );
@@ -57,7 +56,6 @@ export class StatementService {
           return res;
         }),
         catchError(err => {
-          console.log(err);
           return throwError(err);
         })
       )

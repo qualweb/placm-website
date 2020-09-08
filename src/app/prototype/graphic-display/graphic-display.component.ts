@@ -170,6 +170,10 @@ export class GraphicDisplayComponent implements OnInit {
     if(e.point || e.target){
       let data = e.point ? e.point : e.target;
       const dialogConfig = new MatDialogConfig();
+      dialogConfig.width = '50rem';
+      dialogConfig.position = {
+        top: '20vh'
+      };
       dialogConfig.autoFocus = true;
       dialogConfig.data = {
         category: this.actualCategory,

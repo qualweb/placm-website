@@ -31,7 +31,6 @@ export class GraphicBreadcrumbsComponent implements OnInit {
     this.category = this.data.category;
     // scApp only
     this.appNames = this.data.appNames;
-    console.log(this.appNames);
 
     this.activatedRoute.queryParams.subscribe(() => {
       if(this.comparing)
@@ -44,7 +43,6 @@ export class GraphicBreadcrumbsComponent implements OnInit {
   prepareBreadcrumbs(): void {
     this.breadcrumbs = [];
     let queryParams = this.activatedRoute.snapshot.queryParams;
-    console.log(queryParams);
     let removed;
     let removableFilters = ['filter', 'p'];
     for(let f of removableFilters){
@@ -90,7 +88,6 @@ export class GraphicBreadcrumbsComponent implements OnInit {
         }
       );
     }
-    console.log(this.breadcrumbs);
   }
 
   prepareComparingBreadcrumbs(): void {

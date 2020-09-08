@@ -3,22 +3,22 @@
   <mat-tab-group animationDuration="0ms">
     
     <mat-tab label="Drilldown">
-      <mat-dialog-content>
-        <p>You have clicked on {{categoryName}} {{name}}</p>
-        <ng-template [ngIf]="!lastDrilldown" [ngIfElse]="lastDrill">
-          <p>Where do you want to drill now?</p>
-          <app-graphic-picker [actualCategory]="category" [type]="type" [showAll]="false" (change)="changedCategorySelection($event)"></app-graphic-picker>
-        </ng-template>
-        <ng-template #lastDrill>
-          <p class="bold">You cannot drill further!</p>
-        </ng-template>
-      </mat-dialog-content>
-      
-      <mat-dialog-actions>
+      <p>You have clicked on {{categoryName}} {{name}}</p>
+      <ng-template [ngIf]="!lastDrilldown" [ngIfElse]="lastDrill">
+        <p>Where do you want to drill now?</p>
+        <app-graphic-picker [actualCategory]="category" [type]="type" [showAll]="false" (change)="changedCategorySelection($event)"></app-graphic-picker>
+      </ng-template>
+      <ng-template #lastDrill>
+        <p class="bold">You cannot drill further!</p>
+      </ng-template>
+        
+      <mat-divider></mat-divider>
+
+      <div class="actionButtons">
         <button mat-raised-button color="warn" (click)="close()">Close</button>
         <span class="fill-remaining-space"></span>
         <button *ngIf="!lastDrilldown" mat-raised-button color="primary" (click)="submittedCategory()" [disabled]=!selectedCategory>Submit</button>
-      </mat-dialog-actions>
+      </div>
     </mat-tab>
 
     <mat-tab label="Comparing same category">
@@ -77,9 +77,9 @@
       </mat-form-field>
 
       <div *ngIf="compareForm.controls.category.value && compareForm.controls.category.value.name">
-        <p >Select which {{compareForm.controls.category.value.name}} do you want to base your data on:</p>
-        
-        <mat-form-field floatLabel="always">
+        <p>Select which {{compareForm.controls.category.value.name}} do you want to base your data on:</p>
+        <p *ngIf="!namesOptionsReady">Loading...</p>
+        <mat-form-field *ngIf="namesOptionsReady" floatLabel="always">
           <mat-label>Names</mat-label>
           <mat-select
             aria-label="Names from chosen category"

@@ -29,7 +29,6 @@ export class CountryService {
           return res;
         }),
         catchError(err => {
-          console.log(err);
           return throwError(err);
         })
       )
@@ -53,7 +52,6 @@ export class CountryService {
           return res;
         }),
         catchError(err => {
-          console.log(err);
           return throwError(err);
         })
       )
@@ -77,7 +75,6 @@ export class CountryService {
           return res;
         }),
         catchError(err => {
-          console.log(err);
           return throwError(err);
         })
       )

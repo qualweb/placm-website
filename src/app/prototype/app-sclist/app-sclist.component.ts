@@ -108,7 +108,7 @@ export class AppSCListComponent implements OnInit {
         this.error = true;
         this.errorMessage = 8;
       }
-      console.log(this.errorMessage);
+      
       if(!this.error){
 
         // only prepareGraphic after making sure both queries dont return error
@@ -328,6 +328,10 @@ export class AppSCListComponent implements OnInit {
           return x;
       })
     });
+  }
+
+  trackByIndex(index: number, data: any): number {
+    return +data['SCId'].replace('.','');
   }
 
 }

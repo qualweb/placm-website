@@ -45,5 +45,13 @@ mat-panel-title {
 }
 /* end - adding padding between columns */
 
-
+.mat-accordion .mat-expansion-panel.headers  {
+  border: 1px;
+  border-bottom-width: 0;
+  border-style: solid;
+  border-color: lightblue;
+}
+.mat-accordion .mat-expansion-panel.headers:last-of-type{
+  border-bottom-width: 1px;
+}
 

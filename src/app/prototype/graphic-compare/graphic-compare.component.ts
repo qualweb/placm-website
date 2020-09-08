@@ -228,6 +228,10 @@ export class GraphicCompareComponent implements OnInit {
 
       const dialogConfig = new MatDialogConfig();
       dialogConfig.autoFocus = true;
+      dialogConfig.width = '50rem';
+      dialogConfig.position = {
+        top: '20vh'
+      };
       dialogConfig.data = {
         category: this.actualCategory,
         type: this.actualGraphicType,

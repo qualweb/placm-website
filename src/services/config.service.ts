@@ -50,7 +50,6 @@ export class ConfigService {
           return res;
         }),
         catchError(err => {
-          console.log(err);
           return throwError(err);
         })
       )
