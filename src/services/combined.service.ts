@@ -5,7 +5,7 @@ import { EvaluationService } from './evaluation.service';
 import { RuleService } from './rule.service';
 import { TagService } from './tag.service';
 import { SessionStorage } from '@cedx/ngx-webstorage';
-import { POSSIBLE_FILTERS, SERVER_NAME, BASE_URL } from 'utils/constants';
+import { POSSIBLE_FILTERS, SERVER_NAME, BASE_URL, queryParamsRegex } from 'utils/constants';
 import { throwError } from 'rxjs';
 import { CriteriaService } from './criteria.service';
 import { PLACMError } from 'models/error';
@@ -33,6 +33,11 @@ export class CombinedService {
     let sessionData = this.session.getObject(sessionName);
     let oneMinuteHasPassed = Date.now() - (sessionData ? sessionData.timedate : 0) > 60000;
     let paramsExist = queryParams ? Object.keys(queryParams).length : false;
+    
+    if(!paramsExist && comparing){
+      return Promise.reject({ code: 0, message: 'No queryParams given', err: 'EMPTY_PARAMS' })
+    }
+
     let data;
     try {
       if(sessionData === undefined || (sessionData.result === [] && oneMinuteHasPassed)){

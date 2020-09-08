@@ -311,23 +311,32 @@ export class GraphicCompareComponent implements OnInit {
       }
     }
 
-    // input can be sent as '{}' in this function
     // only send first queryParam while comparing!
     let firstParam = Object.keys(input)[0];
-    let firstParamInput = JSON.parse('{"' + firstParam + '":"' + input[firstParam] + '"}');
-
-    try{
-      data = await this.combinedService.getData(this.actualCategory, this.actualGraphicType, firstParamInput, true);
-    } catch (err){
+    let firstParamInput;
+    if(!!firstParam){
+      firstParamInput = JSON.parse('{"' + firstParam + '":"' + input[firstParam] + '"}')
+    } else {
+      // while comparing, we need to have queryParams
       this.error = true;
-      this.errorMessage = 3;
+      this.errorMessage = -1;
     }
 
-    if(data && data['success'] === 1){
-      rawData = data['result'];
-    } else {
-      this.error = true;
-      this.errorMessage = 4;
+    if(!this.error){  
+      try{
+        // input can be sent as '{}' in this function
+        data = await this.combinedService.getData(this.actualCategory, this.actualGraphicType, firstParamInput, true);
+      } catch (err){
+        this.error = true;
+        this.errorMessage = 3;
+      }
+
+      if(data && data['success'] === 1){
+        rawData = data['result'];
+      } else {
+        this.error = true;
+        this.errorMessage = 4;
+      }
     }
 
     if(!this.error){    
