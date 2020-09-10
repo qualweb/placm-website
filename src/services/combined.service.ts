@@ -43,17 +43,11 @@ export class CombinedService {
       if(sessionData === undefined || (sessionData.result === [] && oneMinuteHasPassed)){
         switch(category){
           case 'continent':
-            if(paramsExist){
-              data = await this.countryService.getContinentData(SERVER_NAME, type, JSON.stringify(queryParams), comparing);
-            } else {
-              data = await this.countryService.getContinentData(SERVER_NAME, type);
-            }
-            break;
           case 'country':
             if(paramsExist){
-              data = await this.countryService.getCountryData(SERVER_NAME, type, JSON.stringify(queryParams), comparing);
+              data = await this.countryService.getData(SERVER_NAME, category, type, JSON.stringify(queryParams), comparing);
             } else {
-              data = await this.countryService.getCountryData(SERVER_NAME, type);
+              data = await this.countryService.getData(SERVER_NAME, category, type);
             }
             break;
           case 'tag':
@@ -64,24 +58,12 @@ export class CombinedService {
             }
             break;
           case 'sector':
-            if(paramsExist){
-              data = await this.appService.getSectorData(SERVER_NAME, type, JSON.stringify(queryParams), comparing);
-            } else {
-              data = await this.appService.getSectorData(SERVER_NAME, type);
-            }
-            break;
           case 'org':
-            if(paramsExist){
-              data = await this.appService.getOrganizationData(SERVER_NAME, type, JSON.stringify(queryParams), comparing);
-            } else {
-              data = await this.appService.getOrganizationData(SERVER_NAME, type);
-            }
-            break;
           case 'app':
             if(paramsExist){
-              data = await this.appService.getAppData(SERVER_NAME, type, JSON.stringify(queryParams), comparing);
+              data = await this.appService.getData(SERVER_NAME, category, type, JSON.stringify(queryParams), comparing);
             } else {
-              data = await this.appService.getAppData(SERVER_NAME, type);
+              data = await this.appService.getData(SERVER_NAME, category, type);
             }
             break;
           case 'eval':
@@ -113,23 +95,23 @@ export class CombinedService {
             }
             break;
           case 'countryNames':
-            data = await this.countryService.getAllCountryNames(SERVER_NAME);
+            data = await this.countryService.getNames(SERVER_NAME, 'country');
             break;
           case 'tagNames':
-            data = await this.tagService.getAllTagsNames(SERVER_NAME);
+            data = await this.tagService.getNames(SERVER_NAME);
             break;
           case 'scApp':
             data = await this.appService.getSuccessCriteriaData(SERVER_NAME, JSON.stringify(queryParams));
             break;
           default:
             //todo error
-            data = await this.countryService.getContinentData(SERVER_NAME);
+            data = await this.countryService.getData(SERVER_NAME, 'continent');
             break;
         } 
       } else {
         if(category === 'tagNames'){
           if(oneMinuteHasPassed){
-            data = await this.tagService.getAllTagsNames(SERVER_NAME);
+            data = await this.tagService.getNames(SERVER_NAME);
           }
         } else {
           // if it reaches here, it means data exists on sessionstorage
@@ -144,6 +126,79 @@ export class CombinedService {
         if(type === 'scApp')
           data.result = data.result[8];
         //
+        data.timedate = Date.now();
+        this.session.setObject(sessionName, data);
+      }
+      return this.session.getObject(sessionName);
+    } catch (err){
+      return Promise.reject(err);
+    }
+  }
+
+  async getNames(category: string, queryParams?: any): Promise<any> {
+    let sessionName = this.getStorageName(category, 'names', [queryParams]);
+    let sessionData = this.session.getObject(sessionName);
+    let oneMinuteHasPassed = Date.now() - (sessionData ? sessionData.timedate : 0) > 60000;
+    let paramsExist = queryParams ? Object.keys(queryParams).length : false;
+
+    let data;
+    try {
+      if(sessionData === undefined || (sessionData.result === [] && oneMinuteHasPassed)){
+        switch(category){
+          case 'continent':
+          case 'country':
+            if(paramsExist){
+              data = await this.countryService.getNames(SERVER_NAME, category, JSON.stringify(queryParams));
+            } else {
+              data = await this.countryService.getNames(SERVER_NAME, category);
+            }
+            break;
+          case 'tag':
+            if(paramsExist){
+              data = await this.tagService.getNames(SERVER_NAME, JSON.stringify(queryParams));
+            } else {
+              data = await this.tagService.getNames(SERVER_NAME);
+            }
+            break;
+          case 'sector':
+          case 'org':
+          case 'app':
+            if(paramsExist){
+              data = await this.appService.getNames(SERVER_NAME, category, JSON.stringify(queryParams));
+            } else {
+              data = await this.appService.getNames(SERVER_NAME, category);
+            }
+            break;
+          case 'eval':
+            if(paramsExist){
+              data = await this.evalService.getNames(SERVER_NAME, JSON.stringify(queryParams));
+            } else {
+              data = await this.evalService.getNames(SERVER_NAME);
+            }
+            break;
+          case 'sc':
+            if(paramsExist){
+              data = await this.criteriaService.getNames(SERVER_NAME, JSON.stringify(queryParams));
+            } else {
+              data = await this.criteriaService.getNames(SERVER_NAME);
+            }
+            break;
+          case 'type':
+          case 'rule':
+            if(paramsExist){
+              data = await this.ruleService.getNames(SERVER_NAME, category, JSON.stringify(queryParams));
+            } else {
+              data = await this.ruleService.getNames(SERVER_NAME, category);
+            }
+            break;
+          default:
+            //todo error
+            data = await this.countryService.getNames(SERVER_NAME, 'continent');
+            break;
+        } 
+      }
+
+      if(await data && data.success === 1){
         data.timedate = Date.now();
         this.session.setObject(sessionName, data);
       }

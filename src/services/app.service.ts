@@ -15,6 +15,8 @@ const appUrl = BASE_URL + 'application/';
 export class AppService {
 
   constructor(private http: HttpClient) { }
+  
+  // this service handles sector, org and app data and names (and appSCList)
 
   getAllByName(): Promise<any> {
     return this.http.get(appUrl + 'byName')
@@ -37,60 +39,14 @@ export class AppService {
       .toPromise();
   }
 
-  getAppData(serverName: string, type?: string, filters?: any, comparing?: boolean): Promise<any> {
+  getData(serverName: string, category: string, type?: string, filters?: any, comparing?: boolean): Promise<any> {
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
     let types = type === 'scriteria' ? 'SC' : '';
     let compare = comparing ? 'Compare' : ''; 
     if(filters)
       opts = opts.append('filters', filters);
-    return this.http.get(appUrl + 'appData' + types + compare, {params: opts})
-      .pipe(
-        retry(3),
-        map(res => {
-          if (res['success'] !== 1 || res['errors'] !== null) {
-            throw new PLACMError(res['success'], res['message']);
-          }
-          return res;
-        }),
-        catchError(err => {
-          return throwError(err);
-        })
-      )
-      .toPromise();
-  }
-
-  getSectorData(serverName: string, type?: string, filters?: any, comparing?: boolean): Promise<any> {
-    let opts = new HttpParams();
-    opts = opts.append('name', serverName);
-    let types = type === 'scriteria' ? 'SC' : '';
-    let compare = comparing ? 'Compare' : ''; 
-    if(filters)
-      opts = opts.append('filters', filters);
-    return this.http.get(appUrl + 'sectorData' + types + compare, {params: opts})
-      .pipe(
-        retry(3),
-        map(res => {
-          if (res['success'] !== 1 || res['errors'] !== null) {
-            throw new PLACMError(res['success'], res['message']);
-          }
-          return res;
-        }),
-        catchError(err => {
-          return throwError(err);
-        })
-      )
-      .toPromise();
-  }
-
-  getOrganizationData(serverName: string, type?: string, filters?: any, comparing?: boolean): Promise<any> {
-    let opts = new HttpParams();
-    opts = opts.append('name', serverName);
-    let types = type === 'scriteria' ? 'SC' : '';
-    let compare = comparing ? 'Compare' : ''; 
-    if(filters)
-      opts = opts.append('filters', filters);
-    return this.http.get(appUrl + 'orgData' + types + compare, {params: opts})
+    return this.http.get(appUrl + category + 'Data' + types + compare, {params: opts})
       .pipe(
         retry(3),
         map(res => {
@@ -112,6 +68,27 @@ export class AppService {
     if(filters)
       opts = opts.append('filters', filters);
     return this.http.get(appUrl + 'scApp', {params: opts})
+      .pipe(
+        retry(3),
+        map(res => {
+          if (res['success'] !== 1 || res['errors'] !== null) {
+            throw new PLACMError(res['success'], res['message']);
+          }
+          return res;
+        }),
+        catchError(err => {
+          return throwError(err);
+        })
+      )
+      .toPromise();
+  }
+
+  getNames(serverName: string, category?: string, filters?: any): Promise<any> {
+    let opts = new HttpParams();
+    opts = opts.append('name', serverName);
+    if(filters)
+      opts = opts.append('filters', filters);
+    return this.http.get(appUrl + category + 'Names', {params: opts})
       .pipe(
         retry(3),
         map(res => {

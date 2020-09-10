@@ -325,7 +325,7 @@ export class GraphicCompareComponent implements OnInit {
     if(!this.error){  
       try{
         // input can be sent as '{}' in this function
-        data = await this.combinedService.getData(this.actualCategory, this.actualGraphicType, firstParamInput, true);
+        data = await this.combinedService.getData(this.actualCategory, this.actualGraphicType, input, true);
       } catch (err){
         this.error = true;
         this.errorMessage = 3;
@@ -356,6 +356,15 @@ export class GraphicCompareComponent implements OnInit {
       for(let i = 0; i < paramArgIds.length; i++){
         graphSplitData[paramArgIds[i]] = [];
       }
+
+      // fill null with unspecified (only happens in continent, country or tags)
+      rawData = rawData.map(x => {
+        if(x[orderByParam] === null){
+          x[orderByParam] = 0;
+          x[orderByParamName] = 'Unspecified'
+        }
+        return x;
+      });
 
       // sort data based on order of ids in sorting filter param
       rawData.sort(function(a, b){
@@ -733,6 +742,10 @@ export class GraphicCompareComponent implements OnInit {
           this.failedIds.push(key);
         }
       });
+      let checkedCheckboxes = this.xAxisVars.filter(x => {if(x.checked === true) return x;});
+      if(checkedCheckboxes.length === 1){
+        this.breadcrumbsData['comparingByOne'] = checkedCheckboxes[0].name;
+      }
       console.log('failedIds', this.failedIds);
       this.tableReady = true;
 

@@ -16,27 +16,14 @@ export class TagService {
   constructor(
     private http: HttpClient) { }
 
-  getNumber(): Promise<any> {
-    return this.http.get(tagUrl + 'numberOf')
-      .pipe(
-        retry(3),
-        map(res => {
-          if (res['success'] !== 1 || res['errors'] !== null) {
-            throw new PLACMError(res['success'], res['message']);
-          }
-          return res;
-        }),
-        catchError(err => {
-          return throwError(err);
-        })
-      )
-      .toPromise();
-  }
-  
-  getAllTagsNames(serverName: string): Promise<any> {
+  getData(serverName: string, type?: string, filters?: any, comparing?: boolean): Promise<any> {
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
-    return this.http.get(tagUrl + 'tagNames', {params: opts})
+    let types = type === 'scriteria' ? 'SC' : '';
+    let compare = comparing ? 'Compare' : ''; 
+    if(filters)
+      opts = opts.append('filters', filters);
+    return this.http.get(tagUrl + 'tagData' + types + compare, {params: opts})
       .pipe(
         retry(3),
         map(res => {
@@ -52,14 +39,12 @@ export class TagService {
       .toPromise();
   }
 
-  getData(serverName: string, type?: string, filters?: any, comparing?: boolean): Promise<any> {
+  getNames(serverName: string, filters?: any): Promise<any> {
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
-    let types = type === 'scriteria' ? 'SC' : '';
-    let compare = comparing ? 'Compare' : ''; 
     if(filters)
       opts = opts.append('filters', filters);
-    return this.http.get(tagUrl + 'tagData' + types + compare, {params: opts})
+    return this.http.get(tagUrl + 'tagNames', {params: opts})
       .pipe(
         retry(3),
         map(res => {

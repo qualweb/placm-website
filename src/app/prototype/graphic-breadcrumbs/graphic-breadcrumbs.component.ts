@@ -13,6 +13,7 @@ export class GraphicBreadcrumbsComponent implements OnInit {
   graphicType: string;
   category: string;
   comparing: boolean;
+  comparingByOneName: string;
   appNames: string[];
 
   serverName = SERVER_NAME;
@@ -33,6 +34,7 @@ export class GraphicBreadcrumbsComponent implements OnInit {
     this.category = this.data.category;
     // scApp only
     this.appNames = this.data.appNames;
+    this.comparingByOneName = this.data.comparingByOne;
 
     this.activatedRoute.queryParams.subscribe(() => {
       if(this.comparing)
@@ -119,7 +121,13 @@ export class GraphicBreadcrumbsComponent implements OnInit {
   prepareComparingText(): string {
     let names = this.data.names;
     let result = 'Comparing ';
-    result += LABELS_PLURAL[this.category];
+    if(this.comparingByOneName === undefined){
+      result += LABELS_PLURAL[this.category];
+    } else {
+      if(this.category !== 'sc')
+        result += LABELS_SINGULAR[this.category];
+      result += ' \'' + this.comparingByOneName + '\'';
+    }
     if(this.category !== this.data.title){
       result += ' grouped by ' + LABELS_PLURAL[this.data.title];
     }

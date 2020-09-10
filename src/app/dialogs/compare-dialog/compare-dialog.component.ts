@@ -6,6 +6,7 @@ import { Observable } from 'rxjs/internal/Observable';
 import { startWith } from 'rxjs/internal/operators/startWith';
 import { map } from 'rxjs/internal/operators/map';
 import { CombinedService } from 'services/combined.service';
+import { query } from '@angular/animations';
 
 @Component({
   selector: 'app-compare-dialog',
@@ -34,8 +35,7 @@ export class CompareDialogComponent implements OnInit {
   constructor(@Inject(MAT_DIALOG_DATA) data,
     public dialog: MatDialog,
     private dialogRef: MatDialogRef<CompareDialogComponent>,
-    private combinedService: CombinedService,
-    private cd: ChangeDetectorRef) {
+    private combinedService: CombinedService) {
       this.category = data.category;
       this.categoryName = LABELS_SINGULAR[this.category].toLowerCase();
       this.categoryNamePlural = LABELS_PLURAL[this.category].toLowerCase();
@@ -58,6 +58,10 @@ export class CompareDialogComponent implements OnInit {
       startWith(''),
       map(value => typeof value === 'string' ? value : value['name']),
       map(name => name ? this._filter('names', name) : this.names.slice()));
+
+    this.form.controls.radio!.valueChanges.subscribe( (x) => {
+      this.prepareNames();
+    })
   }
 
   private initializeForms(){
@@ -80,7 +84,22 @@ export class CompareDialogComponent implements OnInit {
   }
   
   async prepareNames(): Promise<void> {
-    this.names = await this.combinedService.getData(this.category, this.type, this.queryParams);
+    let queryPar = this.queryParams;
+    if(this.form.controls.radio.value === '0'){
+      let firstParam = Object.keys(this.queryParams)[0];
+      let queryParamsString = '{"' + firstParam + '":"' + this.graphId + '"';
+      if(this.queryParams){
+        for(let params in this.queryParams){
+          if(POSSIBLE_FILTERS.includes(params) && params !== firstParam && params !== 'filter' && params !== 'p'){
+            queryParamsString = queryParamsString + ',"'
+                      + params + '":"' + this.queryParams[params] + '"';
+          }
+        }
+      }
+      queryParamsString = queryParamsString + '}';
+      queryPar = JSON.parse(queryParamsString);
+    }
+    this.names = await this.combinedService.getNames(this.category, queryPar);
     if(this.names['success'] === 1){
       this.names = this.names['result'];
       this.form.get('names').setValue(this.names.filter(x => {if(x.id === this.id) return x}));

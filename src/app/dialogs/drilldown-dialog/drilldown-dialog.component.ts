@@ -119,7 +119,7 @@ export class DrilldownDialogComponent implements OnInit {
   }
 
   async prepareNames(): Promise<void> {
-    this.sameNames = await this.combinedService.getData(this.category, this.type, this.queryParams);
+    this.sameNames = await this.combinedService.getNames(this.category, this.queryParams);
     if(this.sameNames && this.sameNames['success'] === 1 && this.sameNames['result'].length > 0){
       this.sameNames = this.sameNames['result'];
       this.compareForm.get('sameNames').setValue(this.sameNames.filter(x => {if(x.id === this.id) return x}));
@@ -211,7 +211,7 @@ export class DrilldownDialogComponent implements OnInit {
   }
 
   inputControl(event: any) {
-    setTimeout(async () => {      
+    setTimeout(async () => { 
       let isValueTrue = this.categories.filter(myAlias => myAlias.name === event.target.value);
       
       if (isValueTrue.length === 0){
@@ -220,9 +220,17 @@ export class DrilldownDialogComponent implements OnInit {
         this.namesOptionsReady = false;
         let selectedCategory = this.compareForm.controls['category'].value.value;
         let selectedCategoryIds = selectedCategory + 'Ids';
-        this.names = await this.combinedService.getData(selectedCategory, this.type, this.queryParams);
+        let newQueryParams = this.addClickedParams();
+        this.names = await this.combinedService.getNames(selectedCategory, newQueryParams);
         if(this.names && this.names['success'] === 1 && this.names['result'].length > 0){
           this.names = this.names['result'];
+          let nullIndex = this.names.findIndex(function(item, i) {
+            return item.id === null;
+          });
+          if(nullIndex >= 0){
+            this.names[nullIndex].id = 0;
+            this.names[nullIndex].name = 'Unspecified'
+          }
           if(Object.keys(this.queryParams).includes(selectedCategoryIds)){
             this.compareForm.get('names').setValue(this.names.filter(x => {if(this.queryParams[selectedCategoryIds].includes(x.id)) return x}));
           } else {
@@ -249,6 +257,19 @@ export class DrilldownDialogComponent implements OnInit {
         break;
     }
     return filter;
+  }
+
+  private addClickedParams(): any{
+    let queryParamsString = '{"' + this.filterName + '":"' + this.id + '"';
+    if(this.queryParams){
+      for(let params in this.queryParams){
+        if(POSSIBLE_FILTERS.includes(params) && params !== 'filter' && params !== 'p'){
+          queryParamsString += ',"' + params + '":"' + this.queryParams[params] + '"';
+        }
+      }
+    }
+    queryParamsString += '}';
+    return JSON.parse(queryParamsString);
   }
 
 }

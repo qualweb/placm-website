@@ -11,7 +11,7 @@
   </ng-template>
   
   <ng-template #chartsAllReady>
-    <app-graphic-breadcrumbs [data]="breadcrumbsData"></app-graphic-breadcrumbs>
+    <app-graphic-breadcrumbs *ngIf="tableReady" [data]="breadcrumbsData"></app-graphic-breadcrumbs>
     <div class="graphic">
       <div *ngFor="let c of charts; let i = index" id="{{ 'chart' + i }}" class="chart">
       </div>
