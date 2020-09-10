@@ -119,9 +119,9 @@ export class CombinedService {
       }
 
       if(await data && data.success === 1){
-        // because the first 5 items in result array are OkPackets and not RowDataPackets
+        // because the first 6 items in result array are OkPackets and not RowDataPackets
         if(type === 'scriteria')
-          data.result = data.result[5];
+          data.result = data.result[6];
         // because the first 8 items in result array are OkPackets and not RowDataPackets
         if(type === 'scApp')
           data.result = data.result[8];
@@ -232,6 +232,8 @@ export class CombinedService {
   }
 
   private getStorageName(category: string, type: string, queryParams?: any, comparing?: boolean): string {
+    let storageName;
+    let serverName = SERVER_NAME;
     let result = category;
     let compare = comparing ? 'comp' : '';
     queryParams = queryParams ? this.sortObject(queryParams) : [];
@@ -239,9 +241,13 @@ export class CombinedService {
       if(POSSIBLE_FILTERS.includes(param) && param !== 'filter' && param !== 'p')
         result = result + ';' + param.substring(0, 3) + '=' + this.sortObject(queryParams[0][param].split(','));
     }
-    return comparing ? 
-    compare + '_' + type.substring(0, 2) + '_' + result + '_' + SERVER_NAME : 
-    type.substring(0, 2) + '_' + result + '_' + SERVER_NAME;
+    storageName = comparing ? 
+                  compare + '_' + type.substring(0, 2) + '_' + result : 
+                  type.substring(0, 2) + '_' + result;
+    if(serverName !== ''){
+      storageName += '_' + serverName;
+    }
+    return storageName;
   }
 
   private sortObject(obj) {
