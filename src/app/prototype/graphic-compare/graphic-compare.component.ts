@@ -404,11 +404,23 @@ export class GraphicCompareComponent implements OnInit {
           // if theres any data
           let value = graphSplitData[id];
           if(value.length > 0){
-            if(!value[i] || (value[i]['id'] !== existentIds[i])){
+            if(value[i]){
+              if(value[i]['id'] !== existentIds[i]){
+                let correctIndex = value.findIndex((item, index) => {
+                  return item.id === existentIds[i];
+                });
+                if(correctIndex >= i) {
+                  value.splice(i, 0, value[correctIndex]);
+                  value.splice(correctIndex+1, 1);
+                } else {
+                  value.splice(i, 0, {id: existentIds[i], index: i});
+                }
+              }
+            } else {
               value.splice(i, 0, {id: existentIds[i], index: i});
             }
-          }
-        })
+          } 
+        });
       }
 
       let names = [], nApps = [], nPages = [], nPassed = [],
