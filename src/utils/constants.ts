@@ -6,7 +6,7 @@ const BASE_URL = environment.production ? '/' : 'http://localhost:3443/' ;
 // already exists: '', 'pt', 'test'
 const SERVER_NAME = '';
 
-const POSSIBLE_FILTERS = ['continentIds', 'countryIds', 'sectorIds', 'orgIds', 'tagIds', 'appIds', 'evalIds', 'scIds', 'typeIds', 'ruleIds', 'filter', 'p'];
+const POSSIBLE_FILTERS = ['continentIds', 'countryIds', 'sectorIds', 'orgIds', 'tagIds', 'appIds', 'evalIds', 'scIds', 'typeIds', 'ruleIds', 'filter', 'p', 'graph'];
 
 const LABELS_PLURAL = {
   'continent': 'Continents',

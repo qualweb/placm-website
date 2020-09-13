@@ -57,7 +57,8 @@
       <div id="checkboxes">
           <mat-checkbox *ngFor="let variable of xAxisVars; let i = index" color="primary" [checked]="variable.checked" (change)="updateBySelection(variable.id, 0)">{{variable.name}}</mat-checkbox>
       </div>
-      <button (click)="removeAllFilters()">Select all</button>
+      <button (click)="selectAllCheckboxes()">Select all</button>
+      <button (click)="unselectAllCheckboxes()">Unselect all</button>
     </div>
   </ng-template>
 </ng-template>

@@ -41,6 +41,7 @@ export class GraphicCompareComponent implements OnInit {
 
   comparingSameType: boolean;
   colSpan: number;
+  rowIndex: number;
 
   table: any[];
   showTable: boolean = false;
@@ -54,6 +55,8 @@ export class GraphicCompareComponent implements OnInit {
   
   error: boolean = false;
   errorMessage: number = 0;
+
+  legendAlreadyClicked: boolean = false;
 
   constructor(
     private router: Router,
@@ -98,9 +101,9 @@ export class GraphicCompareComponent implements OnInit {
     });
 
     this.clearExistentCharts();
-    // if queryparams changed (even if first load!), but it was not from a checkbox change, then refresh data!
+    // if queryparams changed (even if first load!), but it was a legend change from united charts, then refresh data!
     this.activatedRoute.queryParams.subscribe(async (params: any) => {
-      if(this.legendChange) {
+      if(this.legendChange && !this.unitedChart) {
         this.legendChange = false;
       } else {
         this.clearExistentCharts();
@@ -117,17 +120,42 @@ export class GraphicCompareComponent implements OnInit {
     let actualParams = this.activatedRoute.snapshot.queryParams;
     let queryParamsArray = [];
     let actualFilterExists = false;
-    let workingParam = type === 0 ? 'filter' : 'p';
+    let workingParam = type === 0 ? (!this.unitedChart ? 'filter' : 'p') : 'p';
+    let assertionsGraphic = this.actualGraphicType === 'assertions' ? true : false;
     
-    let emptyParamString = "";
-    // if it wasnt a legend click on the first p
-    if(!(type === 1 && id === 0)){
-      emptyParamString = '"' + workingParam + '":"';
-      // if it was a legend click, there needs to be added the first p (because its always visible in initialization)
-      if(type === 1){
-        emptyParamString = emptyParamString + '0,';
+    let emptyParamString = '';
+    if(this.legendChange){
+      if(assertionsGraphic){
+        if(id === 0){
+          if(this.legendAlreadyClicked){
+            emptyParamString = '"' + workingParam + '":"';
+            emptyParamString += id.toString() + '"';
+          }
+        } else {
+          emptyParamString = '"' + workingParam + '":"';
+          if(!this.legendAlreadyClicked)
+            emptyParamString += '0,';
+          emptyParamString += id.toString() + '"';
+        }
+      } else if(!assertionsGraphic){
+        if([0,1].includes(id)){
+          emptyParamString = '"' + workingParam + '":"';
+          if(this.legendAlreadyClicked){
+            emptyParamString += id.toString() + '"';
+          } else {
+            emptyParamString += id === 0 ? '1"' : '0"';
+          }
+        } else {
+          emptyParamString = '"' + workingParam + '":"';
+          if(!this.legendAlreadyClicked)
+            emptyParamString +=  '0,1,';
+          emptyParamString += id.toString() + '"';
+        }
       }
-      emptyParamString = emptyParamString + id.toString() + '"';
+      this.legendAlreadyClicked = true;
+    } else {
+      emptyParamString = '"' + workingParam + '":"';
+      emptyParamString += id.toString() + '"';
     }
 
     if(!isEmpty(actualParams)){
@@ -176,18 +204,14 @@ export class GraphicCompareComponent implements OnInit {
     let jsonNavExtras = JSON.parse('{' + queryParamsArray.join(',') + '}');
 
     for(let c of testCharts){
-      // if legend click and not chart clicked (because it toggles automatically)
+      // if legend click and click not on chart clicked
+      // to make all charts update legend
       if(type === 1 && e.target.chart.renderTo !== c['renderTo']){
+        // setVisible toggles visibility
         c.series[id].setVisible();
       }
-      
-     // update data table on checkbox click
-      if(c.options.exporting.showTable){
-        let element = document.getElementsByClassName("highcharts-data-table");
-        if(element)
-          element[0].removeChild(element[0].childNodes[0]);
-      }
     }
+    console.log(jsonNavExtras);
     this.router.navigate([], {
         relativeTo: this.activatedRoute,
         queryParams: jsonNavExtras
@@ -199,6 +223,16 @@ export class GraphicCompareComponent implements OnInit {
     // if there were any filters active (in the url)
     if(filter){
       return filter.split(',');
+    } else {
+      return [];
+    }
+  }
+
+  getPParamsArray(): string[] {
+    let p = this.activatedRoute.snapshot.queryParams['p'];
+    // if there were any filters active (in the url)
+    if(p){
+      return p.split(',');
     } else {
       return [];
     }
@@ -259,7 +293,7 @@ export class GraphicCompareComponent implements OnInit {
     this.breadcrumbsData['names'] = [];
     let data, rawData;
     let orderByParam, orderByParamName;
-    let filterArray;
+    let filterArray, pArray;
     let idInParams;
     let resultData = [];
     let subtitle = "";
@@ -332,7 +366,12 @@ export class GraphicCompareComponent implements OnInit {
       }
 
       if(data && data['success'] === 1){
-        rawData = data['result'];
+        if(data['result'].length){
+          rawData = data['result'];
+        } else {
+          this.error = true;
+          this.errorMessage = -2;
+        }
       } else {
         this.error = true;
         this.errorMessage = 4;
@@ -341,6 +380,7 @@ export class GraphicCompareComponent implements OnInit {
 
     if(!this.error){    
       filterArray = this.getFilterParamsArray();
+      pArray = this.getPParamsArray();
       orderByParam = this.getOrderByParam(input);
       this.comparingSameType = orderByParam === 'id' || orderByParam === 'name';
       this.unitedChart = this.comparingSameType && 
@@ -445,18 +485,19 @@ export class GraphicCompareComponent implements OnInit {
       this.table = [[...tableHeaders]];
       let columnIndex;
       this.colSpan = this.comparingSameType ? 1 : this.charts.length;
-      let rowIndex = 1;
+      this.rowIndex = 1;
       let tableData: any[];
       let columnHeaders: string[] = [];
       let name;
       let titleName;
+      let checkboxIndex = 0;
 
       let chartData: IHashString = {};
 
       paramArgIds.forEach((key) => {
         if(graphSplitData[key].length > 0){
           columnIndex = this.comparingSameType ? 0 : this.charts.indexOf(key);
-          rowIndex = this.comparingSameType ? rowIndex : 2;
+          this.rowIndex = this.comparingSameType ? this.rowIndex : 2;
           names = [], nApps = [], nPages = [], nPassed = [],
           nFailed = [], nCantTell = [], 
           nInapplicable = [], nUntested = [];
@@ -487,10 +528,12 @@ export class GraphicCompareComponent implements OnInit {
                 chartData[titleName] = [];
             }
             
-            idInParams = filterArray.includes(testId.toString());
+            idInParams = filterArray.includes(testId.toString()) || (this.unitedChart && !pArray.includes(checkboxIndex.toString()));
             if(test !== '-' && !checkboxesPossibilities.includes(test)){
               checkboxesPossibilities.push(test);
-              this.xAxisVars.push({name: test, id: testId, checked: !idInParams});
+              let checkId = this.unitedChart ? checkboxIndex : testId;
+              this.xAxisVars.push({name: test, id: checkId, checked: !idInParams});
+              checkboxIndex++;
             }
 
             // only passes if [id not in filter] or [it was manually filled with null and not same index]
@@ -545,9 +588,9 @@ export class GraphicCompareComponent implements OnInit {
                 }
     
               }
-              this.table = this.addDataToTable(tableData, rowIndex, columnIndex, this.colSpan, this.table);
-              this.table = this.addRowHeaderToTable(name, rowIndex, this.table);
-              rowIndex++;
+              this.table = this.addDataToTable(tableData, this.rowIndex, columnIndex, this.colSpan, this.table);
+              this.table = this.addRowHeaderToTable(name, this.rowIndex, this.table);
+              this.rowIndex++;
             }
             // handling table headers
             if(!this.comparingSameType){
@@ -566,14 +609,13 @@ export class GraphicCompareComponent implements OnInit {
 
           // if theres data to present -> does not load empty charts
           if(names.length > 0){
-      
             let visibleSeries = [];
-            for(let i = 0; i <= 5; i++){
-              visibleSeries.push(this.isSeriesVisible(i));
-            }
 
             if(!this.unitedChart){
               let i = 0;
+              for(let i = 0; i <= 5; i++){
+                visibleSeries.push(this.isSeriesVisible(i));
+              }
 
               if(this.actualGraphicType === 'assertions'){
                 resultData.push({
@@ -624,12 +666,15 @@ export class GraphicCompareComponent implements OnInit {
                 visible: visibleSeries[i]
               });
             } else {
+              let i = 0;
               Object.keys(chartData).forEach((k) => {
                 resultData.push({
                   id: k,
                   name: k,
-                  data: chartData[k]
+                  data: chartData[k],
+                  visible: this.isSeriesVisible(i)
                 });
+                i++;
               });
             }
             
@@ -725,6 +770,7 @@ export class GraphicCompareComponent implements OnInit {
                     cursor: !this.comparingSameType ? 'pointer' : undefined,
                     events: {
                         legendItemClick: (e) => {
+                          console.log(e.target['_i']);
                           this.updateBySelection(e.target['_i'], 1, e);
                         }              
                     },
@@ -880,10 +926,14 @@ export class GraphicCompareComponent implements OnInit {
     if(parameterParam){
       result = parameterParam.split(',').includes(i);
     } else {
-      if(this.actualGraphicType === 'assertions'){
-        result = index === 0;
+      if(!this.unitedChart){
+        if(this.actualGraphicType === 'assertions'){
+          result = index === 0;
+        } else {
+          result = index === 0 || index === 1;
+        }
       } else {
-        result = index === 0 || index === 1;
+        result = false;
       }
     }
     return result;
@@ -907,14 +957,14 @@ export class GraphicCompareComponent implements OnInit {
     if(this.actualGraphicType === 'assertions'){
       this.router.navigate(['/compare/scriteria/'+this.actualCategory], {
         queryParams: {
-          p: null
+          p: this.unitedChart ? '0,1' : null
         },
         queryParamsHandling: 'merge'
       });
     } else {
       this.router.navigate(['/compare/assertions/'+this.actualCategory], {
         queryParams: {
-          p: null
+          p: this.unitedChart ? '0' : null
         },
         queryParamsHandling: 'merge'
       });
@@ -922,21 +972,60 @@ export class GraphicCompareComponent implements OnInit {
   }
 
   changeGraphicType() {
+    // nVars here is equal to the number of checkboxes
+    let nVars = this.xAxisVars.length;
     this.router.navigate([], {
       queryParams: {
-        graph: this.unitedChart ? 0 : 1
+        graph: this.unitedChart ? 0 : 1,
+        // if its not united chart, it will fill p parameter with 0,1,2,... 
+        // to make the checkbox click equal to the legend click
+        p: this.unitedChart ? null : [...Array(nVars).keys()].join(','),
+        filter: null
       },
       queryParamsHandling: 'merge'
     });
   }
 
-  removeAllFilters() {
-    this.router.navigate([], {
-      queryParams: {
-        filter: null
-      },
-      queryParamsHandling: 'merge'
-    });
+  selectAllCheckboxes() {
+    // p is a positive filter - if its in 'p', it is on the chart
+    // filter is a negative filter - if its in 'filter', its not on the chart
+    if(this.unitedChart) {
+      let nVars = this.xAxisVars.length;
+      this.router.navigate([], {
+        queryParams: {
+          p: [...Array(nVars).keys()].join(',')
+        },
+        queryParamsHandling: 'merge'
+      });
+    } else {
+      this.router.navigate([], {
+        queryParams: {
+          filter: null
+        },
+        queryParamsHandling: 'merge'
+      });
+    }
+  }
+
+  unselectAllCheckboxes() {
+    // p is a positive filter - if its in 'p', it is on the chart
+    // filter is a negative filter - if its in 'filter', its not on the chart
+    if(this.unitedChart) {
+      this.router.navigate([], {
+        queryParams: {
+          p: null
+        },
+        queryParamsHandling: 'merge'
+      });
+    } else {
+      this.router.navigate([], {
+        queryParams: {
+          filter: this.xAxisVars.map(x => x.id).join(',')
+        },
+        queryParamsHandling: 'merge'
+      });
+    }
+    this.showTable = false;
   }
 }
 

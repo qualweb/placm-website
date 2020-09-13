@@ -42,6 +42,8 @@ export class GraphicDisplayComponent implements OnInit {
   error: boolean = false;
   errorMessage: number = 0;
 
+  legendAlreadyClicked: boolean = false;
+
   constructor(
     private router: Router,
     private activatedRoute: ActivatedRoute,
@@ -87,9 +89,10 @@ export class GraphicDisplayComponent implements OnInit {
     let queryParamsArray = [];
     let actualFilterExists = false;
     let workingParam = type === 0 ? 'filter' : 'p';
+    let assertionsGraphic = this.actualGraphicType === 'assertions' ? true : false;
     
     let emptyParamString = "";
-    // if it wasnt a legend click on the first p
+    /*// if it wasnt a legend click on the first p
     if(!(type === 1 && id === 0)){
       emptyParamString = '"' + workingParam + '":"';
       // if it was a legend click, there needs to be added the first p (because its always visible in initialization)
@@ -97,6 +100,40 @@ export class GraphicDisplayComponent implements OnInit {
         emptyParamString = emptyParamString + '0,';
       }
       emptyParamString = emptyParamString + id.toString() + '"';
+    }*/
+
+    if(this.legendChange){
+      if(assertionsGraphic){
+        if(id === 0){
+          if(this.legendAlreadyClicked){
+            emptyParamString = '"' + workingParam + '":"';
+            emptyParamString += id.toString() + '"';
+          }
+        } else {
+          emptyParamString = '"' + workingParam + '":"';
+          if(!this.legendAlreadyClicked)
+            emptyParamString += '0,';
+          emptyParamString += id.toString() + '"';
+        }
+      } else if(!assertionsGraphic){
+        if([0,1].includes(id)){
+          emptyParamString = '"' + workingParam + '":"';
+          if(this.legendAlreadyClicked){
+            emptyParamString += id.toString() + '"';
+          } else {
+            emptyParamString += id === 0 ? '1"' : '0"';
+          }
+        } else {
+          emptyParamString = '"' + workingParam + '":"';
+          if(!this.legendAlreadyClicked)
+            emptyParamString +=  '0,1,';
+          emptyParamString += id.toString() + '"';
+        }
+      }
+      this.legendAlreadyClicked = true;
+    } else {
+      emptyParamString = '"' + workingParam + '":"';
+      emptyParamString += id.toString() + '"';
     }
 
     if(!isEmpty(actualParams)){
@@ -264,8 +301,13 @@ export class GraphicDisplayComponent implements OnInit {
     }
 
     if(data && data['success'] === 1){
-      rawData = data['result'];
-      subtitle = this.prepareSubtitle(rawData, subtitlePossibilities);
+      if(data['result'].length){
+        rawData = data['result'];
+        subtitle = this.prepareSubtitle(rawData, subtitlePossibilities);
+      } else {
+        this.error = true;
+        this.errorMessage = -2;
+      }
     } else {
       this.error = true;
       this.errorMessage = 2;
@@ -569,9 +611,22 @@ export class GraphicDisplayComponent implements OnInit {
   }
 
   isSeriesVisible(index: number): boolean {
+    let result;
     let parameterParam = this.activatedRoute.snapshot.queryParams['p'];
     let i = index.toString();
-    return parameterParam ? parameterParam.split(',').includes(i) : (index === 0 ? true : false);
+    // visible if index exists on p queryParam or
+    // if studying assertions, visible nPages (i=0) or
+    // if studying scriteria, visible nPassed and nFailed (i=0,1)
+    if(parameterParam){
+      result = parameterParam.split(',').includes(i);
+    } else {
+      if(this.actualGraphicType === 'assertions'){
+        result = index === 0;
+      } else {
+        result = index === 0 || index === 1;
+      }
+    }
+    return result;
   }
 
   submittedCategory(cat: string, extra?: any){
@@ -611,14 +666,14 @@ export class GraphicDisplayComponent implements OnInit {
     if(this.actualGraphicType === 'assertions'){
       this.router.navigate(['/scriteria/'+this.actualCategory], {
         queryParams: {
-          p: null
+          p: '0,1'
         },
         queryParamsHandling: 'merge'
       });
     } else {
       this.router.navigate(['/assertions/'+this.actualCategory], {
         queryParams: {
-          p: null
+          p: '0'
         },
         queryParamsHandling: 'merge'
       });
@@ -637,10 +692,18 @@ export class GraphicDisplayComponent implements OnInit {
       }});
   }
 
-  removeAllFilters() {
+  selectAllCheckboxes() {
     this.router.navigate([], {
       queryParams: {
         filter: null
+      },
+      queryParamsHandling: 'merge'
+    });
+  }
+  unselectAllCheckboxes() {
+    this.router.navigate([], {
+      queryParams: {
+        filter: this.xAxisVars.map(x => x.id).join(',')
       },
       queryParamsHandling: 'merge'
     });
