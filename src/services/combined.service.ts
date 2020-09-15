@@ -94,12 +94,6 @@ export class CombinedService {
               data = await this.ruleService.getRuleData(SERVER_NAME);
             }
             break;
-          case 'countryNames':
-            data = await this.countryService.getNames(SERVER_NAME, 'country');
-            break;
-          case 'tagNames':
-            data = await this.tagService.getNames(SERVER_NAME);
-            break;
           case 'scApp':
             data = await this.appService.getSuccessCriteriaData(SERVER_NAME, JSON.stringify(queryParams));
             break;

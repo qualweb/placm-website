@@ -804,7 +804,7 @@ export class GraphicCompareComponent implements OnInit {
       if(checkedCheckboxes.length === 1){
         this.breadcrumbsData['comparingByOne'] = checkedCheckboxes[0].name;
       }
-      console.log('failedIds', this.failedIds);
+      //console.log('failedIds', this.failedIds);
       this.tableReady = true;
 
       if(this.actualCategory === 'eval'){

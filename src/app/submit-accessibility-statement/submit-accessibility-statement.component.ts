@@ -77,9 +77,9 @@ export class SubmitAccessibilityStatementComponent implements OnInit {
 
   private async prepareData(): Promise<void> {
     if(SERVER_NAME !== undefined){
-      this.countries = await this.combinedService.getData('countryNames');
+      this.countries = await this.combinedService.getNames('country');
       this.countries = this.countries['result'];
-      this.tags = await this.combinedService.getData('tagNames');
+      this.tags = await this.combinedService.getNames('tag');
       this.tags = this.tags['result'];
     }
     for(let sec of Object.keys(SECTORS)){

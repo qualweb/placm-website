@@ -20,8 +20,8 @@ export class AdminComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     try {
-      await this.combinedService.getData('countryNames');
-      await this.combinedService.getData('tagNames');
+      await this.combinedService.getNames('country');
+      await this.combinedService.getNames('tag');
       this.loading = false;
     } catch(err) {
       //todo error fix
