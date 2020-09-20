@@ -4,10 +4,11 @@ import { CountryService } from './country.service';
 import { EvaluationService } from './evaluation.service';
 import { RuleService } from './rule.service';
 import { TagService } from './tag.service';
+import { CriteriaService } from './criteria.service';
+import { TimelineService } from './timeline.service';
 import { SessionStorage } from '@cedx/ngx-webstorage';
 import { POSSIBLE_FILTERS, SERVER_NAME, BASE_URL, queryParamsRegex } from 'utils/constants';
 import { throwError } from 'rxjs';
-import { CriteriaService } from './criteria.service';
 import { PLACMError } from 'models/error';
 import { catchError, retry, map } from 'rxjs/operators';
 import { HttpClient, HttpParams } from '@angular/common/http';
@@ -24,6 +25,7 @@ export class CombinedService {
     private evalService: EvaluationService,
     private ruleService: RuleService,
     private criteriaService: CriteriaService,
+    private timelineService: TimelineService,
     private session: SessionStorage,
     private http: HttpClient
   ) { }
@@ -193,6 +195,33 @@ export class CombinedService {
       }
 
       if(await data && data.success === 1){
+        data.timedate = Date.now();
+        this.session.setObject(sessionName, data);
+      }
+      return this.session.getObject(sessionName);
+    } catch (err){
+      return Promise.reject(err);
+    }
+  }
+
+  async getTimelineData(type: string, queryParams?: any): Promise<any> {
+    let sessionName = this.getStorageName('timeline', type, [queryParams]);
+    let sessionData = this.session.getObject(sessionName);
+    let oneMinuteHasPassed = Date.now() - (sessionData ? sessionData.timedate : 0) > 60000;
+    let paramsExist = queryParams ? Object.keys(queryParams).length : false;
+
+    let data;
+    try {
+      if(sessionData === undefined || (sessionData.result === [] && oneMinuteHasPassed)){
+        if(paramsExist){
+          data = await this.timelineService.getByMonth(SERVER_NAME, type, JSON.stringify(queryParams));
+        } else {
+          data = await this.timelineService.getByMonth(SERVER_NAME, type);
+        }
+      }
+
+      if(await data && data.success === 1){
+        data.result = data.result[2];
         data.timedate = Date.now();
         this.session.setObject(sessionName, data);
       }

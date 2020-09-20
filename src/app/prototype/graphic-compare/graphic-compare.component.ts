@@ -211,7 +211,6 @@ export class GraphicCompareComponent implements OnInit {
         c.series[id].setVisible();
       }
     }
-    console.log(jsonNavExtras);
     this.router.navigate([], {
         relativeTo: this.activatedRoute,
         queryParams: jsonNavExtras
@@ -770,7 +769,6 @@ export class GraphicCompareComponent implements OnInit {
                     cursor: !this.comparingSameType ? 'pointer' : undefined,
                     events: {
                         legendItemClick: (e) => {
-                          console.log(e.target['_i']);
                           this.updateBySelection(e.target['_i'], 1, e);
                         }              
                     },

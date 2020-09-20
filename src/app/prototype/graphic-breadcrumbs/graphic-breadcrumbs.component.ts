@@ -85,6 +85,10 @@ export class GraphicBreadcrumbsComponent implements OnInit {
           }
         );
       }
+    } else if(this.category === 'timeline') {
+      this.breadcrumbs.push({
+        name: 'Timeline'
+      });
     } else {
       this.breadcrumbs.push(
         {

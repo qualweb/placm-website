@@ -27,12 +27,16 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import * as Highcharts from 'highcharts';
+import * as Highstocks from 'highcharts/highstock';
 import HC_accessibility from 'highcharts/modules/accessibility';
 import HC_exporting from 'highcharts/modules/exporting';
 import HC_exportdata from 'highcharts/modules/export-data';
 HC_accessibility(Highcharts);
 HC_exporting(Highcharts);
 HC_exportdata(Highcharts);
+HC_accessibility(Highstocks);
+HC_exporting(Highstocks);
+HC_exportdata(Highstocks);
 
 import { AppComponent } from './app.component';
 import { SubmitEarlReportComponent } from './submit-earl-report/submit-earl-report.component';
@@ -51,6 +55,7 @@ import { GraphicBreadcrumbsComponent } from './prototype/graphic-breadcrumbs/gra
 import { SuccessDialogComponent } from './dialogs/success-dialog/success-dialog.component';
 import { CompareDialogComponent } from './dialogs/compare-dialog/compare-dialog.component';
 import { ErrorPageComponent } from './prototype/error-page/error-page.component';
+import { GraphicTimelineComponent } from './prototype/graphic-timeline/graphic-timeline.component';
 //import { LocationStrategy, PathLocationStrategy } from '@angular/common';
 
 const appRoutes: Routes = [
@@ -121,6 +126,14 @@ const appRoutes: Routes = [
     ]
   },
 
+  { path: 'timeline',
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'assertions' },
+      { path: 'assertions', component: GraphicTimelineComponent },
+      { path: 'scriteria', component: GraphicTimelineComponent }
+    ]
+  },
+
   { path: 'admin', component: AdminComponent },
   
   // Error handling path
@@ -150,7 +163,8 @@ const appRoutes: Routes = [
     GraphicBreadcrumbsComponent,
     SuccessDialogComponent,
     CompareDialogComponent,
-    ErrorPageComponent
+    ErrorPageComponent,
+    GraphicTimelineComponent
   ],
   imports: [
     BrowserModule,

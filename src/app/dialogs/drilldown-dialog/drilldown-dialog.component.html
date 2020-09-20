@@ -1,150 +1,132 @@
-<ng-template [ngIf]="!scApp" [ngIfElse]="scAppCode">
+<mat-tab-group animationDuration="0ms">
+  
+  <mat-tab label="Drilldown">
+    <p>You have clicked on {{categoryName}} {{name}}</p>
+    <ng-template [ngIf]="!lastDrilldown" [ngIfElse]="lastDrill">
+      <p>Where do you want to drill now?</p>
+      <app-graphic-picker [actualCategory]="category" [type]="type" [showAll]="false" (change)="changedCategorySelection($event)"></app-graphic-picker>
+    </ng-template>
+    <ng-template #lastDrill>
+      <p class="bold">You cannot drill further!</p>
+    </ng-template>
+      
+    <mat-divider></mat-divider>
 
-  <mat-tab-group animationDuration="0ms">
-    
-    <mat-tab label="Drilldown">
-      <p>You have clicked on {{categoryName}} {{name}}</p>
-      <ng-template [ngIf]="!lastDrilldown" [ngIfElse]="lastDrill">
-        <p>Where do you want to drill now?</p>
-        <app-graphic-picker [actualCategory]="category" [type]="type" [showAll]="false" (change)="changedCategorySelection($event)"></app-graphic-picker>
-      </ng-template>
-      <ng-template #lastDrill>
-        <p class="bold">You cannot drill further!</p>
-      </ng-template>
-        
-      <mat-divider></mat-divider>
+    <div class="actionButtons">
+      <button mat-raised-button color="warn" (click)="close()">Close</button>
+      <span class="fill-remaining-space"></span>
+      <button *ngIf="!lastDrilldown" mat-raised-button color="primary" (click)="submittedCategory()" [disabled]=!selectedCategory>Submit</button>
+    </div>
+  </mat-tab>
 
-      <div class="actionButtons">
-        <button mat-raised-button color="warn" (click)="close()">Close</button>
-        <span class="fill-remaining-space"></span>
-        <button *ngIf="!lastDrilldown" mat-raised-button color="primary" (click)="submittedCategory()" [disabled]=!selectedCategory>Submit</button>
-      </div>
-    </mat-tab>
+  <mat-tab label="Details" *ngIf="scApp">
+    <p>You have clicked on {{categoryName}} {{name}}</p>
+    <p>Do you want to see success criteria in detail?</p>
+  
+    <mat-divider></mat-divider>
 
-    <mat-tab label="Comparing same category">
-      <p>In this tab, you can compare {{categoryName}}'s data.</p>
-      <p>Select which {{categoryNamePlural}} do you want to compare:</p>
-        
-      <mat-form-field floatLabel="always">
+    <div class="actionButtons">
+      <button mat-raised-button color="warn" (click)="close()">Close</button>
+      <span class="fill-remaining-space"></span>
+      <button  mat-raised-button color="primary" (click)="goToSCDetailsPage()">Go to details page</button>
+    </div>
+  </mat-tab>
+
+  <mat-tab label="Timeline" *ngIf="type === 'assertions'">
+    <p>You have clicked on {{categoryName}} {{name}}</p>
+    <p>Do you want to see the temporal evolution?</p>
+  
+    <mat-divider></mat-divider>
+
+    <div class="actionButtons">
+      <button mat-raised-button color="warn" (click)="close()">Close</button>
+      <span class="fill-remaining-space"></span>
+      <button  mat-raised-button color="primary" (click)="goToTimelinePage()">Go to timeline page</button>
+    </div>
+  </mat-tab>
+
+  <mat-tab label="Comparing same category">
+    <p>In this tab, you can compare {{categoryName}}'s data.</p>
+    <p>Select which {{categoryNamePlural}} do you want to compare:</p>
+      
+    <mat-form-field floatLabel="always">
+      <mat-label>Names</mat-label>
+      <mat-select
+        aria-label="Names from same category"
+        id='sameNames'
+        [formControl]="compareForm.controls.sameNames"
+        [multiple]="true">
+        <mat-option *ngFor="let c of sameNamesOptions | async" [value]="c">
+          {{c.name}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-divider></mat-divider>
+
+    <div class="actionButtons">
+      <button mat-raised-button color="warn" (click)="close()">Close</button>
+      <span class="fill-remaining-space"></span>
+      <button mat-raised-button color="primary"
+      [disabled]="compareForm.controls.sameNames.value.length < 2"
+      (click)="goToCompPageSame()">Go to comparison page</button>
+    </div>
+  </mat-tab>
+
+  <mat-tab label="Comparing Different categories">
+    <p>In this tab, you can compare data from the category you're in ({{categoryName}}) based on a second category.</p>
+    <p>Take this as an example: You can compare Application/Website data by Continents!</p>
+    <p>Select which category you want to base {{categoryName}}'s data by:</p>
+    <mat-form-field floatLabel="always">
+      <mat-label>Category</mat-label>
+      <input type="text"
+          aria-label="Category"
+          matInput
+          id='category'
+          [formControl]="compareForm.controls.category"
+          [matAutocomplete]="auto"
+          (blur)="inputControl($event)">
+      <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" [displayWith]="displayFn">
+        <mat-option *ngFor="let c of categoriesOptions | async" [value]="c">
+          {{c.name}}
+        </mat-option>
+      </mat-autocomplete>
+      <button mat-button 
+        *ngIf="compareForm.controls.category.value"
+        matSuffix 
+        mat-icon-button 
+        aria-label="Clear" 
+        (click)="clearInput('category')">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <div *ngIf="compareForm.controls.category.value && compareForm.controls.category.value.name">
+      <p>Select which {{compareForm.controls.category.value.name}} do you want to base your data on:</p>
+      <p *ngIf="!namesOptionsReady">Loading...</p>
+      <mat-form-field *ngIf="namesOptionsReady" floatLabel="always">
         <mat-label>Names</mat-label>
         <mat-select
-          aria-label="Names from same category"
-          id='sameNames'
-          [formControl]="compareForm.controls.sameNames"
+          aria-label="Names from chosen category"
+          id='names'
+          [formControl]="compareForm.controls.names"
           [multiple]="true">
-          <mat-option *ngFor="let c of sameNamesOptions | async" [value]="c">
+          <mat-option *ngFor="let c of namesOptions | async" [value]="c">
             {{c.name}}
           </mat-option>
         </mat-select>
       </mat-form-field>
-
-      <mat-divider></mat-divider>
-
-      <div class="actionButtons">
-        <span class="fill-remaining-space"></span>
-        <button mat-raised-button color="primary"
-        [disabled]="compareForm.controls.sameNames.value.length < 2"
-        (click)="goToCompPageSame()">Go to comparison page</button>
-      </div>
-    </mat-tab>
-
-    <mat-tab label="Comparing Different categories">
-      <p>In this tab, you can compare data from the category you're in ({{categoryName}}) based on a second category.</p>
-      <p>Take this as an example: You can compare Application/Website data by Continents!</p>
-      <p>Select which category you want to base {{categoryName}}'s data by:</p>
-      <mat-form-field floatLabel="always">
-        <mat-label>Category</mat-label>
-        <input type="text"
-           aria-label="Category"
-           matInput
-           id='category'
-           [formControl]="compareForm.controls.category"
-           [matAutocomplete]="auto"
-           (blur)="inputControl($event)">
-        <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" [displayWith]="displayFn">
-          <mat-option *ngFor="let c of categoriesOptions | async" [value]="c">
-            {{c.name}}
-          </mat-option>
-        </mat-autocomplete>
-        <button mat-button 
-          *ngIf="compareForm.controls.category.value"
-          matSuffix 
-          mat-icon-button 
-          aria-label="Clear" 
-          (click)="clearInput('category')">
-          <mat-icon>close</mat-icon>
-        </button>
-      </mat-form-field>
-
-      <div *ngIf="compareForm.controls.category.value && compareForm.controls.category.value.name">
-        <p>Select which {{compareForm.controls.category.value.name}} do you want to base your data on:</p>
-        <p *ngIf="!namesOptionsReady">Loading...</p>
-        <mat-form-field *ngIf="namesOptionsReady" floatLabel="always">
-          <mat-label>Names</mat-label>
-          <mat-select
-            aria-label="Names from chosen category"
-            id='names'
-            [formControl]="compareForm.controls.names"
-            [multiple]="true">
-            <mat-option *ngFor="let c of namesOptions | async" [value]="c">
-              {{c.name}}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-
-      <mat-divider></mat-divider>
-
-      <div class="actionButtons">
-        <span class="fill-remaining-space"></span>
-        <button mat-raised-button color="primary"
-        [disabled]="compareForm.controls.names.value.length < 2"
-        (click)="goToCompPageDifferent()">Go to comparison page</button>
-      </div>
-    </mat-tab>
-
-  </mat-tab-group>
-
-</ng-template>
-
-<ng-template #scAppCode>
-
-  <mat-tab-group animationDuration="0ms">
-
-    <mat-tab label="Drilldown">
-        <p>You have clicked on {{categoryName}} {{name}}</p>
-        <ng-template [ngIf]="!lastDrilldown" [ngIfElse]="lastDrill">
-          <p>Where do you want to drill now?</p>
-          <app-graphic-picker [actualCategory]="category" [type]="type" [showAll]="false" (change)="changedCategorySelection($event)"></app-graphic-picker>
-        </ng-template>
-        <ng-template #lastDrill>
-          <p class="bold">You cannot drill further!</p>
-        </ng-template>
-      
-      <mat-divider></mat-divider>
-
-      <div class="actionButtons">
-        <button mat-raised-button color="warn" (click)="close()">Close</button>
-        <span class="fill-remaining-space"></span>
-        <button *ngIf="!lastDrilldown" mat-raised-button color="primary" (click)="submittedCategory()" [disabled]=!selectedCategory>Submit</button>
     </div>
-    </mat-tab>
 
-    <mat-tab label="Details">
-      <p>You have clicked on {{categoryName}} {{name}}</p>
-      <p>Do you want to see success criteria in detail?</p>
-    
-      <mat-divider></mat-divider>
+    <mat-divider></mat-divider>
 
-      <div class="actionButtons">
-        <span class="fill-remaining-space"></span>
-        <button  mat-raised-button color="primary" (click)="goToSCDetailsPage()">Go to details page</button>
-      </div>
-    </mat-tab>
-    
-    
+    <div class="actionButtons">
+      <button mat-raised-button color="warn" (click)="close()">Close</button>
+      <span class="fill-remaining-space"></span>
+      <button mat-raised-button color="primary"
+      [disabled]="compareForm.controls.names.value.length < 2"
+      (click)="goToCompPageDifferent()">Go to comparison page</button>
+    </div>
+  </mat-tab>
 
-  </mat-tab-group>
-
-</ng-template>
-
+</mat-tab-group>

@@ -7,14 +7,15 @@ import { CombinedService } from 'services/combined.service';
 import * as isEmpty from 'lodash.isempty';
 import * as filter from 'lodash.filter';
 import * as remove from 'lodash.remove';
+import * as Highstock from 'highcharts/highstock';
 import * as Highcharts from 'highcharts';
 
 @Component({
-  selector: 'app-graphic-display',
-  templateUrl: './graphic-display.component.html',
-  styleUrls: ['./graphic-display.component.css']
+  selector: 'app-graphic-timeline',
+  templateUrl: './graphic-timeline.component.html',
+  styleUrls: ['./graphic-timeline.component.css']
 })
-export class GraphicDisplayComponent implements OnInit {
+export class GraphicTimelineComponent implements OnInit {
 
   @Output() closedDialog = new EventEmitter();
   actualGraphicType: string;
@@ -53,11 +54,10 @@ export class GraphicDisplayComponent implements OnInit {
 
   ngOnInit(): void {    
     this.initChange = true;
-    this.actualGraphicType = this.activatedRoute.snapshot.parent.url[0].path;
-    this.actualCategory = this.activatedRoute.snapshot.url[0].path;
-    this.actualFilter = this.actualCategory + 'Ids';
+    this.actualGraphicType = this.activatedRoute.snapshot.url[0].path;
+    //this.actualFilter = this.actualCategory + 'Ids';
     
-    switch(this.actualCategory){
+    /*switch(this.actualCategory){
       case 'continent':
       case 'country':
       case 'tag':
@@ -65,12 +65,12 @@ export class GraphicDisplayComponent implements OnInit {
       case 'org':
       case 'app':
       case 'eval':
-        this.sCriteriaVisible = true;
-        break;
+        //this.sCriteriaVisible = true;
+        //break;
       default:
         this.sCriteriaVisible = false;
         break;
-    }
+    }*/
 
     // if queryparams changed (even if first load!), but it was not from a checkbox change, then refresh data!
     this.activatedRoute.queryParams.subscribe(async (params: any) => {
@@ -294,7 +294,7 @@ export class GraphicDisplayComponent implements OnInit {
     filterArray = this.getFilterParamsArray();
     try{
       // input can be sent as '{}' in this function
-      data = await this.combinedService.getData(this.actualCategory, this.actualGraphicType, input);
+      data = await this.combinedService.getTimelineData(this.actualGraphicType, input);
     } catch(err) {
       this.error = true;
       this.errorMessage = 1;
@@ -333,37 +333,27 @@ export class GraphicDisplayComponent implements OnInit {
       this.xAxisVars = [];
       this.table = [[...tableHeaders]];
 
-      let test, testId, rowIndex = 1;
+      let test, testDate, rowIndex = 1;
       for(let vars of rawData){
         tableData = [];
-        testId = vars.id ? vars.id : 0;
-        if(this.actualCategory === 'sc'){
-          test = vars.name ? 'SC ' + testId + ' - ' + vars.name : 'Unspecified';
-        } else {
-          test = vars.name ? vars.name : 'Unspecified';
-        }
-        idInParams = filterArray.includes(testId.toString());
-        this.xAxisVars.push({name: test, id: testId, checked: !idInParams});
+        testDate = Date.UTC(vars.date.split('-')[0], vars.date.split('-')[1]);
+        idInParams = filterArray.includes(vars.date.replace('-','').toString());
+        this.xAxisVars.push({name: vars.date, id: vars.date.replace('-',''), checked: !idInParams});
         if(!idInParams){
 
           // handling x axis
-          if(this.actualCategory === 'sc'){
-            name = 'SC ' + testId;
-          } else {
-            name = test;
-          }
-          names.push(name);
+          names.push(testDate);
 
           // handling y axis and table data
           if(this.actualGraphicType === 'assertions'){
             tableData.push(vars.nPages);
-            nPages.push(vars.nPages);
+            nPages.push([testDate, vars.nPages]);
           }
-          nPassed.push(vars.nPassed);
-          nFailed.push(vars.nFailed);
-          nCantTell.push(vars.nCantTell);
-          nInapplicable.push(vars.nInapplicable);
-          nUntested.push(vars.nUntested);
+          nPassed.push([testDate, vars.nPassed]);
+          nFailed.push([testDate, vars.nFailed]);
+          nCantTell.push([testDate, vars.nCantTell]);
+          nInapplicable.push([testDate, vars.nInapplicable]);
+          nUntested.push([testDate, vars.nUntested]);
           
           tableData.push(vars.nPassed);
           tableData.push(vars.nFailed);
@@ -371,13 +361,13 @@ export class GraphicDisplayComponent implements OnInit {
           tableData.push(vars.nInapplicable);
           tableData.push(vars.nUntested);
           
-          this.table = this.addDataToTable(name, tableData, rowIndex, this.table);
+          this.table = this.addDataToTable(vars.date, tableData, rowIndex, this.table);
           rowIndex++;
         }
         
       }
 
-      this.breadcrumbsData['category'] = this.actualCategory;
+      this.breadcrumbsData['category'] = 'timeline';
       this.breadcrumbsData['type'] = this.actualGraphicType;
 
       this.chartsReady = true;
@@ -439,17 +429,24 @@ export class GraphicDisplayComponent implements OnInit {
         visible: visibleSeries[i]
       });
 
-      this.chart = Highcharts.chart('chart', {
+      this.chart = Highstock.stockChart('chart', {
         chart: {
-          type: 'column',
-          animation: false
+          alignTicks: false,
+          animation: false,
+          type: 'column'
+        },
+        rangeSelector : {
+          enabled: !!names.length,
+          inputDateFormat: '%b, %Y',
+          inputEditDateFormat: '%m-%Y'
         },
         title: {
-          text: LABELS_PLURAL[this.actualCategory] + ' column chart'
+          text: 'Timeline column chart'
         },
-        //to enable a single tooltip to all series at one point
         tooltip: {
-          shared: true
+          split: false,
+          shared: true,
+          xDateFormat: '%B %Y'
         },
         credits: {
           enabled: false
@@ -474,28 +471,6 @@ export class GraphicDisplayComponent implements OnInit {
                   } 
 
                   this.updateMenuTableText();
-                  /* let element;
-                  // if it was visible - it will be removed
-                  if(this.showTable){
-                    element = document.getElementsByClassName("highcharts-data-table");
-                    if(element)
-                      element[0].removeChild(element[0].childNodes[0]);
-                  }
-                  this.showTable = !this.showTable;
-                  this.chart.update({
-                    exporting: {
-                      showTable: this.showTable
-                    }
-                  });
-                  this.updateMenuTableText(this.showTable); */
-
-                  // if it is now visible - change tabindex to 0
-                  // because default is -1
-                  /* if(this.chart.options.exporting.showTable){
-                    element = document.getElementsByClassName("highcharts-data-table");
-                    if(element)
-                      element[0].childNodes[0].setAttribute("tabIndex", 0);
-                  } */
                 },
                 text: 'Show and go to data table'
             }
@@ -511,43 +486,36 @@ export class GraphicDisplayComponent implements OnInit {
               enabled: true
           }
         },
-        //eixo dos x - nomes de cada coluna
+        //eixo dos x - month-year
         xAxis: {
-          categories: names,
-          crosshair: true
-        },
-        /*legend: {
-          accessibility: {
-            enabled: true,
-            keyboardNavigation: {
-              enabled: true
+          type: 'datetime',
+          tickPositions: names.length <= 3 ? names : undefined,
+          labels: {
+            formatter: function () {
+              return Highcharts.dateFormat('%b %Y', this.value);
             }
           },
-          itemHoverStyle: {}
-        },*/
+        },
+        legend: {
+          enabled: true   
+        },
         plotOptions: {
+          column: {
+            getExtremesFromAll: true
+          },
           series: {
-            // disabling graphic animations
-            animation: false,
-            cursor: 'pointer',
+            showInNavigator: true,
+            animation: {
+              duration: 0
+            },
             events: {
-                legendItemClick: (e) => {
-                  this.updateBySelection(e.target['_i'], 1);
-                }              
+              legendItemClick: (e) => {
+                this.updateBySelection(e.target['_i'], 1);
+              }  
             },
-            point: {
-              events: {
-                click: (e) => {
-                  this.onPointSelect(e);
-                }
-              }
-            },
-            compare: 'value',
-            showInNavigator: true
-            
           }
         },
-        series: resultData
+        series: resultData.length ? resultData : undefined
       });
 
       if(subtitle)
@@ -648,9 +616,7 @@ export class GraphicDisplayComponent implements OnInit {
       }
       queryParamsString = queryParamsString + '}';
 
-      let url = cat !== 'timeline' ? '../' + cat : '../../timeline/' + this.actualGraphicType;
-
-      this.router.navigate([url], {
+      this.router.navigate(['../' + cat], {
         relativeTo: this.activatedRoute,
         queryParams: JSON.parse(queryParamsString)
       });

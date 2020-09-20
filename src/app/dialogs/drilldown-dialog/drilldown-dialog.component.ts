@@ -86,6 +86,10 @@ export class DrilldownDialogComponent implements OnInit {
   goToSCDetailsPage(){
     this.dialogRef.close({selected: 'scApp', filter: this.filterName, id: this.id});
   }
+  
+  goToTimelinePage(){
+    this.dialogRef.close({selected: 'timeline', filter: this.filterName, id: this.id});
+  }
 
   async goToCompPageSame(){
     let idsSelected = this.compareForm.controls.sameNames.value.map(x => x.id);
