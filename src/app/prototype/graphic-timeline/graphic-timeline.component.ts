@@ -336,7 +336,7 @@ export class GraphicTimelineComponent implements OnInit {
       let test, testDate, rowIndex = 1;
       for(let vars of rawData){
         tableData = [];
-        testDate = Date.UTC(vars.date.split('-')[0], vars.date.split('-')[1]);
+        testDate = Date.UTC(+vars.date.split('-')[0], +vars.date.split('-')[1] - 1);
         idInParams = filterArray.includes(vars.date.replace('-','').toString());
         this.xAxisVars.push({name: vars.date, id: vars.date.replace('-',''), checked: !idInParams});
         if(!idInParams){
