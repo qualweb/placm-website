@@ -36,6 +36,8 @@ export class DrilldownDialogComponent implements OnInit {
   namesOptions: Observable<any[]>;
   namesOptionsReady: boolean = false;
 
+  scriteriaTimelineVisible: boolean;
+
   constructor(@Inject(MAT_DIALOG_DATA) data,
     public dialog: MatDialog,
     private dialogRef: MatDialogRef<DrilldownDialogComponent>,
@@ -52,6 +54,25 @@ export class DrilldownDialogComponent implements OnInit {
       this.lastDrilldown = this.category === 'rule' || (this.type === 'scriteria' && this.category === 'eval');
       this.scApp = this.category === 'app' && this.type === 'scriteria';
       this.queryParams = data.queryParams;
+
+      if(this.type === 'assertions'){
+        this.scriteriaTimelineVisible = true;
+      } else {
+        switch(this.category){
+          case 'continent':
+          case 'country':
+          case 'tag':
+          case 'sector':
+          case 'org':
+          case 'app':
+          case 'eval':
+            this.scriteriaTimelineVisible = true;
+            break;
+          default:
+            this.scriteriaTimelineVisible = false;
+            break;
+        }
+      }
 
       this.prepareCategories();
       this.initializeForms();

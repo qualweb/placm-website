@@ -221,8 +221,9 @@ export class CombinedService {
       }
 
       if(await data && data.success === 1){
-        data.result = data.result[2];
         data.timedate = Date.now();
+        if(type === 'scriteria')
+          data.result = data.result[6];
         this.session.setObject(sessionName, data);
       }
       return this.session.getObject(sessionName);

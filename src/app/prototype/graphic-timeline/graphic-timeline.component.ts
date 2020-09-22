@@ -57,20 +57,9 @@ export class GraphicTimelineComponent implements OnInit {
     this.actualGraphicType = this.activatedRoute.snapshot.url[0].path;
     //this.actualFilter = this.actualCategory + 'Ids';
     
-    /*switch(this.actualCategory){
-      case 'continent':
-      case 'country':
-      case 'tag':
-      case 'sector':
-      case 'org':
-      case 'app':
-      case 'eval':
-        //this.sCriteriaVisible = true;
-        //break;
-      default:
-        this.sCriteriaVisible = false;
-        break;
-    }*/
+    this.sCriteriaVisible = Object.keys(this.activatedRoute.snapshot.queryParams).every(
+      x => !['scIds', 'typeIds', 'ruleIds'].includes(x)
+    );
 
     // if queryparams changed (even if first load!), but it was not from a checkbox change, then refresh data!
     this.activatedRoute.queryParams.subscribe(async (params: any) => {
@@ -632,14 +621,14 @@ export class GraphicTimelineComponent implements OnInit {
 
   changeType() {
     if(this.actualGraphicType === 'assertions'){
-      this.router.navigate(['/scriteria/'+this.actualCategory], {
+      this.router.navigate(['../../timeline/scriteria'], {
         queryParams: {
           p: '0,1'
         },
         queryParamsHandling: 'merge'
       });
     } else {
-      this.router.navigate(['/assertions/'+this.actualCategory], {
+      this.router.navigate(['../../timeline/assertions'], {
         queryParams: {
           p: '0'
         },

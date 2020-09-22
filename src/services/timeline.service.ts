@@ -19,7 +19,7 @@ export class TimelineService {
   getByMonth(serverName: string, type?: string, filters?: any): Promise<any> {
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
-    let types = type === 'scriteria' ? 'SC' : '';
+    let types = type === 'scriteria' ? 'SC' : 'AS';
     if(filters)
       opts = opts.append('filters', filters);
     return this.http.get(appUrl + 'byMonth' + types, {params: opts})
