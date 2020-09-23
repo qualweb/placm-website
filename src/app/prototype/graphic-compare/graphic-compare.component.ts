@@ -811,6 +811,17 @@ export class GraphicCompareComponent implements OnInit {
         });
       }
 
+      // set the maximum yaxis value and set it to all charts
+      let yAxisMax = 0;
+      for(let chart of this.actualCharts){
+        yAxisMax = chart.yAxis[0].max > yAxisMax ? chart.yAxis[0].max : yAxisMax;
+      }
+      for(let chart of this.actualCharts) {
+        chart.yAxis[0].update({
+          max: yAxisMax
+        });
+      }
+
       // show tooltip on all graphic on mouse hover or keyboard focus
       Array.from(document.getElementsByClassName('chart')).forEach((x) => {
         ['mousemove', 'touchmove', 'touchstart', 'keyup', 'mouseleave'].forEach((eventType) => {
