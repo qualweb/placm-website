@@ -115,7 +115,7 @@ export class GraphicDisplayComponent implements OnInit {
             emptyParamString += '0,';
           emptyParamString += id.toString() + '"';
         }
-      } else if(!assertionsGraphic){
+      } else {
         if([0,1].includes(id)){
           emptyParamString = '"' + workingParam + '":"';
           if(this.legendAlreadyClicked){

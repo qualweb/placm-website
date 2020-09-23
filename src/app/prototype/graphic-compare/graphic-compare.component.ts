@@ -87,25 +87,14 @@ export class GraphicCompareComponent implements OnInit {
         break;
     }
 
-    // to fill some data when redirected to continent because of an error
-    this.router.events.pipe(
-      filterRxjs(event => event instanceof NavigationEnd
-        && (event.urlAfterRedirects === '/compare/assertions/continent' ||
-        event.urlAfterRedirects === '/compare/scriteria/continent')
-      )
-    ).subscribe((event: NavigationEnd) => {
-      const queryParams = {continentIds: "1,2,3,4,5,6"};
-      this.router.navigate([], {
-        queryParams
-      })
-    });
-
     this.clearExistentCharts();
     // if queryparams changed (even if first load!), but it was a legend change from united charts, then refresh data!
     this.activatedRoute.queryParams.subscribe(async (params: any) => {
-      if(this.legendChange && !this.unitedChart) {
+      console.log(params);
+      if(this.legendChange) {
         this.legendChange = false;
       } else {
+        console.log("ola");
         this.clearExistentCharts();
         await this.prepareApplicationGraphic(this.activatedRoute.snapshot.queryParams);
       }
@@ -115,8 +104,10 @@ export class GraphicCompareComponent implements OnInit {
 
   // type 0 = checkbox; type 1 = legend click
   updateBySelection(id: number, type: number, e?: any): void {
+    console.log(type);
     let testCharts = Highcharts.charts.filter(x => {if(x !== undefined) return x;});
-    this.legendChange = type === 1;
+    this.legendChange = type === 1 && !this.unitedChart;
+    console.log(type, this.legendChange);
     let actualParams = this.activatedRoute.snapshot.queryParams;
     let queryParamsArray = [];
     let actualFilterExists = false;
@@ -137,7 +128,7 @@ export class GraphicCompareComponent implements OnInit {
             emptyParamString += '0,';
           emptyParamString += id.toString() + '"';
         }
-      } else if(!assertionsGraphic){
+      } else {
         if([0,1].includes(id)){
           emptyParamString = '"' + workingParam + '":"';
           if(this.legendAlreadyClicked){
@@ -377,7 +368,7 @@ export class GraphicCompareComponent implements OnInit {
       }
     }
 
-    if(!this.error){    
+    if(!this.error){
       filterArray = this.getFilterParamsArray();
       pArray = this.getPParamsArray();
       orderByParam = this.getOrderByParam(input);
@@ -531,7 +522,7 @@ export class GraphicCompareComponent implements OnInit {
             if(test !== '-' && !checkboxesPossibilities.includes(test)){
               checkboxesPossibilities.push(test);
               let checkId = this.unitedChart ? checkboxIndex : testId;
-              this.xAxisVars.push({name: test, id: checkId, checked: !idInParams});
+              this.xAxisVars.push({name: test, id: checkId, dbId: testId, checked: !idInParams});
               checkboxIndex++;
             }
 
@@ -798,6 +789,7 @@ export class GraphicCompareComponent implements OnInit {
           this.failedIds.push(key);
         }
       });
+      
       let checkedCheckboxes = this.xAxisVars.filter(x => {if(x.checked === true) return x;});
       if(checkedCheckboxes.length === 1){
         this.breadcrumbsData['comparingByOne'] = checkedCheckboxes[0].name;
@@ -981,15 +973,40 @@ export class GraphicCompareComponent implements OnInit {
   }
 
   changeGraphicType() {
-    // nVars here is equal to the number of checkboxes
-    let nVars = this.xAxisVars.length;
+    let futureFilters = []; 
+    if(!this.unitedChart){
+      // nVars here is equal to the number of checkboxes
+      let nVars = this.xAxisVars.length;
+      let filters = this.getFilterParamsArray();
+      futureFilters = [...Array(nVars).keys()];
+      if(filters.length){
+        for(let filter of filters){
+          let idIndex = this.xAxisVars.findIndex(x => +x.dbId === +filter);
+          if(idIndex >= 0){
+            futureFilters = futureFilters.filter(x => x !== idIndex);
+          }
+        }
+      }
+    } else {
+      let pFilters = this.getPParamsArray();
+      if(pFilters.length){
+        futureFilters = this.xAxisVars.map(x => x.dbId);
+        for(let p of pFilters){
+          futureFilters = futureFilters.filter(x => x !== this.xAxisVars[+p].dbId);
+        }
+      }
+      this.legendAlreadyClicked = false;
+    }
+    
     this.router.navigate([], {
       queryParams: {
         graph: this.unitedChart ? 0 : 1,
         // if its not united chart, it will fill p parameter with 0,1,2,... 
         // to make the checkbox click equal to the legend click
-        p: this.unitedChart ? null : [...Array(nVars).keys()].join(','),
-        filter: null
+        p: this.unitedChart ? null : futureFilters.join(','),
+        // if its united chart, it will fill filter parameter with all ids... 
+        // to make the legend click equal to the checkbox click
+        filter: this.unitedChart ? (futureFilters.length ? futureFilters.join(',') : null) : null
       },
       queryParamsHandling: 'merge'
     });
