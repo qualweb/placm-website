@@ -85,7 +85,8 @@
           id='category'
           [formControl]="compareForm.controls.category"
           [matAutocomplete]="auto"
-          (blur)="inputControl($event)">
+          (blur)="inputControl($event)"
+          #autocompleteTrigger="matAutocompleteTrigger">
       <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" [displayWith]="displayFn">
         <mat-option *ngFor="let c of categoriesOptions | async" [value]="c">
           {{c.name}}

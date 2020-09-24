@@ -28,6 +28,7 @@ export class GraphicCompareComponent implements OnInit {
 
   initChange = false;
   legendChange = false;
+  checkboxClick = false;
 
   homepageUrl: string; 
 
@@ -90,13 +91,16 @@ export class GraphicCompareComponent implements OnInit {
     this.clearExistentCharts();
     // if queryparams changed (even if first load!), but it was a legend change from united charts, then refresh data!
     this.activatedRoute.queryParams.subscribe(async (params: any) => {
-      console.log(params);
       if(this.legendChange) {
         this.legendChange = false;
       } else {
-        console.log("ola");
         this.clearExistentCharts();
         await this.prepareApplicationGraphic(this.activatedRoute.snapshot.queryParams);
+        if(this.checkboxClick){
+          let element = document.getElementById("checkboxes");
+          element.scrollIntoView();
+          this.checkboxClick = false;
+        }
       }
     });
 
@@ -104,10 +108,9 @@ export class GraphicCompareComponent implements OnInit {
 
   // type 0 = checkbox; type 1 = legend click
   updateBySelection(id: number, type: number, e?: any): void {
-    console.log(type);
     let testCharts = Highcharts.charts.filter(x => {if(x !== undefined) return x;});
     this.legendChange = type === 1 && !this.unitedChart;
-    console.log(type, this.legendChange);
+    this.checkboxClick = type === 0;
     let actualParams = this.activatedRoute.snapshot.queryParams;
     let queryParamsArray = [];
     let actualFilterExists = false;

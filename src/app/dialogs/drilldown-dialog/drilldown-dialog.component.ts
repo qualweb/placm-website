@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Inject, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { LABELS_SINGULAR, LABELS_PLURAL, POSSIBLE_FILTERS, queryParamsRegex } from 'utils/constants';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
@@ -38,6 +38,7 @@ export class DrilldownDialogComponent implements OnInit {
 
   scriteriaTimelineVisible: boolean;
 
+  @ViewChild('autocompleteTrigger') autocompleteTrigger;
   constructor(@Inject(MAT_DIALOG_DATA) data,
     public dialog: MatDialog,
     private dialogRef: MatDialogRef<DrilldownDialogComponent>,
@@ -227,10 +228,6 @@ export class DrilldownDialogComponent implements OnInit {
     return JSON.parse(queryParamsString);
   }
 
-  clearInput(inputName: string) {
-    this.compareForm.get(inputName).setValue('');
-  }
-
   displayFn(cat: any): string {
     return cat && cat.name ? cat.name : '';
   }
@@ -282,6 +279,12 @@ export class DrilldownDialogComponent implements OnInit {
         break;
     }
     return filter;
+  }
+  
+  clearInput(inputName: string) {
+    this.compareForm.get(inputName).setValue('');
+    if(inputName === 'category')
+      setTimeout(() => this.autocompleteTrigger.openPanel());
   }
 
   private addClickedParams(): any{
