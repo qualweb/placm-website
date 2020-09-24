@@ -800,7 +800,7 @@ export class GraphicCompareComponent implements OnInit {
       //console.log('failedIds', this.failedIds);
       this.tableReady = true;
 
-      if(this.actualCategory === 'eval'){
+      if(this.actualCategory === 'eval' || this.actualCategory === 'type'){
         this.xAxisVars.sort(function(a, b){
           return a.name.localeCompare(b.name);
         });
