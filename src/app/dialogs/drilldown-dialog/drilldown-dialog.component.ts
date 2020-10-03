@@ -148,6 +148,16 @@ export class DrilldownDialogComponent implements OnInit {
     this.sameNames = await this.combinedService.getNames(this.category, this.queryParams);
     if(this.sameNames && this.sameNames['success'] === 1 && this.sameNames['result'].length > 0){
       this.sameNames = this.sameNames['result'];
+      let nullIndex = this.sameNames.findIndex(function(item, i) {
+        return item.id === null;
+      });
+      if(nullIndex >= 0){
+        this.sameNames[nullIndex].id = 0;
+        this.sameNames[nullIndex].name = 'Unspecified'
+      }
+      this.sameNames.sort(function(a, b){
+        return a.name.localeCompare(b.name);
+      });
       this.compareForm.get('sameNames').setValue(this.sameNames.filter(x => {if(x.id === this.id) return x}));
     } else {
       this.sameNames = [];
@@ -218,7 +228,7 @@ export class DrilldownDialogComponent implements OnInit {
     if(filter){
       data = await this.combinedService.getData(this.category, this.type, this.queryParams);
       if(data['success'] === 1){
-        filters = data['result'].map(x => x.id).filter(id => id !== this.id);
+        filters = data['result'].map(x => x.id === null ? 0 : x.id).filter(id => id !== this.id);
         if(filters.length)
           queryParamsString += ',"filter":"' + filters.join(',') + '"';
       }
@@ -253,6 +263,9 @@ export class DrilldownDialogComponent implements OnInit {
             this.names[nullIndex].id = 0;
             this.names[nullIndex].name = 'Unspecified'
           }
+          this.names.sort(function(a, b){
+            return a.name.localeCompare(b.name);
+          });
           if(Object.keys(this.queryParams).includes(selectedCategoryIds)){
             this.compareForm.get('names').setValue(this.names.filter(x => {if(this.queryParams[selectedCategoryIds].includes(x.id)) return x}));
           } else {

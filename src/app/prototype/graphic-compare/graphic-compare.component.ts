@@ -41,6 +41,7 @@ export class GraphicCompareComponent implements OnInit {
   tableReady: boolean = false;
 
   comparingSameType: boolean;
+  //oneCheckboxSelected: boolean;
   colSpan: number;
   rowIndex: number;
 
@@ -246,13 +247,31 @@ export class GraphicCompareComponent implements OnInit {
     return result;
   }
 
-  onPointSelect(e: any, graphId: number): void {
-    if(e.point || e.target){
-      let data = e.point ? e.point : e.target;
+  // paramArgInfo here can be all ids of paramArg or id of paramArg
+  onPointSelect(e: any, paramArgInfo: number|string, outsideClick: boolean = false, xAxisIndex?: number, chartIndex?: number): void {
+    // outsideClick - mouse click outside of column
+    // e.point - mouse click on column
+    // e.target - keyboard press on column
+    if(outsideClick || e.point || e.target){
+      let data = outsideClick ? {} : (e.point ? e.point : e.target);
+      let checkedCheckboxes = filter(this.xAxisVars, 'checked');
 
-      let graphTitle = data.series.chart.title.textStr.replace(' column chart','').split(' ');
+      let graphTitle = outsideClick ? e.title.textStr.replace(' column chart','').split(' ') :
+        data.series.chart.title.textStr.replace(' column chart','').split(' ');
       graphTitle = graphTitle[graphTitle.length - 1];
 
+      // manually assigning data if clicked outside
+      if(outsideClick){
+        data.category = checkedCheckboxes[xAxisIndex].name;
+        // no variable clicked, so its empty
+        data.series = {
+          'userOptions': {
+            id: ''
+          }
+        };
+        data.index = xAxisIndex;
+      }
+      
       const dialogConfig = new MatDialogConfig();
       dialogConfig.autoFocus = true;
       dialogConfig.width = '50rem';
@@ -265,10 +284,10 @@ export class GraphicCompareComponent implements OnInit {
         filter: this.actualFilter,
         name: data.category,
         variable: data.series['userOptions'].id,
-        id: filter(this.xAxisVars, 'checked')[data.index].id,
+        id: checkedCheckboxes[data.index].id,
         queryParams: this.activatedRoute.snapshot.queryParams,
         graphTitle: graphTitle,
-        graphId: +graphId
+        graphId: outsideClick ? +paramArgInfo[chartIndex] : +paramArgInfo
       }
       let dialogRef = this.dialog.open(CompareDialogComponent, dialogConfig);
       dialogRef.afterClosed().subscribe(cat => {
@@ -396,6 +415,9 @@ export class GraphicCompareComponent implements OnInit {
           x[orderByParam] = 0;
           x[orderByParamName] = 'Unspecified'
         }
+        if(x.id == null){
+          x.id = 0;
+        }
         return x;
       });
 
@@ -411,14 +433,17 @@ export class GraphicCompareComponent implements OnInit {
             this.breadcrumbsData['names'].push(vars[orderByParamName]);
           }
         } else {
-          if(!existentIds.includes(vars.id)){
-            existentIds.push(vars.id);
+          if(!existentIds.includes(+vars.id)){
+            existentIds.push(+vars.id);
           }
           if(!this.breadcrumbsData['names'].includes(vars[orderByParamName]))
             this.breadcrumbsData['names'].push(vars[orderByParamName]);
           graphSplitData[vars[orderByParam]].push(vars);
         }
       }
+
+      /* let selectedCheckboxes = existentIds.filter(x => {if(!filterArray.includes(x)) return x});
+      this.oneCheckboxSelected = !this.comparingSameType && selectedCheckboxes.length === 1; */
 
       this.breadcrumbsData['category'] = this.actualCategory;
       this.breadcrumbsData['title'] = titleCategory;
@@ -484,6 +509,7 @@ export class GraphicCompareComponent implements OnInit {
       let name;
       let titleName;
       let checkboxIndex = 0;
+      let maxValue = 0;
 
       let chartData: IHashString = {};
 
@@ -525,7 +551,7 @@ export class GraphicCompareComponent implements OnInit {
             if(test !== '-' && !checkboxesPossibilities.includes(test)){
               checkboxesPossibilities.push(test);
               let checkId = this.unitedChart ? checkboxIndex : testId;
-              this.xAxisVars.push({name: test, id: checkId, dbId: testId, checked: !idInParams});
+              this.xAxisVars.push({name: test, id: checkId, dbId: testId, checked: !idInParams, groupById: +key});
               checkboxIndex++;
             }
 
@@ -569,6 +595,8 @@ export class GraphicCompareComponent implements OnInit {
                 tableData.push(vars.nCantTell);
                 tableData.push(vars.nInapplicable);
                 tableData.push(vars.nUntested);
+                let max = Math.max(...tableData);
+                maxValue = max > maxValue ? max : maxValue;
 
                 if(!this.unitedChart){
                   nPassed.push(vars.nPassed);
@@ -676,7 +704,16 @@ export class GraphicCompareComponent implements OnInit {
                 chart: {
                   type: 'column',
                   animation: false,
-                  renderTo: 'chart'+chartIndex
+                  renderTo: 'chart'+chartIndex,
+                  events: {
+                    click: (e: any) =>  {
+                      if(!this.comparingSameType){
+                        let xAxisValue = Math.abs(Math.round(e.xAxis[0].value));
+                        let chartIndex = +e.path[3].id.replace('chart','');
+                        this.onPointSelect(this.actualCharts[chartIndex], paramArgIds, true, xAxisValue, chartIndex);
+                      }
+                    }
+                  }
                 },
                 title: {
                   text: !this.unitedChart ? 
@@ -747,6 +784,9 @@ export class GraphicCompareComponent implements OnInit {
                   categories: names,
                   crosshair: true
                 },
+                yAxis: {
+                  min: 0 
+                },
                 /*legend: {
                   accessibility: {
                     enabled: true,
@@ -783,7 +823,7 @@ export class GraphicCompareComponent implements OnInit {
         
               if(subtitle)
                 chart.setSubtitle({text: subtitle});
-        
+
               this.actualCharts.push(chart);
               chartIndex++;
             }
@@ -807,13 +847,13 @@ export class GraphicCompareComponent implements OnInit {
       }
 
       // set the maximum yaxis value and set it to all charts
-      let yAxisMax = 0;
+      /* let yAxisMax = 0;
       for(let chart of this.actualCharts){
         yAxisMax = chart.yAxis[0].max > yAxisMax ? chart.yAxis[0].max : yAxisMax;
-      }
+      }  */
       for(let chart of this.actualCharts) {
         chart.yAxis[0].update({
-          max: yAxisMax
+          max: maxValue
         });
       }
 

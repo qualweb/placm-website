@@ -182,11 +182,11 @@ export class GraphicDisplayComponent implements OnInit {
     let jsonNavExtras = JSON.parse('{' + queryParamsArray.join(',') + '}');
 
     // update data table on checkbox click
-    if(this.chart.options.exporting.showTable){
+    /* if(this.chart.options.exporting.showTable){
       let element = document.getElementsByClassName("highcharts-data-table");
       if(element)
         element[0].removeChild(element[0].childNodes[0]);
-    }
+    } */
     this.router.navigate([], {
         relativeTo: this.activatedRoute,
         queryParams: jsonNavExtras // remove to replace all query params by provided
@@ -203,9 +203,26 @@ export class GraphicDisplayComponent implements OnInit {
     }
   }
 
-  onPointSelect(e: any): void {
-    if(e.point || e.target){
-      let data = e.point ? e.point : e.target;
+  onPointSelect(e: any, outsideClick: boolean = false, xAxisIndex?: number): void {
+    // outsideClick - mouse click outside of column
+    // e.point - mouse click on column
+    // e.target - keyboard press on column
+    if(outsideClick || e.point || e.target){
+      let data = outsideClick ? {} : (e.point ? e.point : e.target);
+      let checkedCheckboxes = filter(this.xAxisVars, 'checked');
+
+      // manually getting data if clicked outside
+      if(outsideClick){
+        data.category = checkedCheckboxes[xAxisIndex].name;
+        // no variable clicked, so its empty
+        data.series = {
+          'userOptions': {
+            id: ''
+          }
+        };
+        data.index = xAxisIndex;
+      }
+
       const dialogConfig = new MatDialogConfig();
       dialogConfig.width = '50rem';
       dialogConfig.position = {
@@ -218,7 +235,7 @@ export class GraphicDisplayComponent implements OnInit {
         filter: this.actualFilter,
         name: data.category,
         variable: data.series['userOptions'].id,
-        id: filter(this.xAxisVars, 'checked')[data.index].id,
+        id: checkedCheckboxes[data.index].id,
         queryParams: this.activatedRoute.snapshot.queryParams
       }
       let dialogRef = this.dialog.open(DrilldownDialogComponent, dialogConfig);
@@ -247,10 +264,6 @@ export class GraphicDisplayComponent implements OnInit {
     let variableName, tableHeaders = [];
     this.chartsReady = false;
 
-    /* if(this.chart){
-      this.chart.destroy();
-      this.chart = undefined;
-    } */
     if(this.actualGraphicType === 'assertions'){
       variableName = this.actualGraphicType;
       tableHeaders = ['# pages']
@@ -442,7 +455,13 @@ export class GraphicDisplayComponent implements OnInit {
       this.chart = Highcharts.chart('chart', {
         chart: {
           type: 'column',
-          animation: false
+          animation: false,
+          events: {
+            click: (e: any) => {
+              let xAxisValue = Math.abs(Math.round(e.xAxis[0].value));
+              this.onPointSelect(this.chart, true, xAxisValue);
+            }
+          }
         },
         title: {
           text: LABELS_PLURAL[this.actualCategory] + ' column chart'
@@ -515,6 +534,10 @@ export class GraphicDisplayComponent implements OnInit {
         xAxis: {
           categories: names,
           crosshair: true
+        },
+        yAxis: {
+          min: 0,
+          tickAmount: 8
         },
         /*legend: {
           accessibility: {

@@ -48,6 +48,7 @@ export class CompareDialogComponent implements OnInit {
 
       this.graphTitle = data.graphTitle;
       this.graphId = data.graphId;
+      console.log(data);
 
       this.initializeForms();
   }
