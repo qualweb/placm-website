@@ -55,7 +55,10 @@
         Change graphic type
       </button>
       <div id="checkboxes">
-          <mat-checkbox *ngFor="let variable of xAxisVars; let i = index" color="primary" [checked]="variable.checked" (change)="updateBySelection(variable.id, 0)">{{variable.name}}</mat-checkbox>
+          <mat-checkbox *ngFor="let variable of xAxisVars; let i = index" color="primary" 
+          [checked]="variable.checked" 
+          (change)="updateBySelection(variable.id, 0, 
+          {'id': variable.id, 'index': i, 'checked': $event.checked})">{{variable.name}}</mat-checkbox>
       </div>
       <button (click)="selectAllCheckboxes()">Select all</button>
       <button (click)="unselectAllCheckboxes()">Unselect all</button>

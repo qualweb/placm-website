@@ -31,12 +31,15 @@ import * as Highstocks from 'highcharts/highstock';
 import HC_accessibility from 'highcharts/modules/accessibility';
 import HC_exporting from 'highcharts/modules/exporting';
 import HC_exportdata from 'highcharts/modules/export-data';
+import HC_boost from 'highcharts/modules/boost';
 HC_accessibility(Highcharts);
 HC_exporting(Highcharts);
 HC_exportdata(Highcharts);
+HC_boost(Highcharts);
 HC_accessibility(Highstocks);
 HC_exporting(Highstocks);
 HC_exportdata(Highstocks);
+HC_boost(Highstocks);
 
 import { AppComponent } from './app.component';
 import { SubmitEarlReportComponent } from './submit-earl-report/submit-earl-report.component';
