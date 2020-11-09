@@ -9,7 +9,7 @@
 
 <ng-template #showDialog>
   <mat-form-field floatLabel="always">
-    <mat-label>Choose which category you want to study:</mat-label>
+    <mat-label>Category</mat-label>
     <mat-select (selectionChange)="changeCategory($event.value)">
       <mat-option *ngFor="let category of categories" [value]="category.abbr">
         {{category.name}}

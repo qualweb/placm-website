@@ -118,7 +118,7 @@ export class DrilldownDialogComponent implements OnInit {
     this.dialogRef.close({comparing: true,
                           selected: this.category,
                           ids: idsSelected,
-                          queryParams: await this.prepareQueryParams(this.category, idsSelected)})
+                          queryParams: await this.prepareQueryParams(this.category, idsSelected, false)})
   }
 
   async goToCompPageDifferent(){
@@ -207,6 +207,7 @@ export class DrilldownDialogComponent implements OnInit {
       this.categories.push(
         {
           name: LABELS_SINGULAR[cat],
+          plural: LABELS_PLURAL[cat],
           value: cat
         }
       );
@@ -232,6 +233,8 @@ export class DrilldownDialogComponent implements OnInit {
         if(filters.length)
           queryParamsString += ',"filter":"' + filters.join(',') + '"';
       }
+    } else {
+      queryParamsString += ',"p":"' + [...Array(ids.length).keys()].join(',') + '","graph":"1"';
     }
 
     queryParamsString += '}';

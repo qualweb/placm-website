@@ -48,7 +48,7 @@ export class GraphicBreadcrumbsComponent implements OnInit {
     this.breadcrumbs = [];
     let queryParams = this.activatedRoute.snapshot.queryParams;
     let removed;
-    let removableFilters = ['filter', 'p'];
+    let removableFilters = ['filter', 'p', 'graph'];
     for(let f of removableFilters){
       if(queryParams[f])
         ({[f]: removed, ...queryParams} = queryParams);
@@ -135,7 +135,11 @@ export class GraphicBreadcrumbsComponent implements OnInit {
     if(this.category !== this.data.title){
       result += ' grouped by ' + LABELS_PLURAL[this.data.title];
     }
-    result += ' (' + names.slice(0, -1).join(', ') + ' and ' + names.slice(-1) + ')';
+    result += ' (';
+    if(names.length > 1){
+      result += names.slice(0, -1).join(', ') + ' and ';
+    }
+    result += names.slice(-1) + ')';
     return result;
   }
 

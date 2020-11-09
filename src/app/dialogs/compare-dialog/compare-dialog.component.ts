@@ -23,7 +23,7 @@ export class CompareDialogComponent implements OnInit {
   variable: string;
   id: string;
   type: string;
-  queryParams: any[];
+  queryParams: any;
 
   graphTitle: string;
   graphId: number;
@@ -31,6 +31,8 @@ export class CompareDialogComponent implements OnInit {
   form: FormGroup;
   names: any[] = [];
   namesOptions: Observable<any[]>;
+
+  dataFilters: any;
 
   constructor(@Inject(MAT_DIALOG_DATA) data,
     public dialog: MatDialog,
@@ -60,8 +62,8 @@ export class CompareDialogComponent implements OnInit {
       map(value => typeof value === 'string' ? value : value['name']),
       map(name => name ? this._filter('names', name) : this.names.slice()));
 
-    this.form.controls.radio!.valueChanges.subscribe( (x) => {
-      this.prepareNames();
+    this.form.controls.radio!.valueChanges.subscribe(async () => {
+      await this.prepareNames();
     })
   }
 
@@ -86,21 +88,31 @@ export class CompareDialogComponent implements OnInit {
   
   async prepareNames(): Promise<void> {
     let queryPar = this.queryParams;
+
+    let removed;
+    let removableFilters = ['filter', 'p', 'graph'];
+    for(let f of removableFilters){
+      if(queryPar[f])
+        ({[f]: removed, ...queryPar} = queryPar);
+    }
+
     if(this.form.controls.radio.value === '0'){
-      let firstParam = Object.keys(this.queryParams)[0];
+      let firstParam = Object.keys(queryPar)[0];
       let queryParamsString = '{"' + firstParam + '":"' + this.graphId + '"';
-      if(this.queryParams){
-        for(let params in this.queryParams){
-          if(POSSIBLE_FILTERS.includes(params) && params !== firstParam && params !== 'filter' && params !== 'p'){
+      if(queryPar){
+        for(let params in queryPar){
+          if(POSSIBLE_FILTERS.includes(params) && params !== firstParam){
             queryParamsString = queryParamsString + ',"'
-                      + params + '":"' + this.queryParams[params] + '"';
+                      + params + '":"' + queryPar[params] + '"';
           }
         }
       }
       queryParamsString = queryParamsString + '}';
       queryPar = JSON.parse(queryParamsString);
     }
-    this.names = await this.combinedService.getNames(this.category, queryPar);
+    
+    this.dataFilters = queryPar;
+    this.names = await this.combinedService.getNames(this.category, this.dataFilters);
     if(this.names['success'] === 1){
       this.names = this.names['result'];
       this.form.get('names').setValue(this.names.filter(x => {if(x.id === this.id) return x}));
@@ -114,21 +126,21 @@ export class CompareDialogComponent implements OnInit {
     this.dialogRef.close({comparing: true,
                           selected: this.category,
                           ids: idsSelected,
-                          queryParams: this.prepareQueryParams(this.category, idsSelected)})
+                          queryParams: this.prepareQueryParams(this.category, idsSelected)});
   }
   
   prepareQueryParams(cat: string, ids: number[]): any {
     let selectedParam = cat + 'Ids';
     let queryParamsString = '{"' + selectedParam + '":"' + ids.join(',') + '"';
-    if(this.queryParams){
-      for(let params in this.queryParams){
-        if(POSSIBLE_FILTERS.includes(params) && params !== selectedParam && params !== 'filter' && params !== 'p'){
-          queryParamsString = queryParamsString + ',"'
-                    + params + '":"' + this.queryParams[params] + '"';
-        }
+    if(this.dataFilters){
+      for(let params in this.dataFilters){
+        queryParamsString += ',"' + params + '":"' + this.dataFilters[params] + '"';
       }
+      // adding united chart and make series visible
+      queryParamsString += ',"graph":"1","p":"' + [...Array(ids.length).keys()] + '"';
     }
-    queryParamsString = queryParamsString + '}';
+
+    queryParamsString += '}';
     return JSON.parse(queryParamsString);
   }
 

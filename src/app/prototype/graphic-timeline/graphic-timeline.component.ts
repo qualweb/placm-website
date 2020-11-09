@@ -477,6 +477,7 @@ export class GraphicTimelineComponent implements OnInit {
         },
         //eixo dos x - month-year
         xAxis: {
+          minRange: 1,
           type: 'datetime',
           tickPositions: names.length <= 3 ? names : undefined,
           labels: {

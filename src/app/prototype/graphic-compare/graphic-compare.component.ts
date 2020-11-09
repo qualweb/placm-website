@@ -58,6 +58,8 @@ export class GraphicCompareComponent implements OnInit {
 
   legendAlreadyClicked: boolean = false;
 
+  //loadingBackground: boolean = false;
+
   /* selectAllClicked: boolean = false;
   unselectAllClicked: boolean = false;
   checkboxData: any;
@@ -1069,18 +1071,21 @@ export class GraphicCompareComponent implements OnInit {
   }
 
   changeType() {
+    let newQueryParams = {};
     if(this.actualGraphicType === 'assertions'){
+      if(!this.unitedChart){
+        newQueryParams = {p: '0,1'};
+      }
       this.router.navigate(['/compare/scriteria/'+this.actualCategory], {
-        queryParams: {
-          p: this.unitedChart ? '0,1' : null
-        },
+        queryParams: newQueryParams,
         queryParamsHandling: 'merge'
       });
     } else {
+      if(!this.unitedChart){
+        newQueryParams = {p: '0'};
+      }
       this.router.navigate(['/compare/assertions/'+this.actualCategory], {
-        queryParams: {
-          p: this.unitedChart ? '0' : null
-        },
+        queryParams: newQueryParams,
         queryParamsHandling: 'merge'
       });
     }

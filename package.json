@@ -8,6 +8,7 @@
     "build:prod": "ng build --prod --build-optimizer --base-href=\"/placm/\"",
     "build:prodpt": "ng build --prod --build-optimizer --base-href=\"/placm/pt/\"",
     "build:prodtest": "ng build --prod --build-optimizer --base-href=\"/placm/test/\"",
+    "build:prodtest2": "ng build --prod --build-optimizer --base-href=\"/placm/test2/\"",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
