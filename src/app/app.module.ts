@@ -41,25 +41,26 @@ HC_exporting(Highstocks);
 HC_exportdata(Highstocks);
 HC_boost(Highstocks);
 
+import { FilterPipe } from '../utils/filter.pipe';
+
 import { AppComponent } from './app.component';
-import { SubmitEarlReportComponent } from './submit-earl-report/submit-earl-report.component';
-import { SubmitAccessibilityStatementComponent } from './submit-accessibility-statement/submit-accessibility-statement.component';
+import { SubmitEarlReportComponent } from './admin/submit-earl-report/submit-earl-report.component';
+import { SubmitAccessibilityStatementComponent } from './admin/submit-accessibility-statement/submit-accessibility-statement.component';
 import { ErrorDialogComponent } from './dialogs/error-dialog/error-dialog.component';
 import { DrilldownDialogComponent } from './dialogs/drilldown-dialog/drilldown-dialog.component';
-import { GraphicPickerComponent } from './prototype/graphic-picker/graphic-picker.component';
-import { GraphicDisplayComponent } from './prototype/graphic-display/graphic-display.component';
-import { GraphicHeaderComponent } from './prototype/graphic-header/graphic-header.component';
-import { GraphicCompareComponent } from './prototype/graphic-compare/graphic-compare.component';
-import { AdminComponent } from './prototype/admin/admin.component';
-import { InformationDialogComponent } from './dialogs/information-dialog/information-dialog.component';
+import { GraphicPickerComponent } from './graphic-related/graphic-picker/graphic-picker.component';
+import { GraphicSingleComponent } from './graphic-views/graphic-single/graphic-single.component';
+import { GraphicCompareComponent } from './graphic-views/graphic-compare/graphic-compare.component';
+import { AdminPageComponent } from './admin/admin-page/admin-page.component';
 import { DatabaseDialogComponent } from './dialogs/database-dialog/database-dialog.component';
-import { AppSCListComponent } from './prototype/app-sclist/app-sclist.component';
-import { GraphicBreadcrumbsComponent } from './prototype/graphic-breadcrumbs/graphic-breadcrumbs.component';
+import { AppSCListComponent } from './graphic-views/app-sclist/app-sclist.component';
+import { GraphicBreadcrumbsComponent } from './graphic-related/graphic-breadcrumbs/graphic-breadcrumbs.component';
 import { SuccessDialogComponent } from './dialogs/success-dialog/success-dialog.component';
 import { CompareDialogComponent } from './dialogs/compare-dialog/compare-dialog.component';
-import { ErrorPageComponent } from './prototype/error-page/error-page.component';
-import { GraphicTimelineComponent } from './prototype/graphic-timeline/graphic-timeline.component';
-//import { LocationStrategy, PathLocationStrategy } from '@angular/common';
+import { ErrorPageComponent } from './pages/error-page/error-page.component';
+import { GraphicTimelineComponent } from './graphic-views/graphic-timeline/graphic-timeline.component';
+import { AboutPageComponent } from './pages/about-page/about-page.component';
+import { SidebarNavigationComponent } from './root/sidebar-navigation/sidebar-navigation.component';
 
 const appRoutes: Routes = [
   { path: '', 
@@ -71,29 +72,29 @@ const appRoutes: Routes = [
   { path: 'assertions',
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'continent' },
-      { path: 'continent', component: GraphicDisplayComponent },
-      { path: 'country', component: GraphicDisplayComponent },
-      { path: 'tag', component: GraphicDisplayComponent },
-      { path: 'sector', component: GraphicDisplayComponent },
-      { path: 'org', component: GraphicDisplayComponent },
-      { path: 'app', component: GraphicDisplayComponent },
-      { path: 'eval', component: GraphicDisplayComponent },
-      { path: 'sc', component: GraphicDisplayComponent },
-      { path: 'type', component: GraphicDisplayComponent },
-      { path: 'rule', component: GraphicDisplayComponent }
+      { path: 'continent', component: GraphicSingleComponent },
+      { path: 'country', component: GraphicSingleComponent },
+      { path: 'tag', component: GraphicSingleComponent },
+      { path: 'sector', component: GraphicSingleComponent },
+      { path: 'org', component: GraphicSingleComponent },
+      { path: 'app', component: GraphicSingleComponent },
+      { path: 'eval', component: GraphicSingleComponent },
+      { path: 'sc', component: GraphicSingleComponent },
+      { path: 'type', component: GraphicSingleComponent },
+      { path: 'rule', component: GraphicSingleComponent }
     ]
   },
 
   { path: 'scriteria',
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'continent' },
-      { path: 'continent', component: GraphicDisplayComponent },
-      { path: 'country', component: GraphicDisplayComponent },
-      { path: 'tag', component: GraphicDisplayComponent },
-      { path: 'sector', component: GraphicDisplayComponent },
-      { path: 'org', component: GraphicDisplayComponent },
-      { path: 'app', component: GraphicDisplayComponent },
-      { path: 'eval', component: GraphicDisplayComponent },
+      { path: 'continent', component: GraphicSingleComponent },
+      { path: 'country', component: GraphicSingleComponent },
+      { path: 'tag', component: GraphicSingleComponent },
+      { path: 'sector', component: GraphicSingleComponent },
+      { path: 'org', component: GraphicSingleComponent },
+      { path: 'app', component: GraphicSingleComponent },
+      { path: 'eval', component: GraphicSingleComponent },
       { path: 'scApp', component: AppSCListComponent}
     ]
   },
@@ -136,8 +137,9 @@ const appRoutes: Routes = [
       { path: 'scriteria', component: GraphicTimelineComponent }
     ]
   },
+  { path: 'about', component: AboutPageComponent },
 
-  { path: 'admin', component: AdminComponent },
+  { path: 'admin', component: AdminPageComponent },
   
   // Error handling path
   { path: '**', 
@@ -156,18 +158,19 @@ const appRoutes: Routes = [
     ErrorDialogComponent,
     DrilldownDialogComponent,
     GraphicPickerComponent,
-    GraphicDisplayComponent,
-    GraphicHeaderComponent,
+    GraphicSingleComponent,
     GraphicCompareComponent,
-    AdminComponent,
-    InformationDialogComponent,
+    AdminPageComponent,
     DatabaseDialogComponent,
     AppSCListComponent,
     GraphicBreadcrumbsComponent,
     SuccessDialogComponent,
     CompareDialogComponent,
     ErrorPageComponent,
-    GraphicTimelineComponent
+    GraphicTimelineComponent,
+    FilterPipe,
+    AboutPageComponent,
+    SidebarNavigationComponent
   ],
   imports: [
     BrowserModule,

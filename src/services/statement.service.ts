@@ -16,35 +16,6 @@ export class StatementService {
     private config: ConfigService,
     private http: HttpClient) {}
 
-  sendAccessibilityStatementAjax(serverName: string, numLinks: number, formData: string, links: string, htmls: string): Observable<boolean> {
-    //console.log(htmls);
-    //console.log(numLinks);
-    return ajax
-      .post(this.config.getServer("/admin/statement/add"), {serverName, numLinks, formData, links, htmls})
-      .pipe(
-        retry(3),
-        map(res => {
-          console.log(res);
-          if (!res.response || res.status === 404) {
-            console.log(res);
-            throw new PLACMError(404, "Service not found", "SERIOUS");
-          }
-
-          const response = <Response>res.response;
-
-          if (response.success !== 1) {
-            console.log(response);
-            throw new PLACMError(response.success, response.message);
-          }
-
-          return <boolean>response.result;
-        }),
-        catchError(err => {
-          return of(null);
-        })
-      );
-  }
-
   sendAccessibilityStatement(serverName: string, numLinks: number, formData: string, links: string, htmls: string): Promise<any> {
     return this.http.post((BASE_URL + 'admin/statement/add'), {serverName, numLinks, formData, links, htmls})
       .pipe(

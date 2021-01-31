@@ -5,6 +5,10 @@
   font-family: Roboto, sans-serif;
 }
 
+body {
+  margin: 0;
+}
+
 .mat-tab-body {
   max-height: 50vh;
 }
@@ -114,4 +118,14 @@
 }
 .data-table .header:nth-of-type(odd) th {
   background-color: white;
+}
+
+app-sidebar-navigation {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  overflow: hidden;
+  display: flex;
 }

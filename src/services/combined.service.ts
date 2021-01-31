@@ -235,7 +235,7 @@ export class CombinedService {
   fetchDocument(url: string): Promise<any> {
     let param = new HttpParams();
     param = param.append('url', url);
-    return this.http.get((BASE_URL + 'proto/fetch'), {params: param})
+    return this.http.get((BASE_URL + 'doc/fetch'), {params: param})
       .pipe(
         retry(3),
         map(res => {

@@ -40,7 +40,7 @@ export class ConfigService {
   resetDatabase(serverName: string): Promise<any> {
     let opts = new HttpParams();
     opts = opts.append('name', serverName);
-    return this.http.get((BASE_URL + 'proto/reset'), {params: opts})
+    return this.http.get((BASE_URL + 'db/reset'), {params: opts})
       .pipe(
         retry(3),
         map(res => {

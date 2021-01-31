@@ -21,11 +21,13 @@ export class DrilldownDialogComponent implements OnInit {
   name: string;
   variable: string;
   id: string;
-  type: string;
+  variableGroup: string;
   selectedCategory: string;
   lastDrilldown: boolean;
   scApp: boolean;
   queryParams: any[];
+
+  teste: {id: 0, name: 'ola'};
 
   compareForm: FormGroup;
   sameNames: any[] = [];
@@ -39,6 +41,7 @@ export class DrilldownDialogComponent implements OnInit {
   scriteriaTimelineVisible: boolean;
 
   @ViewChild('autocompleteTrigger') autocompleteTrigger;
+  @ViewChild('selectAllOption') selectAllOption;
   constructor(@Inject(MAT_DIALOG_DATA) data,
     public dialog: MatDialog,
     private dialogRef: MatDialogRef<DrilldownDialogComponent>,
@@ -47,16 +50,16 @@ export class DrilldownDialogComponent implements OnInit {
       this.category = data.category;
       this.categoryName = LABELS_SINGULAR[this.category].toLowerCase();
       this.categoryNamePlural = LABELS_PLURAL[this.category].toLowerCase();
-      this.type = data.type;
+      this.variableGroup = data.group;
       this.filterName = data.filter;
       this.name = data.name;
       this.variable = data.variable;
       this.id = data.id;
-      this.lastDrilldown = this.category === 'rule' || (this.type === 'scriteria' && this.category === 'eval');
-      this.scApp = this.category === 'app' && this.type === 'scriteria';
+      this.lastDrilldown = this.category === 'rule' || (this.variableGroup === 'scriteria' && this.category === 'eval');
+      this.scApp = this.category === 'app' && this.variableGroup === 'scriteria';
       this.queryParams = data.queryParams;
 
-      if(this.type === 'assertions'){
+      if(this.variableGroup === 'assertions'){
         this.scriteriaTimelineVisible = true;
       } else {
         switch(this.category){
@@ -164,6 +167,15 @@ export class DrilldownDialogComponent implements OnInit {
     }
   }
 
+  selectAllNameOptions(): void {
+    if(this.selectAllOption._selected){
+      this.compareForm.get('names').setValue(this.names);
+      this.selectAllOption._selected = true;
+    } else {
+      this.compareForm.get('names').setValue([]);
+    }
+  }
+
   prepareCategories(): void {
     this.categories = [];
     let futureCategories = [];
@@ -227,7 +239,7 @@ export class DrilldownDialogComponent implements OnInit {
 
     let data, filters: any[] = [];
     if(filter){
-      data = await this.combinedService.getData(this.category, this.type, this.queryParams);
+      data = await this.combinedService.getData(this.category, this.variableGroup, this.queryParams);
       if(data['success'] === 1){
         filters = data['result'].map(x => x.id === null ? 0 : x.id).filter(id => id !== this.id);
         if(filters.length)

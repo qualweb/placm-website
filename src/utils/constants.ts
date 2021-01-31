@@ -5,6 +5,8 @@ const BASE_URL = environment.production ? '/' : 'http://localhost:3443/' ;
 
 // already exists: '', 'pt', 'test'
 const SERVER_NAME = '';
+// already exists: '', 'pt', 'test', 'test2'
+const HOMEPAGE_LINK = '';
 
 const POSSIBLE_FILTERS = ['continentIds', 'countryIds', 'sectorIds', 'orgIds', 'tagIds', 'appIds', 'evalIds', 'scIds', 'typeIds', 'ruleIds', 'filter', 'p', 'graph'];
 
@@ -55,7 +57,7 @@ const FILEINPUT_LABEL = 'Choose file(s)';
 
 const queryParamsRegex = new RegExp(/^[0-9]([,.]?[0-9])*$/);
 
-export {BASE_URL, SERVER_NAME, 
+export {BASE_URL, SERVER_NAME, HOMEPAGE_LINK, 
         POSSIBLE_FILTERS, 
         LABELS_PLURAL, LABELS_SINGULAR, 
         SECTORS, TYPES, GENERATORS,

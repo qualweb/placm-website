@@ -1,10 +1,13 @@
+<!-- This is the modal window that shows up when a chart's column is clicked/pressed -->
+<!-- This modal window allows every implemented navigation, except the simple category one (where you click a category in the sidebar) -->
+
 <mat-tab-group animationDuration="0ms">
   
   <mat-tab label="Drilldown">
     <p>You have clicked on {{categoryName}} <span class="bold">{{name}}</span>.</p>
     <ng-template [ngIf]="!lastDrilldown" [ngIfElse]="lastDrill">
       <p>Select which category you want to inspect to:</p>
-      <app-graphic-picker [actualCategory]="category" [type]="type" [showAll]="false" (change)="changedCategorySelection($event)"></app-graphic-picker>
+      <app-graphic-picker [actualCategory]="category" [variable]="variableGroup" (change)="changedCategorySelection($event)"></app-graphic-picker>
     </ng-template>
     <ng-template #lastDrill>
       <p class="bold">You cannot inspect further!</p>
@@ -21,8 +24,6 @@
 
   <mat-tab label="Group by">
     <p>You have clicked on {{categoryName}} <span class="bold">{{name}}</span>.</p>
-    <!--p>In this tab, you can compare data from the category you're in ({{categoryName}}) based on a second category.</p>
-    <p>Take this as an example: You can compare Application/Website data by Continents!</p-->
     <p>Select which category you want to group the data of {{name}} by:</p>
     <mat-form-field floatLabel="always">
       <mat-label>Category</mat-label>
@@ -59,6 +60,7 @@
           id='names'
           [formControl]="compareForm.controls.names"
           [multiple]="true">
+          <mat-option [value]="0" (click)="selectAllNameOptions()" [selected]="false" #selectAllOption>- Select All -</mat-option>
           <mat-option *ngFor="let c of namesOptions | async" [value]="c">
             {{c.name}}
           </mat-option>
@@ -92,7 +94,6 @@
 
   <mat-tab label="Comparison">
     <p>You have clicked on {{categoryName}} <span class="bold">{{name}}</span>.</p>
-    <!--p>In this tab, you can compare {{categoryName}}'s data.</p-->
     <p>Select which {{categoryNamePlural}} do you want to compare:</p>
       
     <mat-form-field floatLabel="always">
