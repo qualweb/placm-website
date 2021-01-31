@@ -7,7 +7,7 @@
     <p>You have clicked on {{categoryName}} <span class="bold">{{name}}</span>.</p>
     <ng-template [ngIf]="!lastDrilldown" [ngIfElse]="lastDrill">
       <p>Select which category you want to inspect to:</p>
-      <app-graphic-picker [actualCategory]="category" [variable]="variableGroup" (change)="changedCategorySelection($event)"></app-graphic-picker>
+      <app-graphic-picker [actualCategory]="category" [inputVariableGroup]="variableGroup" (change)="changedCategorySelection($event)"></app-graphic-picker>
     </ng-template>
     <ng-template #lastDrill>
       <p class="bold">You cannot inspect further!</p>
